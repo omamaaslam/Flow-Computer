@@ -1,4 +1,5 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, observable } from "mobx";
+import { InterfaceStore } from "./InterfaceStore";
 
 export class IOCardStore {
   public cardType: string;
@@ -6,13 +7,13 @@ export class IOCardStore {
 
   constructor(type: string) {
     this.cardType = type;
-    this.interfaces = new Map();
+    this.interfaces = observable.map();
     makeAutoObservable(this); // auto-track all state and actions
   }
 
   // Add or replace an interface
-  public addInterface(key: string, interfaceObj: any) {
-    this.interfaces.set(key, interfaceObj);
+  public addInterface(key: string) {
+    this.interfaces.set(key, new InterfaceStore());
   }
 
   // Get an interface (no reactivity needed)
