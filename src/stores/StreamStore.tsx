@@ -1,19 +1,16 @@
 import { makeAutoObservable } from "mobx";
-import type { Stream } from "../interfaces/Stream";
+import type { Interface } from "../interfaces/Interface";
+
 
 export class StreamStore {
-  public streams: Stream[] = [];
+  public interfaces: Interface[] = [];
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  public addStream(stream: Stream[]) {
-    this.streams.push(...stream);
+  addInterface(interfaceObj: Interface) {
+    this.interfaces.push(interfaceObj);
   }
 
-  public deleteStream() {
-    this.streams.pop();
-    console.log(this.streams);
-  }
 }

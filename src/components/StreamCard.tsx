@@ -7,8 +7,6 @@ interface StreamCardProps {
   stream: {
     id: number;
     name: string;
-    flowRate: number;
-    volume: number;
   };
   colorScheme: "yellow" | "red" | "green" | "gray";
 }
@@ -86,7 +84,7 @@ const StreamCard: React.FC<StreamCardProps> = observer(
                 style={{ borderColor }}
               >
                 <span className="text-[11px] sm:text-[12px] md:text-[18px] font-semibold text-white text-center">
-                  Volume: {stream.volume}
+                  Volume: 86
                 </span>
               </div>
               <div
@@ -96,7 +94,7 @@ const StreamCard: React.FC<StreamCardProps> = observer(
                 style={{ borderColor }}
               >
                 <span className="text-[11px] sm:text-[12px] md:text-[18px] font-semibold text-white text-center">
-                  Flow Rate: {stream.flowRate}
+                  Flow Rate: 12
                 </span>
               </div>
             </div>

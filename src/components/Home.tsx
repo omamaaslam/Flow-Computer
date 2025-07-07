@@ -8,7 +8,7 @@ import HomeController from "../controllers/HomeController";
 new HomeController();
 
 const Home = () => {
-  const streams = globalStore.streamStore.streams;
+  const streams = globalStore.streams;
 
   const colorSchemes: Array<"yellow" | "red" | "green" | "gray"> = [
     "yellow",

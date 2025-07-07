@@ -1,9 +1,39 @@
-import { Thermometer, Logs, Gauge, MoveHorizontal } from "lucide-react";
+import { useState } from "react";
+import { Thermometer, Gauge, MoveHorizontal, List } from "lucide-react";
+
+// 1. Import the new MUI Modal Wrapper and the refactored Form components
+import MuiModalWrapper from "./MuiModalWrapper"; // Assuming this is in the same folder
+import VolumeForm from "./VolumeForm";
+import TemperatureForm from "./TemperatureForm";
+import PressureForm from "./PressureForm";
+import ConversionForm from "./ConversionForm";
+
+// 2. Define a type for the modal state for better type safety
+type ModalType = "volume" | "temperature" | "pressure" | "conversion";
+
+// 3. A configuration object to map modal types to their titles and components.
+// This makes the rendering logic much cleaner and more scalable.
+const modalConfig = {
+  volume: { title: "Configure Volume", Component: VolumeForm },
+  temperature: { title: "Configure Temperature", Component: TemperatureForm },
+  pressure: { title: "Configure Pressure", Component: PressureForm },
+  conversion: { title: "Conversion Settings", Component: ConversionForm },
+};
+
 
 const Configuration = () => {
+  // The state now uses the ModalType we defined
+  const [activeModal, setActiveModal] = useState<ModalType | null>(null);
+
+  const closeModal = () => setActiveModal(null);
+  const openModal = (modalType: ModalType) => setActiveModal(modalType);
+
+  // Dynamically get the current modal's content component, if one is active
+  const ModalContent = activeModal ? modalConfig[activeModal].Component : null;
+
   return (
-    <div className="p-6 w-full max-w-screen-xl mx-auto space-y-6">
-      {/* Top Right Buttons */}
+    <div className="py-6 w-full max-w-screen-xl mx-auto space-y-6">
+      {/* Top Buttons (Unchanged) */}
       <div className="flex justify-end gap-4">
         <button className="px-4 py-2 bg-white text-gray-800 rounded-full shadow-md border border-gray-200 hover:bg-gray-100 transition">
           Stream Configuration
@@ -13,11 +43,12 @@ const Configuration = () => {
         </button>
       </div>
 
-      {/* Outer Wrapper Card */}
-      <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-200 space-y-8">
-        {/* Visualization Card */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-200">
-          <div className="flex flex-col lg:flex-row justify-around items-center gap-8 lg:gap-0">
+      {/* Main Outer Card (Unchanged) */}
+      <div className="bg-white rounded-2xl shadow-md py-2 px-2 border border-gray-200 space-y-8">
+        
+        {/* Visualization Section for Desktop (Unchanged) */}
+        <div className="hidden md:block bg-white rounded-2xl p-6 border border-gray-200">
+          <div className="flex flex-row flex-wrap justify-around items-center gap-4 sm:gap-8">
             {/* Volume */}
             <div className="flex flex-col items-center">
               <span className="text-yellow-500 font-semibold text-sm">Volume</span>
@@ -25,17 +56,12 @@ const Configuration = () => {
                 <div className="w-full h-2/3 bg-gradient-to-t from-gray-400 to-white" />
               </div>
             </div>
-
-            {/* Cylinder */}
+            {/* Cylinder with Particles */}
             <div className="relative bg-gradient-to-t from-gray-500 to-gray-300 w-40 h-48 rounded-t-3xl border-4 border-black flex flex-wrap content-start items-start p-2 gap-1.5">
               {Array.from({ length: 14 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="w-4 h-4 bg-white border border-black rounded-full"
-                ></div>
+                <div key={i} className="w-4 h-4 bg-white border border-black rounded-full"></div>
               ))}
             </div>
-
             {/* Temperature */}
             <div className="flex flex-col items-center">
               <span className="text-yellow-500 font-semibold text-sm">Temperature</span>
@@ -51,7 +77,6 @@ const Configuration = () => {
                 </div>
               </div>
             </div>
-
             {/* Pressure */}
             <div className="flex flex-col items-center">
               <span className="text-yellow-500 font-semibold text-sm mb-2">Pressure</span>
@@ -66,33 +91,75 @@ const Configuration = () => {
           </div>
         </div>
 
-        {/* Control Buttons Card */}
-        <div className="bg-white rounded-2xl p-6 border border-gray-200">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <button className="flex items-center justify-center gap-2 py-3 px-4 border rounded-xl shadow-sm hover:bg-gray-100 transition">
-              <Logs className="text-yellow-500" size={20} />
-              <span className="text-sm font-medium">Volume</span>
+        {/* 4-CARD TABLET-ONLY LAYOUT (Unchanged) */}
+        <div className="md:hidden bg-white rounded-2xl py-4 px-2 border border-gray-200">
+          <h2 className="text-center text-gray-500 text-sm mb-4">Main Reading</h2>
+          <div className="flex flex-col sm:flex-row justify-between gap-4 sm:gap-2">
+            {["Volume", "Temperature", "Pressure", "Conversion"].map((label) => (
+              <div
+                key={label}
+                className="flex-1 border rounded-xl shadow p-4 flex flex-col items-center justify-center min-w-[100px] bg-white"
+              >
+                <h3 className="text-md font-semibold text-gray-800 mb-4">{label}</h3>
+                <div className="flex flex-col items-center space-y-1 text-sm">
+                  <div>
+                    Positive: <span className="text-green-600 font-semibold">75%</span>
+                  </div>
+                  <div>
+                    Negative: <span className="text-red-600 font-semibold">75%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Control Buttons Section (onClick handlers updated) */}
+        <div className="bg-white rounded-2xl py-6 px-2 border border-gray-200">
+          <div className="flex flex-wrap justify-between gap-2 sm:gap-4">
+            <button
+              onClick={() => openModal("volume")}
+              className="flex-1 min-w-[70px] sm:min-w-[100px] max-w-[150px] flex items-center justify-center gap-1 sm:gap-2 py-2 px-3 sm:py-3 sm:px-4 text-xs sm:text-sm border rounded-xl shadow-sm hover:bg-gray-100 transition"
+            >
+              <List className="text-yellow-500" size={18} />
+              <span className="font-medium">Volume</span>
             </button>
-            <button className="flex items-center justify-center gap-2 py-3 px-4 border rounded-xl shadow-sm hover:bg-gray-100 transition">
-              <Thermometer className="text-yellow-500" size={20} />
-              <span className="text-sm font-medium">Temperature</span>
+            <button
+              onClick={() => openModal("temperature")}
+              className="flex-1 min-w-[70px] sm:min-w-[100px] max-w-[150px] flex items-center justify-center gap-1 sm:gap-2 py-2 px-3 sm:py-3 sm:px-4 text-xs sm:text-sm border rounded-xl shadow-sm hover:bg-gray-100 transition"
+            >
+              <Thermometer className="text-yellow-500" size={18} />
+              <span className="font-medium">Temperature</span>
             </button>
-            <button className="flex items-center justify-center gap-2 py-3 px-4 border rounded-xl shadow-sm hover:bg-gray-100 transition">
-              <Gauge className="text-yellow-500" size={20} />
-              <span className="text-sm font-medium">Pressure</span>
+            <button
+              onClick={() => openModal("pressure")}
+              className="flex-1 min-w-[70px] sm:min-w-[100px] max-w-[150px] flex items-center justify-center gap-1 sm:gap-2 py-2 px-3 sm:py-3 sm:px-4 text-xs sm:text-sm border rounded-xl shadow-sm hover:bg-gray-100 transition"
+            >
+              <Gauge className="text-yellow-500" size={18} />
+              <span className="font-medium">Pressure</span>
             </button>
-            <button className="flex items-center justify-center gap-2 py-3 px-4 border rounded-xl shadow-sm hover:bg-gray-100 transition">
-              <MoveHorizontal className="text-yellow-500" size={20} />
-              <span className="text-sm font-medium">Conversion</span>
+            <button
+              onClick={() => openModal("conversion")}
+              className="flex-1 min-w-[70px] sm:min-w-[100px] max-w-[150px] flex items-center justify-center gap-1 sm:gap-2 py-2 px-3 sm:py-3 sm:px-4 text-xs sm:text-sm border rounded-xl shadow-sm hover:bg-gray-100 transition"
+            >
+              <MoveHorizontal className="text-yellow-500" size={18} />
+              <span className="font-medium">Conversion</span>
             </button>
           </div>
         </div>
       </div>
+
+      {/* 4. The new Material-UI Modal logic */}
+      <MuiModalWrapper
+        open={activeModal !== null}
+        onClose={closeModal}
+        title={activeModal ? modalConfig[activeModal].title : ""}
+      >
+        {/* Render the active modal's content component, passing the closeModal function */}
+        {ModalContent && <ModalContent onClose={closeModal} />}
+      </MuiModalWrapper>
     </div>
   );
 };
 
 export default Configuration;
-
-
-<MoveHorizontal />

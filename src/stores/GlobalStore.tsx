@@ -1,18 +1,25 @@
 import { makeAutoObservable } from "mobx";
-import { StreamStore } from "./StreamStore";
-import { IOCardStore } from "./IO_CardStore";
-import { InterfaceStore } from "./InterfaceStore";
+import type { StreamStore } from "./StreamStore";
 
-class GlobalStore {
-  public streamStore: StreamStore;
-  public ioCardStore: IOCardStore;
-  public interfaceStore: InterfaceStore;
+export interface Stream {
+  id: number;
+  name: string;
+  stream: StreamStore;
+}
+
+export class GlobalStore {
+  public streams: Stream[] = [];
 
   constructor() {
-    this.streamStore = new StreamStore();
-    this.ioCardStore = new IOCardStore("default");
-    this.interfaceStore = new InterfaceStore();
     makeAutoObservable(this);
+  }
+
+  addStream(stream: Stream[]) {
+    this.streams.push(...stream);
+  }
+
+  removeStream(id: number) {
+    this.streams = this.streams.filter((s) => s.id !== id);
   }
 }
 
