@@ -1,11 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import type { StreamStore } from "./StreamStore";
-
-export interface Stream {
-  id: number;
-  name: string;
-  stream: StreamStore;
-}
+import type { Stream } from "../interfaces/Stream";
 
 export class GlobalStore {
   public streams: Stream[] = [];
