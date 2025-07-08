@@ -1,11 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import type { StreamStore } from "./StreamStore";
-
-export interface Stream {
-  id: number;
-  name: string;
-  stream: StreamStore;
-}
+import type { Stream } from "./Stream";
 
 export class GlobalStore {
   public streams: Stream[] = [];
@@ -16,10 +10,6 @@ export class GlobalStore {
 
   addStream(stream: Stream[]) {
     this.streams.push(...stream);
-  }
-
-  removeStream(id: number) {
-    this.streams = this.streams.filter((s) => s.id !== id);
   }
 }
 

@@ -1,5 +1,5 @@
 import { makeAutoObservable } from "mobx";
-import { InterfaceStore } from "./InterfaceStore";
+import { InterfaceStore } from "./Interface";
 
 export class HartInterfaceStore extends InterfaceStore {
   constructor() {
