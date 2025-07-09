@@ -10,7 +10,7 @@ const App = observer(() => {
   const navigate = useNavigate();
   
   if (!navigationStore.navigatorInitialized) {
-    navigationStore.initNavigator(navigate); // internally calls syncWithBrowser
+    navigationStore.initNavigator(navigate);
   }
 
   const currentComponent = RouteComponentMap[navigationStore.currentRoute];

@@ -19,7 +19,7 @@ class NavigationStore {
   initNavigator(navigate: (path: string) => void) {
     this.navigator = navigate;
     this.navigatorInitialized = true;
-    this.syncWithBrowser(); // 💡 Sync MobX state with current browser path
+    this.syncWithBrowser();
   }
 
   goTo(routeKey: RouteKey) {
@@ -83,6 +83,14 @@ class NavigationStore {
       this.syncWithBrowser();
     });
   }
-}
 
+configureInterface(path: string) {
+    this.currentRoute = "ConfigureInterface";
+    if (this.navigator) {
+      this.navigator(path);
+    }
+  }
+
+
+}
 export const navigationStore = new NavigationStore();

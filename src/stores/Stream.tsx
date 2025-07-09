@@ -1,11 +1,8 @@
 import { makeAutoObservable, action } from "mobx";
 import { IOCard } from "./IOCard";
-// Import the TYPE from its new, clean location.
-// Update the import path to the correct location of StreamConfig, for example:
 import type { streamConfig as StreamConfig } from "../types/Stream";
-// Or, if the file does not exist, create 'src/types/StreamConfig.ts' and export the type there.
 
-export class StreamStore {
+export class Stream {
   public id: number;
   public name: string;
   public ioCard: IOCard;

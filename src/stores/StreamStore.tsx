@@ -2,7 +2,7 @@ import { makeAutoObservable } from "mobx";
 import type { Interface } from "../interfaces/Interface";
 
 
-export class StreamStore {
+export class Stream {
   public configurations: Record<string, any> = {};
   public interfaces: Interface[] = [];
 
