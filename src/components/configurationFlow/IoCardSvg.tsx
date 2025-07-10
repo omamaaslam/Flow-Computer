@@ -24,12 +24,12 @@ interface IoCardSvgProps {
   di3StatusColor: string;
   onDi5Click: () => void;
   di5StatusColor: string;
-  onDo5TopClick: () => void;
-  do5TopStatusColor: string;
+  do1StatusColor: string;
+  onDo1Click: () => void;
   onDo3Click: () => void;
   do3StatusColor: string;
-  onDo5BottomClick: () => void;
-  do5BottomStatusColor: string;
+  onDo5Click: () => void;
+  do5StatusColor: string;
   onHart1Click: () => void;
   hart1StatusColor: string;
   onRtdClick: () => void;
@@ -598,7 +598,7 @@ const IoCardSvg = (props: IoCardSvgProps) => {
         </text>
       </g>
       <g
-        onClick={props.onDo5TopClick}
+        onClick={props.onDo1Click}
         className="cursor-pointer group"
         filter="url(#filter7_dddd_274_395)"
       >
@@ -607,7 +607,7 @@ const IoCardSvg = (props: IoCardSvgProps) => {
           height="39.1182"
           rx="5.39562"
           transform="matrix(-1 0 0 1 575.764 255.594)"
-          fill={props.do5TopStatusColor}
+          fill={props.do1StatusColor}
           className="transition-all group-hover:brightness-110"
         />
         <text
@@ -615,10 +615,10 @@ const IoCardSvg = (props: IoCardSvgProps) => {
           y="278.15"
           textAnchor="middle"
           dy=".3em"
-          fill={getTextColor(props.do5TopStatusColor)}
+          fill={getTextColor(props.do1StatusColor)}
           className="text-[19px] font-semibold uppercase pointer-events-none"
         >
-          DO5
+          DO1
         </text>
       </g>
       <g
@@ -646,7 +646,7 @@ const IoCardSvg = (props: IoCardSvgProps) => {
         </text>
       </g>
       <g
-        onClick={props.onDo5BottomClick}
+        onClick={props.onDo5Click}
         className="cursor-pointer group"
         filter="url(#filter9_dddd_274_395)"
       >
@@ -655,7 +655,7 @@ const IoCardSvg = (props: IoCardSvgProps) => {
           height="39.1182"
           rx="5.39562"
           transform="matrix(-1 0 0 1 575.764 379.693)"
-          fill={props.do5BottomStatusColor}
+          fill={props.do5StatusColor}
           className="transition-all group-hover:brightness-110"
         />
         <text
@@ -663,7 +663,7 @@ const IoCardSvg = (props: IoCardSvgProps) => {
           y="402.25"
           textAnchor="middle"
           dy=".3em"
-          fill={getTextColor(props.do5BottomStatusColor)}
+          fill={getTextColor(props.do5StatusColor)}
           className="text-[19px] font-semibold uppercase pointer-events-none"
         >
           DO5

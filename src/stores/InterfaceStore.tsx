@@ -1,15 +1,15 @@
 import { makeAutoObservable } from "mobx";
-import type { InterfaceConfig } from "../interfaces/interfaceConfig";
 import type { Device } from "../interfaces/Device";
+import type { Interface } from "./Interface";
 
 export class InterfaceStore {
   public devices: Device[] = [];
-  public configuration: InterfaceConfig[] = [];
+  public configuration: Interface[] = [];
   constructor(id: number, name: string, status: boolean) {
     makeAutoObservable(this);
   }
 
-  setConfiguration(configuration: InterfaceConfig[]) {
+  setConfiguration(configuration: Interface[]) {
     this.configuration = configuration;
   }
 

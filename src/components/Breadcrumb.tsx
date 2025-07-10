@@ -3,7 +3,7 @@ import { navigationStore } from "../stores/NavigationStore";
 
 const Breadcrumb = observer(() => {
   return (
-    <div className="text-sm text-gray-500 px-6 mt-4">
+    <div className="hidden md:block text-sm text-gray-500 px-4 mt-2 font-sans">
       <span className="text-yellow-500">→</span> {navigationStore.currentRoute}
     </div>
   );

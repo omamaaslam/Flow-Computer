@@ -83,14 +83,5 @@ class NavigationStore {
       this.syncWithBrowser();
     });
   }
-
-configureInterface(path: string) {
-    this.currentRoute = "ConfigureInterface";
-    if (this.navigator) {
-      this.navigator(path);
-    }
-  }
-
-
 }
 export const navigationStore = new NavigationStore();
