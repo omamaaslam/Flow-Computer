@@ -1,35 +1,23 @@
-// src/stores/Interface.ts
-import { makeAutoObservable, action } from "mobx";
+import { makeAutoObservable } from "mobx";
 import { Device } from "./Device";
-import type { InterfaceConfig } from "../types";
 
 export class Interface {
-  // Observables
-  public id: string;
-  public name: string;
+  public id: number;
+  public config: any[] = [];
+
   public devices: Device[] = [];
-  public configurations: InterfaceConfig = {};
 
-  constructor(id: string, name: string) {
-    makeAutoObservable(this, {
-      addDevice: action,
-      updateConfig: action,
-    });
+  constructor(id: number, config: any) {
+    makeAutoObservable(this);
     this.id = id;
-    this.name = name;
+    this.config = config;
   }
 
-  // Action to add a device
-  addDevice(device: Device) {
-    this.devices.push(device);
-  }
+ 
+addDevice(id: number, config: any) {
+  const d = new Device(id, config);
+  this.devices.push(d);
+  return d;
+}
 
-  updateConfig(newConfig: Partial<InterfaceConfig>) {
-    Object.assign(this.configurations, newConfig);
-  }
-
-  // Getter to find a specific device
-  getDeviceById(deviceId: string): Device | undefined {
-    return this.devices.find((dev) => dev.id === deviceId);
-  }
 }

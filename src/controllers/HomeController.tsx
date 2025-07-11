@@ -8,16 +8,15 @@ export default class HomeController {
 
   public initStreams() {
     const streams: Stream[] = [
-      new Stream(1, "Eastren Stream", "IOCardType1"),
-      new Stream(2, "Northen Stream", "IOCardType2"),
-      new Stream(3, "Westren Stream", "IOCardType3"),
-      new Stream(4, "Southren Stream", "IOCardType4"),
-      new Stream(5, "Stream E", "IOCardType5"),
+      new Stream(1, "Eastren Stream"),
+      new Stream(2, "Northen Stream"),
+      new Stream(3, "Westren Stream"),
+      new Stream(4, "Southren Stream"),
+      new Stream(5, "Stream E"),
     ];
 
     if (globalStore.streams.length === 0) {
-      globalStore.addStream(streams);
-      console.log(globalStore.streams);
+      streams.map((stream) => globalStore.addStream(stream.id, stream));
     }
   }
 }

@@ -15,6 +15,7 @@ const App = observer(() => {
 
     socket.addEventListener("open", () => {
       console.log("✅ WebSocket connected");
+      socket.send(JSON.stringify({ state: "bulk-start" }));
     });
 
     socket.addEventListener("error", (err) => {
