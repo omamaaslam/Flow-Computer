@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { observer } from "mobx-react-lite";
+import { volumeFormStore } from "../../stores/VolumeForm";
 
-// --- Data for the dropdown ---
 const operatingModes = [
   { value: "encoderOnly", label: "Encoder Only" },
   { value: "onePulse", label: "One pulse input" },
@@ -16,60 +16,35 @@ interface VolumeFormProps {
   onClose: () => void;
 }
 
-const VolumeForm = ({ onClose }: VolumeFormProps) => {
-  const [operatingMode, setOperatingMode] = useState("");
+const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    volumeFormStore.setField(name as keyof typeof volumeFormStore, value);
+  };
 
-  useEffect(() => {
-    const titleElement = document.getElementById("modal-title");
-    const headerDivider = titleElement?.nextElementSibling;
+  const handleSave = () => {
+    console.log("Form Data:", volumeFormStore.formData);
+    onClose();
+  };
 
-    if (titleElement) {
-      const headerContainer = titleElement.parentElement;
-      if (headerContainer) {
-        if (operatingMode) {
-          headerContainer.style.display = "none";
-          if (headerDivider instanceof HTMLElement)
-            headerDivider.style.display = "none";
-        } else {
-          headerContainer.style.display = "flex";
-          if (headerDivider instanceof HTMLElement)
-            headerDivider.style.display = "block";
-        }
-      }
-    }
-    return () => {
-      const titleOnCleanup = document.getElementById("modal-title");
-      if (titleOnCleanup) {
-        const headerContainerOnCleanup = titleOnCleanup.parentElement;
-        const dividerOnCleanup = titleOnCleanup.nextElementSibling;
-        if (headerContainerOnCleanup)
-          headerContainerOnCleanup.style.display = "flex";
-        if (dividerOnCleanup instanceof HTMLElement)
-          dividerOnCleanup.style.display = "block";
-      }
-    };
-  }, [operatingMode]);
+  const handleCancel = () => {
+    onClose();
+  };
 
   return (
-    // --- Overall gap between sections reduced ---
-    <div className="flex flex-col gap-3">
-      {/* --- Card 1: Made more compact --- */}
-      <div className="border border-gray-200 rounded-md shadow-sm p-3 space-y-3">
-        <div className="space-y-1">
-          <label className="block font-medium text-xs text-gray-700">
+    <div className="flex flex-col gap-3 p-4">
+      <h2 className="text-lg font-semibold text-gray-800">Configure Volume</h2>
+
+      <div className="border border-gray-200 rounded-md shadow-sm p-4 space-y-4">
+        <div className="space-y-2">
+          <label className="block font-medium text-sm text-gray-700">
             Operating Mode
           </label>
           <select
-            value={operatingMode}
-            onChange={(e) => setOperatingMode(e.target.value)}
-            // --- Input height and font size reduced ---
-            className={`w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 ${
-              !operatingMode ? "text-gray-400" : "text-gray-800"
-            }`}
+            value={volumeFormStore.operatingMode}
+            onChange={(e) => volumeFormStore.setField("operatingMode", e.target.value)}
+            className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
           >
-            <option value="" disabled>
-              Please select mode
-            </option>
             {operatingModes.map((mode) => (
               <option key={mode.value} value={mode.value}>
                 {mode.label}
@@ -78,126 +53,143 @@ const VolumeForm = ({ onClose }: VolumeFormProps) => {
           </select>
         </div>
 
-        {operatingMode && (
-          <div className="animate-fade-in-up">
-            {operatingMode === "twoPulse1-1" && (
-              <div className="grid grid-cols-2 gap-x-3">
-                <div className="space-y-1">
-                  <label className="block font-medium text-xs text-gray-700">
-                    Select Gas Meter
-                  </label>
-                  <select className="w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500">
-                    <option>Encoder only</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="block font-medium text-xs text-gray-700">
-                    Select Gas Meter
-                  </label>
-                  <select className="w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500">
-                    <option>Encoder only</option>
-                  </select>
-                </div>
-              </div>
-            )}
-            {operatingMode !== "twoPulse1-1" && (
-              <div className="space-y-1">
-                <label className="block font-medium text-xs text-gray-700">
-                  Select Gas Meter
+        {volumeFormStore.operatingMode === "encoderOnly" && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="block font-medium text-sm text-gray-700">
+                Select Gas Meter
+              </label>
+              <select
+                name="gasMeter"
+                value={volumeFormStore.gasMeter}
+                onChange={handleInputChange}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
+              >
+                <option>Encoder only</option>
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block font-medium text-sm text-gray-700">
+                  Qmin Alarm
                 </label>
-                <select className="w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500">
-                  <option>Encoder only</option>
+                <input
+                  name="qminAlarm"
+                  type="number"
+                  value={volumeFormStore.qminAlarm}
+                  onChange={handleInputChange}
+                  placeholder="Please add Value"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block font-medium text-sm text-gray-700">
+                  Qmax Alarm
+                </label>
+                <input
+                  name="qmaxAlarm"
+                  type="number"
+                  value={volumeFormStore.qmaxAlarm}
+                  onChange={handleInputChange}
+                  placeholder="Please add Value"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block font-medium text-sm text-gray-700">
+                  Qmin Warn
+                </label>
+                <input
+                  name="qminWarn"
+                  type="number"
+                  value={volumeFormStore.qminWarn}
+                  onChange={handleInputChange}
+                  placeholder="Please add Value"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block font-medium text-sm text-gray-700">
+                  Qmax Warn
+                </label>
+                <input
+                  name="qmaxWarn"
+                  type="number"
+                  value={volumeFormStore.qmaxWarn}
+                  onChange={handleInputChange}
+                  placeholder="Please add Value"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block font-medium text-sm text-gray-700">
+                  Creep Mode
+                </label>
+                <select
+                  name="creepMode"
+                  value={volumeFormStore.creepMode}
+                  onChange={handleInputChange}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
+                >
+                  <option>Time Limited</option>
                 </select>
               </div>
-            )}
+
+              <div className="space-y-2">
+                <label className="block font-medium text-sm text-gray-700">
+                  m³/h
+                </label>
+                <input
+                  name="m3h"
+                  type="number"
+                  value={volumeFormStore.m3h}
+                  onChange={handleInputChange}
+                  placeholder="Please add Value"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block font-medium text-sm text-gray-700">
+                  Time Second(s)
+                </label>
+                <input
+                  name="timeSeconds"
+                  type="number"
+                  value={volumeFormStore.timeSeconds}
+                  onChange={handleInputChange}
+                  placeholder="Please add Value"
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* --- Card 2: Made more compact --- */}
-      {operatingMode && (
-        <div className="border border-gray-200 rounded-md shadow-sm p-3 space-y-2.5 animate-fade-in-up">
-          <h3 className="text-sm font-semibold text-gray-800">Volume</h3>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-3 text-xs">
-            {/* All items updated for compact layout */}
-            <div className="space-y-1">
-              <label className="block font-medium">Qmin Alarm</label>
-              <input
-                type="text"
-                placeholder="Please add Value"
-                className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block font-medium">Qmax Alarm</label>
-              <input
-                type="text"
-                placeholder="Please add Value"
-                className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block font-medium">Qmin Warn</label>
-              <input
-                type="text"
-                placeholder="Please add Value"
-                className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block font-medium">Qmax Warn</label>
-              <input
-                type="text"
-                placeholder="Please add Value"
-                className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block font-medium">Creep Mode</label>
-              <select className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500">
-                <option>Time Limited</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="block font-medium">Flow-rate label</label>
-              <select className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500">
-                <option>Time Limited</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="block font-medium">m³/h</label>
-              <input
-                type="text"
-                placeholder="Please add Value"
-                className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block font-medium">Time Second(s)</label>
-              <input
-                type="text"
-                placeholder="Please add Value"
-                className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- Footer Buttons: Made more compact --- */}
-      <div className="flex justify-end gap-2 pt-1">
+      <div className="flex justify-end gap-3 pt-2">
         <button
-          onClick={onClose}
-          className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
+          onClick={handleCancel}
+          className="px-6 py-2 rounded-md font-medium text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
         >
           Cancel
         </button>
-        <button className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 transition-colors">
+        <button
+          onClick={handleSave}
+          className="px-6 py-2 rounded-md font-medium text-sm text-white bg-yellow-500 hover:bg-yellow-600 transition-colors"
+        >
           Save
         </button>
       </div>
     </div>
   );
-};
+});
 
 export default VolumeForm;

@@ -11,14 +11,6 @@ export type VolumeOperatingMode =
 export type TemperatureUnit = "C" | "F" | "K";
 export type PressureUnit = "bar" | "psi" | "kPa" | "atm";
 
-export interface Stream {
-  id: number;
-  name: string;
-  stream: Stream;
-}
-
-
-
 export interface VolumeConfig {
   operatingMode: VolumeOperatingMode | null;
   gasMeterSource: string;
@@ -41,7 +33,6 @@ export interface TemperatureConfig {
   unit: TemperatureUnit;
 }
 
-
 export interface PressureConfig {
   substitutePressure: number | null;
   deviceId: string | null;
@@ -56,3 +47,34 @@ export interface StreamConfig {
   temperature: TemperatureConfig;
   pressure: PressureConfig;
 }
+
+export const createDefaultStreamConfig = (): StreamConfig => ({
+  volume: {
+    operatingMode: null,
+    gasMeterSource: "",
+    qMinAlarm: null,
+    qMaxAlarm: null,
+    qMinWarn: null,
+    qMaxWarn: null,
+    creepMode: "Time Limited",
+    flowRateLabel: "Time Limited",
+    m3h: null,
+    timeSeconds: null,
+  },
+  temperature: {
+    substituteTemp: null,
+    deviceId: null,
+    minOpTemp: null,
+    maxOpTemp: null,
+    baseTemp: null,
+    unit: "C",
+  },
+  pressure: {
+    substitutePressure: null,
+    deviceId: null,
+    minOpPressure: null,
+    maxOpPressure: null,
+    basePressure: null,
+    unit: "bar",
+  },
+});

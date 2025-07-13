@@ -1,13 +1,8 @@
-// src/components/Home.tsx
 import { observer } from "mobx-react-lite";
-import StreamCard from "../components/StreamCard";
+import StreamCard from "./StreamCard";
 import globalStore from "../stores/GlobalStore";
-import HomeController from "../controllers/HomeController";
 
-
-new HomeController();
-
-const Home = () => {
+const Home = observer(() => {
   const streams = globalStore.streams;
 
   const colorSchemes: Array<"yellow" | "red" | "green" | "gray"> = [
@@ -28,6 +23,6 @@ const Home = () => {
       ))}
     </div>
   );
-};
+});
 
-export default observer(Home);
+export default Home;

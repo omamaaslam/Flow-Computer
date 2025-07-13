@@ -1,5 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { Stream } from "./Stream";
+import { createDefaultStreamConfig } from "../types/streamConfig";
 
 export class GlobalStore {
   public streams: Stream[] = [];
@@ -8,10 +9,19 @@ export class GlobalStore {
     makeAutoObservable(this);
   }
 
-  addStream(streamId: number, config: any) {
-    const stream = new Stream(streamId, config);
-    this.streams.push(stream);
-    return stream;
+  initializeStreams(initialStreamData: { id: number; name: string }[]) {
+    if (this.streams.length > 0) return;
+
+    const newStreams: Stream[] = [];
+    for (const data of initialStreamData) {
+      const streamInstance = new Stream(
+        data.id,
+        data.name,
+        createDefaultStreamConfig()
+      );
+      newStreams.push(streamInstance);
+    }
+    this.streams = newStreams;
   }
 }
 const globalStore = new GlobalStore();
