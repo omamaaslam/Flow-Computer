@@ -2,30 +2,29 @@ import { makeAutoObservable } from "mobx";
 import { ROUTES, type RouteKey } from "../routes";
 
 class NavigationStore {
-  private navigator: ((path: string) => void) | null = null;
+  // The navigator function provided by React Router
+  private navigator: ((path: string, options?: { replace?: boolean }) => void) | null = null;
+
+  // A simple flag to ensure we don't call navigate before it's ready
   navigatorInitialized = false;
 
   constructor() {
     makeAutoObservable(this);
-    this.listenToHashChange(); // Correct for HashRouter
   }
 
-  currentRoute: RouteKey = "Home";
-
-  setCurrentRoute(routeKey: RouteKey) {
-    this.currentRoute = routeKey;
-  }
-
-  initNavigator(navigate: (path: string) => void) {
+  // This is the key initialization method called from your App component
+  initNavigator(navigate: (path: string, options?: { replace?: boolean }) => void) {
     this.navigator = navigate;
     this.navigatorInitialized = true;
-    this.syncWithBrowser();
   }
 
+  // --- All navigation methods now simply call the navigator ---
+
   goTo(routeKey: RouteKey) {
-    this.currentRoute = routeKey;
     if (this.navigator) {
       this.navigator(ROUTES[routeKey]);
+    } else {
+      console.warn("Navigator not initialized yet.");
     }
   }
 
@@ -49,39 +48,14 @@ class NavigationStore {
     this.goTo("Monitor");
   }
 
-  gotoConfiguration(id: number) {
-    const path = ROUTES.Configuration.replace(":streamId", id.toString());
-    this.currentRoute = "Configuration";
+  gotoConfiguration(id: number | string) {
     if (this.navigator) {
+      const path = ROUTES.Configuration.replace(":streamId", id.toString());
       this.navigator(path);
+    } else {
+      console.warn("Navigator not initialized yet.");
     }
-  }
-
-  getRouteKeyFromPath(path: string): RouteKey | null {
-    for (const [key, value] of Object.entries(ROUTES)) {
-      if (value.includes(":")) {
-        const base = value.split("/:")[0];
-        if (path.startsWith(base)) return key as RouteKey;
-      } else if (value === path) {
-        return key as RouteKey;
-      }
-    }
-    return null;
-  }
-
-  syncWithBrowser() {
-    const hashPath = window.location.hash;
-    const path = hashPath.startsWith("#") ? hashPath.slice(1) : hashPath;
-    const routeKey = this.getRouteKeyFromPath(path);
-    if (routeKey) {
-      this.setCurrentRoute(routeKey);
-    }
-  }
-
-  private listenToHashChange() {
-    window.addEventListener("hashchange", () => {
-      this.syncWithBrowser();
-    });
   }
 }
+
 export const navigationStore = new NavigationStore();

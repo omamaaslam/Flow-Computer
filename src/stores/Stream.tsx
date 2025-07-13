@@ -1,12 +1,13 @@
 import { makeAutoObservable } from "mobx";
 import { IOCard } from "./IOCard";
+import type { StreamConfig } from "../types/Stream";
 
 export class Stream {
   public id: number;
-  public config: any[];
-  public ioCards: any[] = [];
+  public config: StreamConfig;
+  public ioCards: IOCard[] = [];
 
-  constructor(id: number, config: any) {
+  constructor(id: number, config: StreamConfig) {
     makeAutoObservable(this);
     this.id = id;
     this.config = config;
