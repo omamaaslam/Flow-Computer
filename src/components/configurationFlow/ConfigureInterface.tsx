@@ -5,9 +5,8 @@ import MuiModalWrapper from "./MuiModalWrapper";
 import TemperatureDeviceForm from "./TemperatureDeviceForm.tsx";
 import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import AddDeviceForm from "./AddDeviceForm.tsx";
-import InterfacesConfiguration from "./InterfacesConfiguration"; // Make sure to import this
+import InterfacesConfiguration from "./InterfacesConfiguration";
 
-// --- TypeScript Definitions ---
 type DeviceStatus = "ok" | "warning" | "error";
 
 interface Device {
@@ -37,15 +36,13 @@ const statusStyles: Record<
 };
 
 const InterfaceSettingsPage = () => {
-  const [devices, setDevices] = useState<Device[]>([]);
+  const [devices, setDevices] = useState<Device[]>(initialDevices);
   const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null);
-  const [selectedInterface, setSelectedInterface] = useState<string>("V1"); // New state for selected interface
+  const [selectedInterface, setSelectedInterface] = useState<string>("MOD");
+  const [interfaceName, setInterfaceName] = useState<string>("MODBUS");
   const [modalView, setModalView] = useState<ModalView>("closed");
-  const [deviceTypeToConfigure, setDeviceTypeToConfigure] =
-    useState<string>("");
-  const [deviceToConfigureId, setDeviceToConfigureId] = useState<number | null>(
-    null
-  );
+  const [deviceTypeToConfigure, setDeviceTypeToConfigure] = useState<string>("");
+  const [deviceToConfigureId, setDeviceToConfigureId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   const handleAddNewDeviceClick = () => {
@@ -107,15 +104,35 @@ const InterfaceSettingsPage = () => {
     setIsEditing(false);
   };
 
-  // New handler for interface selection
   const handleInterfaceConfigure = (interfaceId: string) => {
     setSelectedInterface(interfaceId);
+    const nameMap: Record<string, string> = {
+      MOD: "MODBUS",
+      DI1: "Digital Input 1",
+      DI2: "Digital Input 2",
+      DI3: "Digital Input 3",
+      DI4: "Digital Input 4",
+      DI5: "Digital Input 5",
+      DO1: "Digital Output 1",
+      DO2: "Digital Output 2",
+      DO3: "Digital Output 3",
+      DO4: "Digital Output 4",
+      DO5: "Digital Output 5",
+      AI1: "Analog Input 1",
+      AI2: "Analog Input 2",
+      AO1: "Analog Output 1",
+      AO2: "Analog Output 2",
+      HART1: "HART 1",
+      HART2: "HART 2",
+      RTD: "RTD",
+    };
+    setInterfaceName(nameMap[interfaceId] || interfaceId);
   };
 
   const getModalTitle = () => {
     switch (modalView) {
       case "modbusSettings":
-        return `${selectedInterface} Settings`; // Modified to use selectedInterface
+        return `${selectedInterface} Settings`;
       case "addDevice_selectType":
         return "Add Device for MODBUS";
       case "addDevice_configure":
@@ -176,7 +193,6 @@ const InterfaceSettingsPage = () => {
             </div>
           </div>
 
-          {/* Modified this section to include InterfacesConfiguration */}
           <div className="border-t pt-6 md:pt-8 space-y-4">
             <InterfacesConfiguration onConfigure={handleInterfaceConfigure} />
             <div className="flex justify-center">
@@ -185,7 +201,9 @@ const InterfaceSettingsPage = () => {
                 className="w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
               >
                 <Settings size={20} />
-                <span>Interface Settings</span>
+                <span>
+                  {interfaceName} Interface Settings
+                </span>
               </button>
             </div>
           </div>

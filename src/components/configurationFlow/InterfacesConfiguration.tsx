@@ -1,18 +1,13 @@
-// InterfacesConfiguration.tsx
 import { useState } from "react";
 import IoCardSvg from "../configurationFlow/IoCardSvg";
-// --- MODIFIED: Removed navigationStore, as it's no longer needed here ---
 
-// --- TypeScript Definitions ---
 type InterfaceStatus = "configured" | "unconfigured" | "alert" | "error";
 type InterfaceStatuses = Record<string, InterfaceStatus>;
 
-// --- NEW: Define the props this component expects ---
 interface InterfacesConfigurationProps {
   onConfigure: (interfaceId: string) => void;
 }
 
-// --- Component Initial Data (Unchanged) ---
 const initialStatuses: InterfaceStatuses = {
   MOD: "unconfigured", DI2: "unconfigured", DI4_left: "unconfigured", AI1: "unconfigured",
   DO2: "unconfigured", DI4_2: "unconfigured", AI2: "unconfigured", HART2: "unconfigured",
@@ -24,7 +19,6 @@ const statusColorMap: Record<InterfaceStatus, string> = {
   configured: "#9BC53F", unconfigured: "#C3C3C3", alert: "#FFB700", error: "#FF3D00",
 };
 
-// --- MODIFIED: The component now accepts the 'onConfigure' prop ---
 const InterfacesConfiguration = ({ onConfigure }: InterfacesConfigurationProps) => {
   const [statuses, setStatuses] = useState<InterfaceStatuses>(initialStatuses);
 
@@ -34,7 +28,6 @@ const InterfacesConfiguration = ({ onConfigure }: InterfacesConfigurationProps) 
         V1
       </h2>
       <div className="w-full max-w-2xl flex justify-center">
-        {/* --- MODIFIED: All onClick handlers now call the 'onConfigure' prop function --- */}
         <IoCardSvg
           modStatusColor={statusColorMap[statuses.MOD]}
           onModClick={() => onConfigure("MOD")}
