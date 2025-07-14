@@ -6,10 +6,10 @@ import type { InterfaceConfig } from "../types/interfaceConfig";
 export class Interface {
   public id: number;
   public name: string;
-  public config: InterfaceConfig;
+  public config: InterfaceConfig = {}; // Initialize with empty object
   public devices: Device[] = [];
 
-  constructor(id: number, name: string, config: InterfaceConfig) {
+  constructor(id: number, name: string, config: InterfaceConfig = {}) {
     makeAutoObservable(this);
     this.id = id;
     this.name = name;
@@ -23,6 +23,11 @@ export class Interface {
   }
 
   updateConfig(newConfig: Partial<InterfaceConfig>) {
-    Object.assign(this.config, newConfig);
+    this.config = { ...this.config, ...newConfig };
+    console.log("Updated config:", this.config); // Log the updated config
+  }
+
+  getConfig(): InterfaceConfig {
+    return this.config;
   }
 }

@@ -6,7 +6,9 @@ import TemperatureDeviceForm from "./TemperatureDeviceForm.tsx";
 import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import AddDeviceForm from "./AddDeviceForm.tsx";
 import InterfacesConfiguration from "./InterfacesConfiguration";
-
+import { observer } from "mobx-react-lite";
+import { Interface } from "../../stores/Interface.tsx";
+import type { InterfaceConfig } from "../../types/interfaceConfig.tsx";
 type DeviceStatus = "ok" | "warning" | "error";
 
 interface Device {
@@ -35,7 +37,7 @@ const statusStyles: Record<
   inactive: { gradient: "from-gray-700 to-gray-500", icon: "text-yellow-400" },
 };
 
-const InterfaceSettingsPage = () => {
+const InterfaceSettingsPage = observer(() => {
   const [devices, setDevices] = useState<Device[]>(initialDevices);
   const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null);
   const [selectedInterface, setSelectedInterface] = useState<string>("MOD");
@@ -44,6 +46,26 @@ const InterfaceSettingsPage = () => {
   const [deviceTypeToConfigure, setDeviceTypeToConfigure] = useState<string>("");
   const [deviceToConfigureId, setDeviceToConfigureId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+
+
+  const [currentInterface] = useState(
+    new Interface(1, "MODBUS", {
+      baudrate: "",
+      dataBits: 8,
+      maxSlaves: 32,
+      parity: "Even",
+      stopBits: 1,
+      pullUpDown: "Enabled",
+      timeoutMs: 1000,
+      pollIntervalMs: 5000,
+      retryCount: 3
+    })
+  );
+
+  const handleSaveInterfaceConfig = (config: InterfaceConfig) => {
+    currentInterface.updateConfig(config);
+    closeModal();
+  };
 
   const handleAddNewDeviceClick = () => {
     setIsEditing(false);
@@ -136,9 +158,8 @@ const InterfaceSettingsPage = () => {
       case "addDevice_selectType":
         return "Add Device for MODBUS";
       case "addDevice_configure":
-        return `${
-          isEditing ? "Edit" : "Configure"
-        } ${deviceTypeToConfigure} Device`;
+        return `${isEditing ? "Edit" : "Configure"
+          } ${deviceTypeToConfigure} Device`;
       default:
         return "";
     }
@@ -157,13 +178,11 @@ const InterfaceSettingsPage = () => {
                 <button
                   key={device.id}
                   onClick={() => handleDeviceClick(device)}
-                  className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${
-                    statusStyles[device.status].gradient
-                  } ${
-                    selectedDeviceId === device.id
+                  className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${statusStyles[device.status].gradient
+                    } ${selectedDeviceId === device.id
                       ? "ring-2 md:ring-4 ring-offset-2 ring-yellow-400"
                       : "ring-2 ring-transparent"
-                  }`}
+                    }`}
                 >
                   <Thermometer
                     className={statusStyles[device.status].icon}
@@ -217,7 +236,10 @@ const InterfaceSettingsPage = () => {
       >
         <>
           {modalView === "modbusSettings" && (
-            <ModbusInterfaceSettingsForm onClose={closeModal} />
+            <ModbusInterfaceSettingsForm
+              currentConfig={currentInterface.getConfig()}
+              onSave={handleSaveInterfaceConfig}
+              onClose={closeModal} />
           )}
           {modalView === "addDevice_selectType" && (
             <AddDeviceForm
@@ -240,6 +262,6 @@ const InterfaceSettingsPage = () => {
       </MuiModalWrapper>
     </>
   );
-};
+});
 
 export default InterfaceSettingsPage;
