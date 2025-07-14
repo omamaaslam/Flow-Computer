@@ -5,9 +5,10 @@ import MuiModalWrapper from "./MuiModalWrapper";
 import TemperatureDeviceForm from "./TemperatureDeviceForm.tsx";
 import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import AddDeviceForm from "./AddDeviceForm.tsx";
+import InterfacesConfiguration from "./InterfacesConfiguration"; // Make sure to import this
 
 // --- TypeScript Definitions ---
-type DeviceStatus = "ok" | "warning" | "error"; // REMOVED "inactive"
+type DeviceStatus = "ok" | "warning" | "error";
 
 interface Device {
   id: number;
@@ -21,19 +22,10 @@ type ModalView =
   | "addDevice_selectType"
   | "addDevice_configure";
 
-// --- Mock Data & Styles ---
-// MODIFIED: Removed all "inactive" devices from the initial state
 const initialDevices: Device[] = [
   { id: 1, type: "Temperature", status: "warning" },
-  { id: 2, type: "Temperature", status: "error" },
-  { id: 3, type: "Temperature", status: "warning" },
-  { id: 4, type: "Temperature", status: "ok" },
-  { id: 6, type: "Temperature", status: "error" },
-  { id: 7, type: "Temperature", status: "error" },
-  { id: 8, type: "Temperature", status: "ok" },
 ];
 
-// Inactive style is no longer used for devices but can be kept for other potential uses
 const statusStyles: Record<
   DeviceStatus | "inactive",
   { gradient: string; icon: string }
@@ -44,11 +36,10 @@ const statusStyles: Record<
   inactive: { gradient: "from-gray-700 to-gray-500", icon: "text-yellow-400" },
 };
 
-// --- The Main Page Component ---
 const InterfaceSettingsPage = () => {
-  const [devices, setDevices] = useState<Device[]>(initialDevices);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null);
-
+  const [selectedInterface, setSelectedInterface] = useState<string>("V1"); // New state for selected interface
   const [modalView, setModalView] = useState<ModalView>("closed");
   const [deviceTypeToConfigure, setDeviceTypeToConfigure] =
     useState<string>("");
@@ -57,9 +48,8 @@ const InterfaceSettingsPage = () => {
   );
   const [isEditing, setIsEditing] = useState(false);
 
-  // --- MODIFIED: This button now opens the modal to start the 'Add Device' flow ---
   const handleAddNewDeviceClick = () => {
-    setIsEditing(false); // This is a new device, not an edit
+    setIsEditing(false);
     setModalView("addDevice_selectType");
   };
 
@@ -71,12 +61,11 @@ const InterfaceSettingsPage = () => {
     setSelectedDeviceId(null);
   };
 
-  // --- MODIFIED: Clicking a device is now ALWAYS for editing an existing one ---
   const handleDeviceClick = (device: Device) => {
     setIsEditing(true);
     setDeviceToConfigureId(device.id);
     setDeviceTypeToConfigure(device.type);
-    setModalView("addDevice_configure"); // Skip directly to the configuration form
+    setModalView("addDevice_configure");
   };
 
   const handleDeviceTypeSelection = (deviceType: string) => {
@@ -84,7 +73,6 @@ const InterfaceSettingsPage = () => {
     setModalView("addDevice_configure");
   };
 
-  // --- MODIFIED: Logic now handles both CREATING and UPDATING devices ---
   const handleSaveDeviceConfiguration = () => {
     if (!deviceTypeToConfigure) {
       console.error("Configuration save failed: Missing device type.");
@@ -93,7 +81,6 @@ const InterfaceSettingsPage = () => {
     }
 
     if (isEditing) {
-      // --- UPDATE an existing device ---
       setDevices((prevDevices) =>
         prevDevices.map((device) =>
           device.id === deviceToConfigureId
@@ -102,11 +89,10 @@ const InterfaceSettingsPage = () => {
         )
       );
     } else {
-      // --- CREATE a new device ---
       const newDevice: Device = {
         id: Date.now(),
         type: deviceTypeToConfigure,
-        status: "ok", // New devices start with an 'ok' status
+        status: "ok",
       };
       setDevices((prevDevices) => [...prevDevices, newDevice]);
     }
@@ -121,10 +107,15 @@ const InterfaceSettingsPage = () => {
     setIsEditing(false);
   };
 
+  // New handler for interface selection
+  const handleInterfaceConfigure = (interfaceId: string) => {
+    setSelectedInterface(interfaceId);
+  };
+
   const getModalTitle = () => {
     switch (modalView) {
       case "modbusSettings":
-        return "Modbus Settings";
+        return `${selectedInterface} Settings`; // Modified to use selectedInterface
       case "addDevice_selectType":
         return "Add Device for MODBUS";
       case "addDevice_configure":
@@ -145,7 +136,6 @@ const InterfaceSettingsPage = () => {
               Devices
             </h2>
             <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4">
-              {/* The list now only maps over active devices */}
               {devices.map((device) => (
                 <button
                   key={device.id}
@@ -170,7 +160,6 @@ const InterfaceSettingsPage = () => {
               ))}
             </div>
             <div className="flex items-center gap-2 md:gap-4">
-              {/* MODIFIED: onClick handler is now for starting the add flow */}
               <button
                 onClick={handleAddNewDeviceClick}
                 className="px-4 py-1.5 md:px-5 md:py-2 text-xs md:text-sm font-semibold font-sans text-yellow-500 bg-white border border-yellow-400 rounded-full shadow-sm hover:bg-yellow-50"
@@ -186,7 +175,10 @@ const InterfaceSettingsPage = () => {
               </button>
             </div>
           </div>
-          <div className="border-t pt-6 md:pt-8">
+
+          {/* Modified this section to include InterfacesConfiguration */}
+          <div className="border-t pt-6 md:pt-8 space-y-4">
+            <InterfacesConfiguration onConfigure={handleInterfaceConfigure} />
             <div className="flex justify-center">
               <button
                 onClick={() => setModalView("modbusSettings")}
