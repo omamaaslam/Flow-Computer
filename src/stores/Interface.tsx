@@ -1,4 +1,4 @@
-// models/Interface.tsx
+// src/models/Interface.ts
 import { makeAutoObservable } from "mobx";
 import { Device } from "./Device";
 import type { InterfaceConfig } from "../types/interfaceConfig";
@@ -6,7 +6,7 @@ import type { InterfaceConfig } from "../types/interfaceConfig";
 export class Interface {
   public id: number;
   public name: string;
-  public config: InterfaceConfig = {}; // Initialize with empty object
+  public config: InterfaceConfig;
   public devices: Device[] = [];
 
   constructor(id: number, name: string, config: InterfaceConfig = {}) {
@@ -24,7 +24,6 @@ export class Interface {
 
   updateConfig(newConfig: Partial<InterfaceConfig>) {
     this.config = { ...this.config, ...newConfig };
-    console.log("Updated config:", this.config); // Log the updated config
   }
 
   getConfig(): InterfaceConfig {

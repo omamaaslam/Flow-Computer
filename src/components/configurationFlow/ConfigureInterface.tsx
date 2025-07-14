@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Thermometer, Settings } from "lucide-react";
-
 import MuiModalWrapper from "./MuiModalWrapper";
 import TemperatureDeviceForm from "./TemperatureDeviceForm.tsx";
 import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
@@ -9,6 +8,7 @@ import InterfacesConfiguration from "./InterfacesConfiguration";
 import { observer } from "mobx-react-lite";
 import { Interface } from "../../stores/Interface.tsx";
 import type { InterfaceConfig } from "../../types/interfaceConfig.tsx";
+
 type DeviceStatus = "ok" | "warning" | "error";
 
 interface Device {
@@ -17,20 +17,13 @@ interface Device {
   status: DeviceStatus;
 }
 
-type ModalView =
-  | "closed"
-  | "modbusSettings"
-  | "addDevice_selectType"
-  | "addDevice_configure";
+type ModalView = "closed" | "modbusSettings" | "addDevice_selectType" | "addDevice_configure";
 
 const initialDevices: Device[] = [
   { id: 1, type: "Temperature", status: "warning" },
 ];
 
-const statusStyles: Record<
-  DeviceStatus | "inactive",
-  { gradient: string; icon: string }
-> = {
+const statusStyles: Record<DeviceStatus | "inactive", { gradient: string; icon: string }> = {
   ok: { gradient: "from-black to-lime-500", icon: "text-yellow-400" },
   warning: { gradient: "from-black to-yellow-500", icon: "text-yellow-400" },
   error: { gradient: "from-black to-red-600", icon: "text-yellow-400" },
@@ -47,9 +40,8 @@ const InterfaceSettingsPage = observer(() => {
   const [deviceToConfigureId, setDeviceToConfigureId] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-
-  const [currentInterface] = useState(
-    new Interface(1, "MODBUS", {
+  const [interfaceInstances] = useState<Record<string, Interface>>(() => ({
+    MOD: new Interface(1, "MODBUS", {
       baudrate: "",
       dataBits: 8,
       maxSlaves: 32,
@@ -59,11 +51,28 @@ const InterfaceSettingsPage = observer(() => {
       timeoutMs: 1000,
       pollIntervalMs: 5000,
       retryCount: 3
-    })
-  );
+    }),
+    DI1: new Interface(2, "Digital Input 1"),
+    DI2: new Interface(3, "Digital Input 2"),
+    DI3: new Interface(4, "Digital Input 3"),
+    DI4: new Interface(5, "Digital Input 4"),
+    DI5: new Interface(6, "Digital Input 5"),
+    DO1: new Interface(7, "Digital Output 1"),
+    DO2: new Interface(8, "Digital Output 2"),
+    DO3: new Interface(9, "Digital Output 3"),
+    DO4: new Interface(10, "Digital Output 4"),
+    DO5: new Interface(11, "Digital Output 5"),
+    AI1: new Interface(12, "Analog Input 1"),
+    AI2: new Interface(13, "Analog Input 2"),
+    AO1: new Interface(14, "Analog Output 1"),
+    AO2: new Interface(15, "Analog Output 2"),
+    HART1: new Interface(16, "HART 1"),
+    HART2: new Interface(17, "HART 2"),
+    RTD: new Interface(18, "RTD"),
+  }));
 
   const handleSaveInterfaceConfig = (config: InterfaceConfig) => {
-    currentInterface.updateConfig(config);
+    interfaceInstances[selectedInterface].updateConfig(config);
     closeModal();
   };
 
@@ -74,9 +83,7 @@ const InterfaceSettingsPage = observer(() => {
 
   const handleDeleteDevice = () => {
     if (selectedDeviceId === null) return;
-    setDevices((prev) =>
-      prev.filter((device) => device.id !== selectedDeviceId)
-    );
+    setDevices((prev) => prev.filter((device) => device.id !== selectedDeviceId));
     setSelectedDeviceId(null);
   };
 
@@ -158,8 +165,7 @@ const InterfaceSettingsPage = observer(() => {
       case "addDevice_selectType":
         return "Add Device for MODBUS";
       case "addDevice_configure":
-        return `${isEditing ? "Edit" : "Configure"
-          } ${deviceTypeToConfigure} Device`;
+        return `${isEditing ? "Edit" : "Configure"} ${deviceTypeToConfigure} Device`;
       default:
         return "";
     }
@@ -220,9 +226,7 @@ const InterfaceSettingsPage = observer(() => {
                 className="w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
               >
                 <Settings size={20} />
-                <span>
-                  {interfaceName} Interface Settings
-                </span>
+                <span>{interfaceName} Interface Settings</span>
               </button>
             </div>
           </div>
@@ -237,27 +241,20 @@ const InterfaceSettingsPage = observer(() => {
         <>
           {modalView === "modbusSettings" && (
             <ModbusInterfaceSettingsForm
-              currentConfig={currentInterface.getConfig()}
+              currentConfig={interfaceInstances[selectedInterface].getConfig()}
               onSave={handleSaveInterfaceConfig}
-              onClose={closeModal} />
-          )}
-          {modalView === "addDevice_selectType" && (
-            <AddDeviceForm
               onClose={closeModal}
-              onNext={handleDeviceTypeSelection}
             />
           )}
-          {modalView === "addDevice_configure" &&
-            deviceTypeToConfigure === "Temperature" && (
-              <TemperatureDeviceForm
-                onSave={handleSaveDeviceConfiguration}
-                onBack={
-                  isEditing
-                    ? closeModal
-                    : () => setModalView("addDevice_selectType")
-                }
-              />
-            )}
+          {modalView === "addDevice_selectType" && (
+            <AddDeviceForm onClose={closeModal} onNext={handleDeviceTypeSelection} />
+          )}
+          {modalView === "addDevice_configure" && deviceTypeToConfigure === "Temperature" && (
+            <TemperatureDeviceForm
+              onSave={handleSaveDeviceConfiguration}
+              onBack={isEditing ? closeModal : () => setModalView("addDevice_selectType")}
+            />
+          )}
         </>
       </MuiModalWrapper>
     </>

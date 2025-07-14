@@ -1,28 +1,7 @@
+// src/components/configurationFlow/ModbusInterfaceSettingsForm.tsx
 import React from "react";
 import { observer } from "mobx-react-lite";
-import { makeObservable, observable, action } from "mobx";
 import type { InterfaceConfig } from "../../types/interfaceConfig";
-
-class ModbusInterfaceFormStore {
-  config: InterfaceConfig;
-
-  constructor(initialConfig: InterfaceConfig) {
-    makeObservable(this, {
-      config: observable,
-      updateConfig: action,
-      setConfig: action
-    });
-    this.config = { ...initialConfig };
-  }
-
-  updateConfig = <K extends keyof InterfaceConfig>(key: K, value: InterfaceConfig[K]) => {
-    this.config[key] = value;
-  };
-
-  setConfig = (newConfig: InterfaceConfig) => {
-    this.config = { ...newConfig };
-  };
-}
 
 interface ModbusInterfaceSettingsFormProps {
   currentConfig: InterfaceConfig;
@@ -35,7 +14,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
   onSave,
   onClose
 }) => {
-  const [formStore] = React.useState(() => new ModbusInterfaceFormStore(currentConfig));
+  const [formData, setFormData] = React.useState<InterfaceConfig>(currentConfig);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -49,11 +28,14 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
         ? Number(value)
         : value;
 
-    formStore.updateConfig(key, processedValue);
+    setFormData(prev => ({
+      ...prev,
+      [key]: processedValue
+    }));
   };
 
   const handleSave = () => {
-    onSave(formStore.config);
+    onSave(formData);
   };
 
   return (
@@ -65,7 +47,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
           <input
             name="baudrate"
             type="text"
-            value={formStore.config.baudrate}
+            value={formData.baudrate || ""}
             onChange={handleChange}
             placeholder="Please add Value"
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -76,7 +58,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
           <label className="block font-medium text-xs">Data Bits</label>
           <select
             name="dataBits"
-            value={formStore.config.dataBits}
+            value={formData.dataBits || 8}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
@@ -90,7 +72,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
           <input
             name="maxSlaves"
             type="number"
-            value={formStore.config.maxSlaves}
+            value={formData.maxSlaves || 32}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           />
@@ -100,7 +82,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
           <label className="block font-medium text-xs">Parity</label>
           <select
             name="parity"
-            value={formStore.config.parity}
+            value={formData.parity || "Even"}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
@@ -115,7 +97,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
           <label className="block font-medium text-xs">Stop Bits</label>
           <select
             name="stopBits"
-            value={formStore.config.stopBits}
+            value={formData.stopBits || 1}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
@@ -128,7 +110,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
           <label className="block font-medium text-xs">Pull-Up/Pull-Down</label>
           <select
             name="pullUpDown"
-            value={formStore.config.pullUpDown}
+            value={formData.pullUpDown || "Enabled"}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
@@ -142,7 +124,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
           <input
             name="timeoutMs"
             type="number"
-            value={formStore.config.timeoutMs}
+            value={formData.timeoutMs || 1000}
             onChange={handleChange}
             placeholder="Time-out for read/write operations eg. 1000"
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -154,7 +136,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
           <input
             name="pollIntervalMs"
             type="number"
-            value={formStore.config.pollIntervalMs}
+            value={formData.pollIntervalMs || 5000}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           />
@@ -164,7 +146,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> = 
           <label className="block font-medium text-xs">Retry Count</label>
           <select
             name="retryCount"
-            value={formStore.config.retryCount}
+            value={formData.retryCount || 3}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
