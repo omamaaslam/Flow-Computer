@@ -2,6 +2,7 @@ import { useState } from "react";
 import StreamConfiguration from "./StreamConfiguration";
 import InterfacesConfiguration from "./InterfacesConfiguration";
 import ConfigureInterface from "./ConfigureInterface";
+import globalStore from "../../stores/GlobalStore";
 
 type ActiveTab = "stream" | "interfaces";
 
@@ -38,6 +39,14 @@ const ConfigurationPage = () => {
     return `${baseClasses} ${inactiveClasses}`;
   };
 
+  // Find the real interface object from the global store
+  const foundInterface = configuringInterfaceId
+    ? globalStore.streams
+        .flatMap((s) => s.ioCards)
+        .flatMap((c) => c.interfaces)
+        .find((iface) => iface.name === configuringInterfaceId)
+    : null;
+
   return (
     <div className="py-6 w-full max-w-screen-xl mx-auto space-y-6">
       <div className="flex justify-end gap-2 md:gap-4 px-2 md:px-0">
@@ -64,10 +73,12 @@ const ConfigurationPage = () => {
                 onConfigure={handleSelectInterfaceToConfigure}
               />
             ) : (
-              <ConfigureInterface
-                interfaceId={configuringInterfaceId}
-                onBack={handleBackToInterfacesList}
-              />
+              foundInterface && (
+                <ConfigureInterface
+                  anInterface={foundInterface}
+                  onBack={handleBackToInterfacesList}
+                />
+              )
             )}
           </>
         )}

@@ -20,6 +20,8 @@ const App = observer(() => {
   }, [navigate]);
 
   useEffect(() => {
+    if (globalStore.streams.length > 0) return;
+
     const initialStreamData = [
       { id: 1, name: "Eastren Stream" },
       { id: 2, name: "Northen Stream" },
@@ -27,7 +29,34 @@ const App = observer(() => {
       { id: 4, name: "Southren Stream" },
       { id: 5, name: "Stream E" },
     ];
+    
     globalStore.initializeStreams(initialStreamData);
+
+    const firstStream = globalStore.streams[0];
+    if (firstStream) {
+        const ioCard = firstStream.addIOCard(1, []); 
+        
+        // --- THESE CALLS ARE NOW CORRECTED ---
+        // We pass the name as a string, not inside an object
+        ioCard.addInterface(1, "MOD");
+        ioCard.addInterface(2, "DI1");
+        ioCard.addInterface(3, "DI2");
+        ioCard.addInterface(4, "DI3");
+        ioCard.addInterface(5, "DI4");
+        ioCard.addInterface(6, "DI5");
+        ioCard.addInterface(7, "AI1");
+        ioCard.addInterface(8, "AI2");
+        ioCard.addInterface(9, "RTD");
+        ioCard.addInterface(10, "DO1");
+        ioCard.addInterface(11, "DO2");
+        ioCard.addInterface(12, "DO3");
+        ioCard.addInterface(13, "DO5");
+        ioCard.addInterface(14, "AO1");
+        ioCard.addInterface(15, "AO2");
+        ioCard.addInterface(16, "HART1");
+        ioCard.addInterface(17, "HART2");
+    }
+
   }, []);
 
   useEffect(() => {

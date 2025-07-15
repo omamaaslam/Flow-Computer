@@ -22,6 +22,12 @@ export class Interface {
     return device;
   }
 
+  // --- ADD THIS METHOD ---
+  removeDevice(deviceId: number) {
+    this.devices = this.devices.filter((device) => device.id !== deviceId);
+  }
+  // -----------------------
+
   updateConfig(newConfig: Partial<InterfaceConfig>) {
     this.config = { ...this.config, ...newConfig };
   }

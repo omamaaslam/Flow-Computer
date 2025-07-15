@@ -1,5 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { Interface } from "./Interface";
+import type { InterfaceConfig } from "../types/interfaceConfig";
 
 export class IOCard {
   id: number;
@@ -12,8 +13,8 @@ export class IOCard {
     makeAutoObservable(this);
   }
 
-  addInterface(id: number, config: any) {
-    const iface = new Interface(id, config);
+  addInterface(id: number, name: string, config: InterfaceConfig = {}) {
+    const iface = new Interface(id, name, config);
     this.interfaces.push(iface);
     return iface;
   }
