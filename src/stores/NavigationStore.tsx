@@ -2,26 +2,51 @@ import { makeAutoObservable } from "mobx";
 import { ROUTES, type RouteKey } from "../routes";
 
 class NavigationStore {
-  // The navigator function provided by React Router
-  private navigator: ((path: string, options?: { replace?: boolean }) => void) | null = null;
+  private navigator:
+    | ((path: string, options?: { replace?: boolean }) => void)
+    | null = null;
+  public navigatorInitialized = false;
 
-  // A simple flag to ensure we don't call navigate before it's ready
-  navigatorInitialized = false;
+  // This now reads from the URL hash, e.g., /#/alarms becomes "/alarms"
+  public currentPath = window.location.hash.substring(1) || "/";
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  // This is the key initialization method called from your App component
-  initNavigator(navigate: (path: string, options?: { replace?: boolean }) => void) {
+  setCurrentPath(path: string) {
+    this.currentPath = path;
+  }
+
+  get currentRoute(): RouteKey | null {
+    const routeEntry = Object.entries(ROUTES).find(([_, value]) => {
+      if (value.includes(":")) {
+        const baseRoute = value.substring(0, value.indexOf("/:"));
+        return (
+          this.currentPath.startsWith(baseRoute) &&
+          this.currentPath.length > baseRoute.length
+        );
+      }
+      return value === this.currentPath;
+    });
+
+    if (routeEntry) {
+      return routeEntry[0] as RouteKey;
+    }
+
+    return null;
+  }
+
+  initNavigator(
+    navigate: (path: string, options?: { replace?: boolean }) => void
+  ) {
     this.navigator = navigate;
     this.navigatorInitialized = true;
   }
 
-  // --- All navigation methods now simply call the navigator ---
-
   goTo(routeKey: RouteKey) {
     if (this.navigator) {
+      // The path definitions in ROUTES don't need to change
       this.navigator(ROUTES[routeKey]);
     } else {
       console.warn("Navigator not initialized yet.");
@@ -31,19 +56,15 @@ class NavigationStore {
   goToHome() {
     this.goTo("Home");
   }
-
   goToAlarms() {
     this.goTo("Alarms");
   }
-
   goToDevices() {
     this.goTo("Devices");
   }
-
   goToUsers() {
     this.goTo("Users");
   }
-
   gotoMonitor() {
     this.goTo("Monitor");
   }

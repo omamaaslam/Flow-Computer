@@ -42,7 +42,6 @@ const InterfacesConfiguration = ({
   onConfigure,
 }: InterfacesConfigurationProps) => {
   const [statuses, setStatuses] = useState<InterfaceStatuses>(initialStatuses);
-
   return (
     <div className="bg-white mx-auto rounded-2xl shadow-md py-4 px-2 border border-gray-200 flex flex-col items-center">
       <h2 className="text-xl md:text-2xl font-semibold text-gray-800 text-center mb-4">
