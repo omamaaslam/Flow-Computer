@@ -1,14 +1,12 @@
-// Configuration.tsx
 import { useState } from "react";
 import StreamConfiguration from "./StreamConfiguration";
 import InterfacesConfiguration from "./InterfacesConfiguration";
-import ConfigureInterface from "./ConfigureInterface"; // --- MODIFIED: Import the detail page component ---
+import ConfigureInterface from "./ConfigureInterface";
 
 type ActiveTab = "stream" | "interfaces";
 
 const ConfigurationPage = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("stream"); // Set to interfaces for easier testing
-
+  const [activeTab, setActiveTab] = useState<ActiveTab>("interfaces");
   const [configuringInterfaceId, setConfiguringInterfaceId] = useState<
     string | null
   >(null);
@@ -17,18 +15,20 @@ const ConfigurationPage = () => {
     setConfiguringInterfaceId(interfaceId);
   };
 
+  const handleBackToInterfacesList = () => {
+    setConfiguringInterfaceId(null);
+  };
 
   const handleTabClick = (tabName: ActiveTab) => {
     setActiveTab(tabName);
+    setConfiguringInterfaceId(null);
   };
 
   const getButtonClass = (tabName: ActiveTab) => {
     const baseClasses = `rounded-full shadow-md transition-colors duration-200 
        text-xs px-3 py-1.5 border border-transparent 
        md:text-sm md:px-4 md:py-2 md:border-transparent`;
-
     const activeClasses = "bg-yellow-500 text-black font-semibold";
-
     const inactiveClasses =
       "bg-white text-gray-800 md:border md:border-gray-200 hover:bg-gray-100";
 
@@ -57,7 +57,6 @@ const ConfigurationPage = () => {
 
       <div>
         {activeTab === "stream" && <StreamConfiguration />}
-
         {activeTab === "interfaces" && (
           <>
             {configuringInterfaceId === null ? (
@@ -65,7 +64,10 @@ const ConfigurationPage = () => {
                 onConfigure={handleSelectInterfaceToConfigure}
               />
             ) : (
-              <ConfigureInterface />
+              <ConfigureInterface
+                interfaceId={configuringInterfaceId}
+                onBack={handleBackToInterfacesList}
+              />
             )}
           </>
         )}

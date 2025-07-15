@@ -1,3 +1,5 @@
+// InterfacesConfiguration.tsx
+// NO CHANGES NEEDED HERE. This component correctly calls the `onConfigure` prop.
 import { useState } from "react";
 import IoCardSvg from "../configurationFlow/IoCardSvg";
 
@@ -9,17 +11,36 @@ interface InterfacesConfigurationProps {
 }
 
 const initialStatuses: InterfaceStatuses = {
-  MOD: "unconfigured", DI2: "unconfigured", DI4_left: "unconfigured", AI1: "unconfigured",
-  DO2: "unconfigured", DI4_2: "unconfigured", AI2: "unconfigured", HART2: "unconfigured",
-  AO1: "unconfigured", DI1: "unconfigured", DI3: "unconfigured", DI5: "unconfigured", DO1: "unconfigured",
-  DO3: "unconfigured", DO5: "unconfigured", HART1: "unconfigured", RTD: "unconfigured", AO2: "unconfigured",
+  MOD: "unconfigured",
+  DI2: "unconfigured",
+  DI4_left: "unconfigured",
+  AI1: "unconfigured",
+  DO2: "unconfigured",
+  DI4_2: "unconfigured",
+  AI2: "unconfigured",
+  HART2: "unconfigured",
+  AO1: "unconfigured",
+  DI1: "unconfigured",
+  DI3: "unconfigured",
+  DI5: "unconfigured",
+  DO1: "unconfigured",
+  DO3: "unconfigured",
+  DO5: "unconfigured",
+  HART1: "unconfigured",
+  RTD: "unconfigured",
+  AO2: "unconfigured",
 };
 
 const statusColorMap: Record<InterfaceStatus, string> = {
-  configured: "#9BC53F", unconfigured: "#C3C3C3", alert: "#FFB700", error: "#FF3D00",
+  configured: "#9BC53F",
+  unconfigured: "#C3C3C3",
+  alert: "#FFB700",
+  error: "#FF3D00",
 };
 
-const InterfacesConfiguration = ({ onConfigure }: InterfacesConfigurationProps) => {
+const InterfacesConfiguration = ({
+  onConfigure,
+}: InterfacesConfigurationProps) => {
   const [statuses, setStatuses] = useState<InterfaceStatuses>(initialStatuses);
 
   return (
