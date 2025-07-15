@@ -2,6 +2,7 @@
 import { makeAutoObservable } from "mobx";
 import { Device } from "./Device";
 import type { InterfaceConfig } from "../types/interfaceConfig";
+import type { DeviceConfig } from "../types/device";
 
 export class Interface {
   public id: number;
@@ -16,17 +17,15 @@ export class Interface {
     this.config = config;
   }
 
-  addDevice(id: number, name: string, config: any) {
+  addDevice(id: number, name: string, config: DeviceConfig) {
     const device = new Device(id, name, config);
     this.devices.push(device);
     return device;
   }
 
-  // --- ADD THIS METHOD ---
   removeDevice(deviceId: number) {
     this.devices = this.devices.filter((device) => device.id !== deviceId);
   }
-  // -----------------------
 
   updateConfig(newConfig: Partial<InterfaceConfig>) {
     this.config = { ...this.config, ...newConfig };

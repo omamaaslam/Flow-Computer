@@ -6,16 +6,15 @@ import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import AddDeviceForm from "./AddDeviceForm.tsx";
 import { observer } from "mobx-react-lite";
 import { Interface } from "../../stores/Interface.tsx";
-import { Device } from "../../stores/Device.tsx"; // <--- IMPORT THE REAL DEVICE
+import { Device } from "../../stores/Device.tsx";
 import type { InterfaceConfig } from "../../types/interfaceConfig.tsx";
-import { createDefaultDeviceConfig } from "../../types/device.tsx"; // Import the helper
+import type { DeviceConfig } from "../../types/device.tsx"; // <--- Import DeviceConfig
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
   onBack: () => void;
 }
 
-// We will use a simple type for status, which is UI-only information
 type DeviceStatus = "ok" | "warning" | "error";
 
 type ModalView =
@@ -54,21 +53,15 @@ const ConfigureInterface = observer(
       setModalView("addDevice_selectType");
     };
 
-    // This logic needs to change to remove from the MobX store
     const handleDeleteDevice = () => {
       if (selectedDeviceId !== null) {
-        anInterface.removeDevice(selectedDeviceId); // Assuming you add this method to Interface.ts
+        anInterface.removeDevice(selectedDeviceId);
         setSelectedDeviceId(null);
       }
     };
 
-    // The parameter is now the REAL Device from the store
     const handleDeviceClick = (device: Device) => {
       setSelectedDeviceId(device.id);
-      setDeviceTypeToConfigure(device.name); // Or a specific 'type' property if you add one
-      // If you want to edit, you can open the modal here
-      // setIsEditing(true);
-      // setModalView("addDevice_configure");
     };
 
     const handleDeviceTypeSelection = (deviceType: string) => {
@@ -76,17 +69,19 @@ const ConfigureInterface = observer(
       setModalView("addDevice_configure");
     };
 
-    const handleSaveDeviceConfiguration = () => {
+    // --- THIS IS THE FINAL ACTION ---
+    // It receives the config from the form and calls the MobX action
+    const handleSaveDeviceConfiguration = (config: DeviceConfig) => {
       if (!deviceTypeToConfigure) {
         closeModal();
         return;
       }
-      // This logic now adds a new device directly to the MobX store
+
       if (!isEditing) {
         anInterface.addDevice(
           Date.now(),
-          deviceTypeToConfigure,
-          createDefaultDeviceConfig()
+          deviceTypeToConfigure, // The name of the new device
+          config // The configuration from the form
         );
       }
       closeModal();
@@ -105,9 +100,7 @@ const ConfigureInterface = observer(
         case "addDevice_selectType":
           return `Add Device for ${anInterface.name}`;
         case "addDevice_configure":
-          return `${
-            isEditing ? "Edit" : "Configure"
-          } ${deviceTypeToConfigure} Device`;
+          return `Configure New ${deviceTypeToConfigure} Device`;
         default:
           return "";
       }
@@ -210,13 +203,11 @@ const ConfigureInterface = observer(
               deviceTypeToConfigure === "Temperature" && (
                 <TemperatureDeviceForm
                   onSave={handleSaveDeviceConfiguration}
-                  onBack={
-                    isEditing
-                      ? closeModal
-                      : () => setModalView("addDevice_selectType")
-                  }
+                  onBack={() => setModalView("addDevice_selectType")}
                 />
               )}
+            {/* You can add more forms here for other device types */}
+            {/* {modalView === "addDevice_configure" && deviceTypeToConfigure === "Pressure" && <PressureDeviceForm ... />} */}
           </>
         </MuiModalWrapper>
       </>
