@@ -7,7 +7,7 @@ import globalStore from "../../stores/GlobalStore";
 type ActiveTab = "stream" | "interfaces";
 
 const ConfigurationPage = () => {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("interfaces");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("stream");
   const [configuringInterfaceId, setConfiguringInterfaceId] = useState<
     string | null
   >(null);

@@ -142,8 +142,6 @@ const Input = ({ hasError, ...props }: InputProps) => (
   />
 );
 
-// --- 1. PROPS ARE UPDATED ---
-// onSave now passes the final DeviceConfig object back to the parent
 interface TemperatureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
@@ -157,19 +155,15 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     "general"
   );
 
-  // --- 2. STATE IS UPDATED ---
-  // The local state now mirrors the structure of your GeneralDeviceConfig
   const [formState, setFormState] = useState({
     slaveId: "",
     registerCount: "",
     registerAddress: "",
-    dataType: "" as DataType | "", // Use the DataType from your types file
+    dataType: "" as DataType | "",
     manufacturer: "",
     serialNumber: "",
     model: "",
     tagName: "",
-    // You can add other fields from GeneralDeviceConfig here if needed
-    // The "parameters" tab fields can stay as they are if they are not part of DeviceConfig
     tempUnit: "C",
     gSize: "",
     tmin: "",
@@ -177,6 +171,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     coeff1: "",
     coeff2: "",
     coeff3: "",
+    coeff4: "",
   });
 
   type FormErrors = Partial<Record<keyof typeof formState, string>>;
@@ -210,6 +205,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     "coeff1",
     "coeff2",
     "coeff3",
+    "coeff4",
   ];
 
   const isFormValid = useMemo(() => {
@@ -399,7 +395,21 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
         )}
         {activeTab === "parameters" && (
           // This section is unchanged for now
-          <div className="flex flex-col space-y-4 animate-fadeIn">...</div>
+          <div className="flex flex-col space-y-4 animate-fadeIn"> <div className="grid grid-cols-2 gap-x-6">
+                        <FormField label="Tmin" error={errors.tmin}><Input hasError={!!errors.tmin} value={formState.tmin} onChange={e => handleStateChange('tmin', e.target.value)} placeholder="Please set Tmin"/></FormField>
+                        <FormField label="Tmax" error={errors.tmax}><Input hasError={!!errors.tmax} value={formState.tmax} onChange={e => handleStateChange('tmax', e.target.value)} placeholder="Please set Tmax"/></FormField>
+                    </div>
+                    <FormField label="Temperature Unit" error={errors.tempUnit}><CustomCombobox hasError={!!errors.tempUnit} value={formState.tempUnit} onChange={(val) => handleStateChange('tempUnit', val)} placeholder="Select Unit" options={[{value: 'C', label: 'C'}, {value: 'F', label: 'F'}, {value: 'K', label: 'K'}]}/></FormField>
+                    <FormField label="Correction Coefficients">
+                        <div className="grid grid-cols-4 gap-x-3">
+                            <div><Input hasError={!!errors.coeff1} value={formState.coeff1} onChange={e => handleStateChange('coeff1', e.target.value)} placeholder="Enter value"/>{errors.coeff1 && <p className="text-xs text-red-600 mt-1">{errors.coeff1}</p>}</div>
+                            <div><Input hasError={!!errors.coeff2} value={formState.coeff2} onChange={e => handleStateChange('coeff2', e.target.value)} placeholder="Enter value"/>{errors.coeff2 && <p className="text-xs text-red-600 mt-1">{errors.coeff2}</p>}</div>
+                            <div><Input hasError={!!errors.coeff3} value={formState.coeff3} onChange={e => handleStateChange('coeff3', e.target.value)} placeholder="Enter value"/>{errors.coeff3 && <p className="text-xs text-red-600 mt-1">{errors.coeff3}</p>}</div>
+                            <div><Input hasError={!!errors.coeff4} value={formState.coeff4} onChange={e => handleStateChange('coeff4', e.target.value)} placeholder="Enter value"/>{errors.coeff4 && <p className="text-xs text-red-600 mt-1">{errors.coeff4}</p>}</div>
+                       
+                        </div>
+                    </FormField>
+                    </div>
         )}
       </div>
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
