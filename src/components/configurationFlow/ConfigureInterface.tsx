@@ -1,3 +1,5 @@
+// src/components/configurationFlow/ConfigureInterface.tsx
+
 import { useState } from "react";
 import { Thermometer, Settings, ArrowLeft } from "lucide-react";
 import MuiModalWrapper from "./MuiModalWrapper";
@@ -5,10 +7,11 @@ import TemperatureDeviceForm from "./TemperatureDeviceForm.tsx";
 import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import AddDeviceForm from "./AddDeviceForm.tsx";
 import { observer } from "mobx-react-lite";
-import { Interface } from "../../stores/Interface.tsx";
-import { Device } from "../../stores/Device.tsx";
+import { Interface } from "../../stores/Interface.tsx"; // Note: Adjust path if needed
+import { Device } from "../../stores/Device.tsx"; // Note: Adjust path if needed
 import type { InterfaceConfig } from "../../types/interfaceConfig.tsx";
-import type { DeviceConfig } from "../../types/device.tsx"; // <--- Import DeviceConfig
+import type { DeviceConfig } from "../../types/device.tsx";
+import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
@@ -20,6 +23,8 @@ type DeviceStatus = "ok" | "warning" | "error";
 type ModalView =
   | "closed"
   | "modbusSettings"
+  | "RTDSettings"
+  | "HART"
   | "addDevice_selectType"
   | "addDevice_configure";
 
@@ -48,6 +53,15 @@ const ConfigureInterface = observer(
       closeModal();
     };
 
+    const handleOpenSettingsModal = () => {
+      if (anInterface.name.toUpperCase().includes("RTD")) {
+        setModalView("RTDSettings");
+      } else {
+        // Assume Modbus as the default
+        setModalView("modbusSettings");
+      }
+    };
+
     const handleAddNewDeviceClick = () => {
       setIsEditing(false);
       setModalView("addDevice_selectType");
@@ -69,8 +83,6 @@ const ConfigureInterface = observer(
       setModalView("addDevice_configure");
     };
 
-    // --- THIS IS THE FINAL ACTION ---
-    // It receives the config from the form and calls the MobX action
     const handleSaveDeviceConfiguration = (config: DeviceConfig) => {
       if (!deviceTypeToConfigure) {
         closeModal();
@@ -78,11 +90,7 @@ const ConfigureInterface = observer(
       }
 
       if (!isEditing) {
-        anInterface.addDevice(
-          Date.now(),
-          deviceTypeToConfigure, // The name of the new device
-          config // The configuration from the form
-        );
+        anInterface.addDevice(Date.now(), deviceTypeToConfigure, config);
       }
       closeModal();
     };
@@ -96,7 +104,9 @@ const ConfigureInterface = observer(
     const getModalTitle = () => {
       switch (modalView) {
         case "modbusSettings":
-          return `${anInterface.name} Settings`;
+          return `Modbus Settings: ${anInterface.name}`;
+        case "RTDSettings":
+          return `RTD Settings: ${anInterface.name}`;
         case "addDevice_selectType":
           return `Add Device for ${anInterface.name}`;
         case "addDevice_configure":
@@ -169,8 +179,9 @@ const ConfigureInterface = observer(
 
           <div className="border-t pt-6 md:pt-8 space-y-4">
             <div className="flex justify-center">
+              {/* --- UPDATED: This button now uses the smart handler --- */}
               <button
-                onClick={() => setModalView("modbusSettings")}
+                onClick={handleOpenSettingsModal}
                 className="w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
               >
                 <Settings size={20} />
@@ -186,6 +197,7 @@ const ConfigureInterface = observer(
           title={getModalTitle()}
         >
           <>
+            {/* This conditional rendering now works perfectly */}
             {modalView === "modbusSettings" && (
               <ModbusInterfaceSettingsForm
                 currentConfig={anInterface.getConfig()}
@@ -193,6 +205,15 @@ const ConfigureInterface = observer(
                 onClose={closeModal}
               />
             )}
+
+            {modalView === "RTDSettings" && (
+              <RTDInterfaceSettingsForm
+                currentConfig={anInterface.getConfig()}
+                onSave={handleSaveInterfaceConfig}
+                onClose={closeModal}
+              />
+            )}
+
             {modalView === "addDevice_selectType" && (
               <AddDeviceForm
                 onClose={closeModal}
@@ -206,8 +227,6 @@ const ConfigureInterface = observer(
                   onBack={() => setModalView("addDevice_selectType")}
                 />
               )}
-            {/* You can add more forms here for other device types */}
-            {/* {modalView === "addDevice_configure" && deviceTypeToConfigure === "Pressure" && <PressureDeviceForm ... />} */}
           </>
         </MuiModalWrapper>
       </>
