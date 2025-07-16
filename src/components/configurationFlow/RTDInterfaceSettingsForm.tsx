@@ -2,11 +2,6 @@
 
 import React, { useState } from "react";
 import type { InterfaceConfig } from "../../types/interfaceConfig";
-
-// 1. Define the props the component will receive from its parent.
-//    - currentConfig: The existing settings from the MobX store.
-//    - onSave: A function to call when the user clicks "Save".
-//    - onClose: A function to call when the user clicks "Cancel".
 interface RTDInterfaceSettingsFormProps {
   currentConfig: InterfaceConfig;
   onSave: (config: InterfaceConfig) => void;

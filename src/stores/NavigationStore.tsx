@@ -6,14 +6,11 @@ class NavigationStore {
     | ((path: string, options?: { replace?: boolean }) => void)
     | null = null;
   public navigatorInitialized = false;
-
-  // This now reads from the URL hash, e.g., /#/alarms becomes "/alarms"
   public currentPath = window.location.hash.substring(1) || "/";
 
   constructor() {
     makeAutoObservable(this);
   }
-
   setCurrentPath(path: string) {
     this.currentPath = path;
   }

@@ -12,6 +12,7 @@ import { Device } from "../../stores/Device.tsx"; // Note: Adjust path if needed
 import type { InterfaceConfig } from "../../types/interfaceConfig.tsx";
 import type { DeviceConfig } from "../../types/device.tsx";
 import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
+import HartInterfaceSettingsForm from "./HartInterfaceSettingsForm.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
@@ -24,7 +25,7 @@ type ModalView =
   | "closed"
   | "modbusSettings"
   | "RTDSettings"
-  | "HART"
+  | "HART1"
   | "addDevice_selectType"
   | "addDevice_configure";
 
@@ -56,7 +57,10 @@ const ConfigureInterface = observer(
     const handleOpenSettingsModal = () => {
       if (anInterface.name.toUpperCase().includes("RTD")) {
         setModalView("RTDSettings");
-      } else {
+      } else if (anInterface.name.toUpperCase().includes("HART")) {
+        setModalView("HART1");
+      }
+      else {
         // Assume Modbus as the default
         setModalView("modbusSettings");
       }
@@ -111,6 +115,8 @@ const ConfigureInterface = observer(
           return `Add Device for ${anInterface.name}`;
         case "addDevice_configure":
           return `Configure New ${deviceTypeToConfigure} Device`;
+        case "HART1":
+          return `HART Settings: ${anInterface.name}`;
         default:
           return "";
       }
@@ -141,13 +147,11 @@ const ConfigureInterface = observer(
                 <button
                   key={device.id}
                   onClick={() => handleDeviceClick(device)}
-                  className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${
-                    statusStyles["ok"].gradient
-                  } ${
-                    selectedDeviceId === device.id
+                  className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${statusStyles["ok"].gradient
+                    } ${selectedDeviceId === device.id
                       ? "ring-2 md:ring-4 ring-offset-2 ring-yellow-400"
                       : "ring-2 ring-transparent"
-                  }`}
+                    }`}
                 >
                   <Thermometer
                     className={statusStyles["ok"].icon}
@@ -208,6 +212,14 @@ const ConfigureInterface = observer(
 
             {modalView === "RTDSettings" && (
               <RTDInterfaceSettingsForm
+                currentConfig={anInterface.getConfig()}
+                onSave={handleSaveInterfaceConfig}
+                onClose={closeModal}
+              />
+            )}
+
+            {modalView === "HART1" && (
+              <HartInterfaceSettingsForm
                 currentConfig={anInterface.getConfig()}
                 onSave={handleSaveInterfaceConfig}
                 onClose={closeModal}

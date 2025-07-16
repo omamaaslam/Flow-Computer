@@ -16,4 +16,11 @@ export interface InterfaceConfig {
   measurementMode?: "Continuous" | "On-Demand";
   samplingInterval?: number;
   referenceResistor?: number;
+
+  // --- HART1 Specific Fields ---
+  hartBaudrate?: number;
+  hartScanInterval?: number;
+  hartRetryCount?: number;
+  hartMaxDevices?: number;
+  hartPhysicalLayer?: "RS-485" | "RS-232";
 }
