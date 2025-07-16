@@ -1,5 +1,5 @@
-import { observer } from "mobx-react-lite";
-import { volumeFormStore } from "../../stores/VolumeForm";
+import React, { useState, useEffect } from "react";
+import type { VolumeConfig } from "../../types/streamConfig";
 
 const operatingModes = [
   { value: "encoderOnly", label: "Encoder Only" },
@@ -13,21 +13,36 @@ const operatingModes = [
 ];
 
 interface VolumeFormProps {
+  initialData: VolumeConfig;
+  onSave: (config: VolumeConfig) => void;
   onClose: () => void;
 }
 
-const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    volumeFormStore.setField(name as keyof typeof volumeFormStore, value);
+const VolumeForm: React.FC<VolumeFormProps> = ({
+  initialData,
+  onSave,
+  onClose,
+}) => {
+  const [formData, setFormData] = useState<VolumeConfig>(initialData);
+
+  // Ensure form state updates if the initial data prop changes
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target;
+
+    // Handle number inputs correctly
+    const processedValue = type === "number" ? Number(value) : value;
+
+    setFormData((prev) => ({ ...prev, [name]: processedValue }));
   };
 
   const handleSave = () => {
-    console.log("Form Data:", volumeFormStore.formData);
-    onClose();
-  };
-
-  const handleCancel = () => {
+    onSave(formData);
     onClose();
   };
 
@@ -41,8 +56,9 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
             Operating Mode
           </label>
           <select
-            value={volumeFormStore.operatingMode}
-            onChange={(e) => volumeFormStore.setField("operatingMode", e.target.value)}
+            name="operatingMode"
+            value={formData.operatingMode}
+            onChange={handleInputChange}
             className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
           >
             {operatingModes.map((mode) => (
@@ -53,19 +69,21 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
           </select>
         </div>
 
-        {volumeFormStore.operatingMode === "encoderOnly" && (
-          <div className="space-y-4">
+        {/* Conditional rendering for "encoderOnly" mode, with all fields restored */}
+        {formData.operatingMode === "encoderOnly" && (
+          <div className="space-y-4 animate-fadeIn">
             <div className="space-y-2">
               <label className="block font-medium text-sm text-gray-700">
                 Select Gas Meter
               </label>
               <select
                 name="gasMeter"
-                value={volumeFormStore.gasMeter}
+                value={formData.gasMeter}
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
               >
                 <option>Encoder only</option>
+                {/* Add other options if available */}
               </select>
             </div>
 
@@ -77,7 +95,7 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
                 <input
                   name="qminAlarm"
                   type="number"
-                  value={volumeFormStore.qminAlarm}
+                  value={formData.qminAlarm}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
@@ -91,7 +109,7 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
                 <input
                   name="qmaxAlarm"
                   type="number"
-                  value={volumeFormStore.qmaxAlarm}
+                  value={formData.qmaxAlarm}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
@@ -105,7 +123,7 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
                 <input
                   name="qminWarn"
                   type="number"
-                  value={volumeFormStore.qminWarn}
+                  value={formData.qminWarn}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
@@ -119,7 +137,7 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
                 <input
                   name="qmaxWarn"
                   type="number"
-                  value={volumeFormStore.qmaxWarn}
+                  value={formData.qmaxWarn}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
@@ -134,11 +152,12 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
                 </label>
                 <select
                   name="creepMode"
-                  value={volumeFormStore.creepMode}
+                  value={formData.creepMode}
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
                 >
                   <option>Time Limited</option>
+                  {/* Add other options if available */}
                 </select>
               </div>
 
@@ -149,7 +168,7 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
                 <input
                   name="m3h"
                   type="number"
-                  value={volumeFormStore.m3h}
+                  value={formData.m3h}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
@@ -163,7 +182,7 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
                 <input
                   name="timeSeconds"
                   type="number"
-                  value={volumeFormStore.timeSeconds}
+                  value={formData.timeSeconds}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-yellow-500"
@@ -176,7 +195,7 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
 
       <div className="flex justify-end gap-3 pt-2">
         <button
-          onClick={handleCancel}
+          onClick={onClose}
           className="px-6 py-2 rounded-md font-medium text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
         >
           Cancel
@@ -190,6 +209,6 @@ const VolumeForm = observer(({ onClose }: VolumeFormProps) => {
       </div>
     </div>
   );
-});
+};
 
 export default VolumeForm;

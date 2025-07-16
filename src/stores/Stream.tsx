@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import { IOCard } from "./IOCard";
-import type { StreamConfig } from "../types/streamConfig";
+import type { StreamConfig, TemperatureConfig, PressureConfig, VolumeConfig } from "../types/streamConfig";
 
 export class Stream {
   public id: number;
@@ -19,5 +19,18 @@ export class Stream {
     const ioCard = new IOCard(cardId, config);
     this.ioCards.push(ioCard);
     return ioCard;
+  }
+  
+  // --- ADD THESE METHODS ---
+  updateTemperatureConfig(newConfig: TemperatureConfig) {
+    this.config.temperature = newConfig;
+  }
+  
+  updatePressureConfig(newConfig: PressureConfig) {
+    this.config.pressure = newConfig;
+  }
+
+  updateVolumeConfig(newConfig: VolumeConfig) {
+    this.config.volume = newConfig;
   }
 }

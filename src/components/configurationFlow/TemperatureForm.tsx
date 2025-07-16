@@ -1,23 +1,34 @@
-import { observer } from "mobx-react-lite";
+// src/components/configurationFlow/TemperatureForm.tsx
+import React, { useState, useEffect } from "react";
 import { Thermometer } from "lucide-react";
-import { temperatureFormStore } from "../../stores/TemperatureForm";
+import type { TemperatureConfig } from "../../types/streamConfig";
 
 interface TemperatureFormProps {
+  initialData: TemperatureConfig;
+  onSave: (config: TemperatureConfig) => void;
   onClose: () => void;
 }
 
-const TemperatureForm = observer(({ onClose }: TemperatureFormProps) => {
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+const TemperatureForm: React.FC<TemperatureFormProps> = ({
+  initialData,
+  onSave,
+  onClose,
+}) => {
+  const [formData, setFormData] = useState<TemperatureConfig>(initialData);
+
+  useEffect(() => {
+    setFormData(initialData);
+  }, [initialData]);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    temperatureFormStore.setField(name as keyof typeof temperatureFormStore, value);
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSave = () => {
-    console.log("Temperature Form Data:", temperatureFormStore.formData);
-    onClose();
-  };
-
-  const handleCancel = () => {
+    onSave(formData);
     onClose();
   };
 
@@ -31,11 +42,10 @@ const TemperatureForm = observer(({ onClose }: TemperatureFormProps) => {
             </label>
             <Thermometer className="text-yellow-500" size={16} />
             <span className="font-semibold text-xs text-yellow-500">
-              {temperatureFormStore.liveTemp}
+              {formData.liveTemp}
             </span>
           </div>
         </div>
-
         <div className="space-y-1">
           <label className="block font-medium text-xs">
             Substitute Temperature (T)
@@ -43,18 +53,17 @@ const TemperatureForm = observer(({ onClose }: TemperatureFormProps) => {
           <input
             name="substituteTemp"
             type="text"
-            value={temperatureFormStore.substituteTemp}
+            value={formData.substituteTemp}
             onChange={handleInputChange}
             placeholder="Please add Value"
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           />
         </div>
-
         <div className="space-y-1">
           <label className="block font-medium text-xs">Device</label>
           <select
             name="device"
-            value={temperatureFormStore.device}
+            value={formData.device}
             onChange={handleInputChange}
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
@@ -63,7 +72,6 @@ const TemperatureForm = observer(({ onClose }: TemperatureFormProps) => {
             <option>Temperature S3</option>
           </select>
         </div>
-
         <div className="space-y-1">
           <label className="block font-medium text-xs">
             Min Op. Temp. (Tmin)
@@ -71,13 +79,12 @@ const TemperatureForm = observer(({ onClose }: TemperatureFormProps) => {
           <input
             name="minOpTemp"
             type="text"
-            value={temperatureFormStore.minOpTemp}
+            value={formData.minOpTemp}
             onChange={handleInputChange}
             placeholder="Please add Value"
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           />
         </div>
-
         <div className="space-y-1">
           <label className="block font-medium text-xs">
             Base Temperature (BT)
@@ -85,13 +92,12 @@ const TemperatureForm = observer(({ onClose }: TemperatureFormProps) => {
           <input
             name="baseTemp"
             type="text"
-            value={temperatureFormStore.baseTemp}
+            value={formData.baseTemp}
             onChange={handleInputChange}
             placeholder="Please add Value"
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           />
         </div>
-
         <div className="space-y-1">
           <label className="block font-medium text-xs">
             Max Op. Temp. (Tmax)
@@ -99,31 +105,29 @@ const TemperatureForm = observer(({ onClose }: TemperatureFormProps) => {
           <input
             name="maxOpTemp"
             type="text"
-            value={temperatureFormStore.maxOpTemp}
+            value={formData.maxOpTemp}
             onChange={handleInputChange}
             placeholder="Please add Value"
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           />
         </div>
-
         <div className="space-y-1">
           <label className="block font-medium text-xs">Temperature Unit</label>
           <select
             name="tempUnit"
-            value={temperatureFormStore.tempUnit}
+            value={formData.tempUnit}
             onChange={handleInputChange}
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
-            <option>°C</option>
-            <option>°F</option>
-            <option>K</option>
+            <option value="°C">°C</option>
+            <option value="°F">°F</option>
+            <option value="K">K</option>
           </select>
         </div>
       </div>
-
       <div className="flex justify-end gap-2 mt-4 pt-3">
         <button
-          onClick={handleCancel}
+          onClick={onClose}
           className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
         >
           Cancel
@@ -137,6 +141,6 @@ const TemperatureForm = observer(({ onClose }: TemperatureFormProps) => {
       </div>
     </>
   );
-});
+};
 
 export default TemperatureForm;

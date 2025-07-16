@@ -1,80 +1,77 @@
-export type VolumeOperatingMode =
-  | "Encoder Only"
-  | "One pulse input"
-  | "Two pulse inputs (1:1)"
-  | "Two pulse inputs (x:y)"
-  | "Encoder with one pulse input"
-  | "One pulse input with encoder"
-  | "Encoder with two pulse inputs"
-  | "Two pulse inputs with encoder";
+// src/types/streamConfig.ts
 
-export type TemperatureUnit = "C" | "F" | "K";
-export type PressureUnit = "bar" | "psi" | "kPa" | "atm";
-
-export interface VolumeConfig {
-  operatingMode: VolumeOperatingMode | null;
-  gasMeterSource: string;
-  qMinAlarm: number | null;
-  qMaxAlarm: number | null;
-  qMinWarn: number | null;
-  qMaxWarn: number | null;
-  creepMode: string;
-  flowRateLabel: string;
-  m3h: number | null;
-  timeSeconds: number | null;
-}
-
+// Define the shape for Temperature configuration
 export interface TemperatureConfig {
-  substituteTemp: number | null;
-  deviceId: string | null;
-  minOpTemp: number | null;
-  maxOpTemp: number | null;
-  baseTemp: number | null;
-  unit: TemperatureUnit;
+  liveTemp: string; // This would likely come from a live data feed, but is stored for display
+  substituteTemp: string;
+  device: string;
+  minOpTemp: string;
+  baseTemp: string;
+  maxOpTemp: string;
+  tempUnit: "°C" | "°F" | "K";
 }
 
+// Define the shape for Pressure configuration
 export interface PressureConfig {
-  substitutePressure: number | null;
-  deviceId: string | null;
-  minOpPressure: number | null;
-  maxOpPressure: number | null;
-  basePressure: number | null;
-  unit: PressureUnit;
+  livePressure: string;
+  substitutePressure: string;
+  device: string;
+  minOpPressure: string;
+  basePressure: string;
+  maxOpPressure: string;
+  pressureUnit: "bar" | "psi" | "kPa" | "atm";
 }
 
+// Define the shape for Volume configuration
+export interface VolumeConfig {
+  operatingMode: string;
+  gasMeter: string;
+  qminAlarm: number | string;
+  qmaxAlarm: number | string;
+  qminWarn: number | string;
+  qmaxWarn: number | string;
+  creepMode: string;
+  m3h: number | string;
+  timeSeconds: number | string;
+}
+
+// Define the overall Stream Configuration object
 export interface StreamConfig {
-  volume: VolumeConfig;
   temperature: TemperatureConfig;
   pressure: PressureConfig;
+  volume: VolumeConfig;
+  // Add other stream-level configs here, e.g., conversion
 }
 
+// Factory function to create a default configuration
 export const createDefaultStreamConfig = (): StreamConfig => ({
-  volume: {
-    operatingMode: null,
-    gasMeterSource: "",
-    qMinAlarm: null,
-    qMaxAlarm: null,
-    qMinWarn: null,
-    qMaxWarn: null,
-    creepMode: "Time Limited",
-    flowRateLabel: "Time Limited",
-    m3h: null,
-    timeSeconds: null,
-  },
   temperature: {
-    substituteTemp: null,
-    deviceId: null,
-    minOpTemp: null,
-    maxOpTemp: null,
-    baseTemp: null,
-    unit: "C",
+    liveTemp: "21.5 °C", // Example static value
+    substituteTemp: "",
+    device: "Temperature S1",
+    minOpTemp: "",
+    baseTemp: "",
+    maxOpTemp: "",
+    tempUnit: "°C",
   },
   pressure: {
-    substitutePressure: null,
-    deviceId: null,
-    minOpPressure: null,
-    maxOpPressure: null,
-    basePressure: null,
-    unit: "bar",
+    livePressure: "1.01 bar", // Example static value
+    substitutePressure: "",
+    device: "Pressure S1",
+    minOpPressure: "",
+    basePressure: "",
+    maxOpPressure: "",
+    pressureUnit: "bar",
+  },
+  volume: {
+    operatingMode: "encoderOnly",
+    gasMeter: "Encoder only",
+    qminAlarm: "",
+    qmaxAlarm: "",
+    qminWarn: "",
+    qmaxWarn: "",
+    creepMode: "Time Limited",
+    m3h: "",
+    timeSeconds: "",
   },
 });
