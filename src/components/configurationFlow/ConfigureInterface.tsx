@@ -65,7 +65,6 @@ const ConfigureInterface = observer(
       } else if (anInterface.name.toUpperCase().includes("DI")) {
         setModalView("Di_InterfaceSettings");
       } else {
-        // Assume Modbus as the default
         setModalView("modbusSettings");
       }
     };
@@ -119,7 +118,7 @@ const ConfigureInterface = observer(
         case "addDevice_selectType":
           return `Add Device for ${anInterface.name}`;
         case "addDevice_configure":
-          return `Configure New ${deviceTypeToConfigure} Device`;
+          return `Configure New ${deviceTypeToConfigure} Device for ${anInterface.name}`;
         case "HART1":
           return `HART Settings: ${anInterface.name}`;
         case "Di_InterfaceSettings":
@@ -254,6 +253,7 @@ const ConfigureInterface = observer(
                 <TemperatureDeviceForm
                   onSave={handleSaveDeviceConfiguration}
                   onBack={() => setModalView("addDevice_selectType")}
+                  interfaceName={anInterface.name}
                 />
               )}
             {modalView === "addDevice_configure" &&

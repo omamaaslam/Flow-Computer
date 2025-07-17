@@ -125,11 +125,13 @@ const Input = ({ hasError, ...props }: InputProps) => (
 interface TemperatureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
+  interfaceName: string;
 }
 
 const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   onBack,
   onSave,
+  interfaceName,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
