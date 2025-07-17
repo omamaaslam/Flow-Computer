@@ -20,7 +20,6 @@ function useOnClickOutside(
     };
   }, [ref, handler]);
 }
-
 interface CustomComboboxProps {
   options: { value: string; label: string }[];
   value: string;
@@ -28,7 +27,6 @@ interface CustomComboboxProps {
   placeholder: string;
   hasError?: boolean;
 }
-
 const CustomCombobox: React.FC<CustomComboboxProps> = ({
   options,
   value,
@@ -39,7 +37,6 @@ const CustomCombobox: React.FC<CustomComboboxProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const comboboxRef = useRef<HTMLDivElement>(null);
   useOnClickOutside(comboboxRef, () => setIsOpen(false));
-
   return (
     <div className="relative w-full" ref={comboboxRef}>
       <input
@@ -72,7 +69,6 @@ const CustomCombobox: React.FC<CustomComboboxProps> = ({
           ></path>
         </svg>
       </button>
-
       {isOpen && (
         <div className="absolute z-[2000] top-full mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 animate-fadeIn p-2">
           <div className="max-h-60 overflow-y-auto">
@@ -122,37 +118,41 @@ const Input = ({ hasError, ...props }: InputProps) => (
   />
 );
 
-interface TemperatureDeviceFormProps {
+const initialFormState = {
+  slaveId: "",
+  registerCount: "",
+  registerAddress: "",
+  dataType: "" as DataType | "",
+  pollingAddress: "",
+  commandSet: "",
+  variableType: "",
+  manufacturer: "",
+  serialNumber: "",
+  model: "",
+  tagName: "",
+  gSize: "",
+  pmin: "",
+  pmax: "",
+  pressureUnit: "psi",
+  correctionCoefficient: "",
+};
+export type PressureFormState = typeof initialFormState;
+
+interface PressureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
+  interfaceName: string;
 }
 
-const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
+const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   onBack,
   onSave,
+  interfaceName,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
-
-  const [formState, setFormState] = useState({
-    slaveId: "",
-    registerCount: "",
-    registerAddress: "",
-    dataType: "" as DataType | "",
-    manufacturer: "",
-    serialNumber: "",
-    model: "",
-    tagName: "",
-    tempUnit: "C",
-    gSize: "",
-    tmin: "",
-    tmax: "",
-    coeff1: "",
-    coeff2: "",
-    coeff3: "",
-    coeff4: "",
-  });
+  const [formState, setFormState] = useState(initialFormState);
 
   type FormErrors = Partial<Record<keyof typeof formState, string>>;
   const [errors, setErrors] = useState<FormErrors>({});
@@ -164,65 +164,88 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     }
   };
 
-  const requiredFields: (keyof typeof formState)[] = [
-    "slaveId",
-    "registerCount",
-    "registerAddress",
-    "dataType",
-    "manufacturer",
-    "serialNumber",
-    "model",
-    "tagName",
-  ];
+  const requiredFields = useMemo(() => {
+    const baseFields: (keyof typeof formState)[] = [
+      "manufacturer",
+      "serialNumber",
+      "model",
+      "tagName",
+      "pmin",
+      "pmax",
+    ];
+    if (interfaceName === "MOD") {
+      return [
+        ...baseFields,
+        "slaveId",
+        "registerCount",
+        "registerAddress",
+        "dataType",
+      ];
+    }
+    if (interfaceName === "HART1" || interfaceName === "HART2") {
+      return [...baseFields, "pollingAddress", "commandSet", "variableType"];
+    }
+    return baseFields;
+  }, [interfaceName]);
+
   const numericFields: (keyof typeof formState)[] = [
     "slaveId",
     "registerCount",
     "registerAddress",
     "gSize",
-    "tmin",
-    "tmax",
-    "coeff1",
-    "coeff2",
-    "coeff3",
-    "coeff4",
+    "pmin",
+    "pmax",
+    "correctionCoefficient",
+    "pollingAddress",
   ];
 
   const isFormValid = useMemo(() => {
     const allRequiredFilled = requiredFields.every(
-      (field) => formState[field]?.trim() !== ""
+      (field) => formState[field as keyof typeof formState]?.trim() !== ""
     );
     if (!allRequiredFilled) return false;
-
     const allNumericValid = numericFields.every((field) => {
-      const value = formState[field];
+      const value = formState[field as keyof typeof formState];
       return !value || /^-?\d*\.?\d*$/.test(value);
     });
     if (!allNumericValid) return false;
-
     return true;
   }, [formState, requiredFields, numericFields]);
 
   const validateAndSave = () => {
     const newErrors: FormErrors = {};
     requiredFields.forEach((field) => {
-      if (!formState[field]?.trim())
-        newErrors[field] = "This field is required.";
+      const typedField = field as keyof typeof formState;
+      if (!formState[typedField]?.toString().trim())
+        newErrors[typedField] = "This field is required.";
     });
     numericFields.forEach((field) => {
-      const value = formState[field];
-      if (value && !/^-?\d*\.?\d*$/.test(value)) {
-        newErrors[field] = "Please enter a valid number.";
-      }
+      const value = formState[field as keyof typeof formState];
+      if (value && !/^-?\d*\.?\d*$/.test(value))
+        newErrors[field as keyof typeof formState] =
+          "Please enter a valid number.";
     });
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
       const finalConfig: DeviceConfig = {
         general: {
-          slaveId: parseInt(formState.slaveId, 10) || null,
-          registerCount: parseInt(formState.registerCount, 10) || null,
-          registerAddress: parseInt(formState.registerAddress, 10) || null,
-          dataType: formState.dataType as DataType,
+          slaveId:
+            interfaceName === "MOD"
+              ? parseInt(formState.slaveId, 10) || null
+              : null,
+          registerCount:
+            interfaceName === "MOD"
+              ? parseInt(formState.registerCount, 10) || null
+              : null,
+          registerAddress:
+            interfaceName === "MOD"
+              ? parseInt(formState.registerAddress, 10) || null
+              : null,
+          dataType:
+            interfaceName === "MOD"
+              ? (formState.dataType as DataType)
+              : "INT16",
           manufacturer: formState.manufacturer,
           model: formState.model,
           serialNumber: formState.serialNumber,
@@ -232,8 +255,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
           version: "",
         },
       };
-
-      console.log("Validation successful. Saving data:", finalConfig);
       onSave(finalConfig);
     } else {
       console.log("Validation failed. Please correct errors.");
@@ -347,7 +368,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
           Parameters
         </button>
       </div>
-
       <div>
         {activeTab === "general" && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
@@ -371,7 +391,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
                 </p>
               )}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Serial Number
@@ -390,7 +409,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
                 </p>
               )}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Model
@@ -405,7 +423,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
                 <p className="text-xs text-red-600 mt-1">{errors.model}</p>
               )}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Tag Name
@@ -420,7 +437,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
                 <p className="text-xs text-red-600 mt-1">{errors.tagName}</p>
               )}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 G-Size
@@ -442,118 +458,75 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             <div className="grid grid-cols-2 gap-x-6">
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Tmin
+                  Pmin
                 </label>
                 <Input
-                  hasError={!!errors.tmin}
-                  value={formState.tmin}
-                  onChange={(e) => handleStateChange("tmin", e.target.value)}
-                  placeholder="Please set Tmin"
+                  hasError={!!errors.pmin}
+                  value={formState.pmin}
+                  onChange={(e) => handleStateChange("pmin", e.target.value)}
+                  placeholder="Please set Pmin"
                 />
-                {errors.tmin && (
-                  <p className="text-xs text-red-600 mt-1">{errors.tmin}</p>
+                {errors.pmin && (
+                  <p className="text-xs text-red-600 mt-1">{errors.pmin}</p>
                 )}
               </div>
-
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Tmax
+                  Pmax
                 </label>
                 <Input
-                  hasError={!!errors.tmax}
-                  value={formState.tmax}
-                  onChange={(e) => handleStateChange("tmax", e.target.value)}
-                  placeholder="Please set Tmax"
+                  hasError={!!errors.pmax}
+                  value={formState.pmax}
+                  onChange={(e) => handleStateChange("pmax", e.target.value)}
+                  placeholder="Please set Pmax"
                 />
-                {errors.tmax && (
-                  <p className="text-xs text-red-600 mt-1">{errors.tmax}</p>
+                {errors.pmax && (
+                  <p className="text-xs text-red-600 mt-1">{errors.pmax}</p>
                 )}
               </div>
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Temperature Unit
+                Pressure Unit
               </label>
               <CustomCombobox
-                hasError={!!errors.tempUnit}
-                value={formState.tempUnit}
-                onChange={(val) => handleStateChange("tempUnit", val)}
+                hasError={!!errors.pressureUnit}
+                value={formState.pressureUnit}
+                onChange={(val) => handleStateChange("pressureUnit", val)}
                 placeholder="Select Unit"
                 options={[
-                  { value: "C", label: "C" },
-                  { value: "F", label: "F" },
-                  { value: "K", label: "K" },
+                  { value: "psi", label: "psi" },
+                  { value: "bar", label: "bar" },
+                  { value: "kPa", label: "kPa" },
                 ]}
               />
-              {errors.tempUnit && (
-                <p className="text-xs text-red-600 mt-1">{errors.tempUnit}</p>
+              {errors.pressureUnit && (
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.pressureUnit}
+                </p>
               )}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Correction Coefficients
+                Correction Coefficient
               </label>
-              <div className="grid grid-cols-4 gap-x-3">
-                <div>
-                  <Input
-                    hasError={!!errors.coeff1}
-                    value={formState.coeff1}
-                    onChange={(e) =>
-                      handleStateChange("coeff1", e.target.value)
-                    }
-                    placeholder="Enter value"
-                  />
-                  {errors.coeff1 && (
-                    <p className="text-xs text-red-600 mt-1">{errors.coeff1}</p>
-                  )}
-                </div>
-                <div>
-                  <Input
-                    hasError={!!errors.coeff2}
-                    value={formState.coeff2}
-                    onChange={(e) =>
-                      handleStateChange("coeff2", e.target.value)
-                    }
-                    placeholder="Enter value"
-                  />
-                  {errors.coeff2 && (
-                    <p className="text-xs text-red-600 mt-1">{errors.coeff2}</p>
-                  )}
-                </div>
-                <div>
-                  <Input
-                    hasError={!!errors.coeff3}
-                    value={formState.coeff3}
-                    onChange={(e) =>
-                      handleStateChange("coeff3", e.target.value)
-                    }
-                    placeholder="Enter value"
-                  />
-                  {errors.coeff3 && (
-                    <p className="text-xs text-red-600 mt-1">{errors.coeff3}</p>
-                  )}
-                </div>
-                <div>
-                  <Input
-                    hasError={!!errors.coeff4}
-                    value={formState.coeff4}
-                    onChange={(e) =>
-                      handleStateChange("coeff4", e.target.value)
-                    }
-                    placeholder="Enter value"
-                  />
-                  {errors.coeff4 && (
-                    <p className="text-xs text-red-600 mt-1">{errors.coeff4}</p>
-                  )}
-                </div>
-              </div>
+              <Input
+                hasError={!!errors.correctionCoefficient}
+                value={formState.correctionCoefficient}
+                onChange={(e) =>
+                  handleStateChange("correctionCoefficient", e.target.value)
+                }
+                placeholder="Enter value"
+              />
+              {errors.correctionCoefficient && (
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.correctionCoefficient}
+                </p>
+              )}
             </div>
           </div>
         )}
       </div>
-
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <button
           onClick={onBack}
@@ -573,4 +546,4 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   );
 };
 
-export default TemperatureDeviceForm;
+export default PressureDeviceForm;

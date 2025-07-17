@@ -23,4 +23,11 @@ export interface InterfaceConfig {
   hartRetryCount?: number;
   hartMaxDevices?: number;
   hartPhysicalLayer?: "RS-485" | "RS-232";
+
+  // --- DI Configuration Specific Fields ---
+  diInputType?: string; // Options might be "Dry Contact", "Wet Contact", etc.
+  diDebounceTime?: number; // Value between 0-10,000
+  diSignalLogic?: "Active High" | "Active Low";
+  diEdgeDetection?: "Rising" | "Falling" | "Both";
+  diPullUpDown?: "Pull-up" | "Pull-down";
 }

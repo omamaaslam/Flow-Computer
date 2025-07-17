@@ -13,6 +13,8 @@ import type { InterfaceConfig } from "../../types/interfaceConfig.tsx";
 import type { DeviceConfig } from "../../types/device.tsx";
 import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
 import HartInterfaceSettingsForm from "./HartInterfaceSettingsForm.tsx";
+import PressureDeviceForm from "./PressureDeviceForm.tsx";
+import DI_InterfaceSettingsForm from "./DI_InterfaceSettingsForm.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
@@ -26,6 +28,7 @@ type ModalView =
   | "modbusSettings"
   | "RTDSettings"
   | "HART1"
+  | "Di_InterfaceSettings"
   | "addDevice_selectType"
   | "addDevice_configure";
 
@@ -59,8 +62,9 @@ const ConfigureInterface = observer(
         setModalView("RTDSettings");
       } else if (anInterface.name.toUpperCase().includes("HART")) {
         setModalView("HART1");
-      }
-      else {
+      } else if (anInterface.name.toUpperCase().includes("DI")) {
+        setModalView("Di_InterfaceSettings");
+      } else {
         // Assume Modbus as the default
         setModalView("modbusSettings");
       }
@@ -95,6 +99,7 @@ const ConfigureInterface = observer(
 
       if (!isEditing) {
         anInterface.addDevice(Date.now(), deviceTypeToConfigure, config);
+        console.log(anInterface);
       }
       closeModal();
     };
@@ -117,6 +122,8 @@ const ConfigureInterface = observer(
           return `Configure New ${deviceTypeToConfigure} Device`;
         case "HART1":
           return `HART Settings: ${anInterface.name}`;
+        case "Di_InterfaceSettings":
+          return `DI Settings: ${anInterface.name}`;
         default:
           return "";
       }
@@ -147,11 +154,13 @@ const ConfigureInterface = observer(
                 <button
                   key={device.id}
                   onClick={() => handleDeviceClick(device)}
-                  className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${statusStyles["ok"].gradient
-                    } ${selectedDeviceId === device.id
+                  className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${
+                    statusStyles["ok"].gradient
+                  } ${
+                    selectedDeviceId === device.id
                       ? "ring-2 md:ring-4 ring-offset-2 ring-yellow-400"
                       : "ring-2 ring-transparent"
-                    }`}
+                  }`}
                 >
                   <Thermometer
                     className={statusStyles["ok"].icon}
@@ -226,6 +235,14 @@ const ConfigureInterface = observer(
               />
             )}
 
+            {modalView === "Di_InterfaceSettings" && (
+              <DI_InterfaceSettingsForm
+                currentConfig={anInterface.getConfig()}
+                onSave={handleSaveInterfaceConfig}
+                onClose={closeModal}
+              />
+            )}
+
             {modalView === "addDevice_selectType" && (
               <AddDeviceForm
                 onClose={closeModal}
@@ -237,6 +254,18 @@ const ConfigureInterface = observer(
                 <TemperatureDeviceForm
                   onSave={handleSaveDeviceConfiguration}
                   onBack={() => setModalView("addDevice_selectType")}
+                />
+              )}
+            {modalView === "addDevice_configure" &&
+              deviceTypeToConfigure === "Pressure" && (
+                <PressureDeviceForm
+                  onSave={handleSaveDeviceConfiguration}
+                  onBack={
+                    isEditing
+                      ? closeModal
+                      : () => setModalView("addDevice_selectType")
+                  }
+                  interfaceName={anInterface.name}
                 />
               )}
           </>
