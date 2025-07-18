@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import type { DeviceConfig, DataType } from "../../types/device";
+import BridgeComponent from "./BridgeComponent";
 
 function useOnClickOutside(
   ref: React.RefObject<HTMLDivElement | null>,
@@ -124,7 +124,7 @@ const Input = ({ hasError, ...props }: InputProps) => (
 
 interface TemperatureDeviceFormProps {
   onBack: () => void;
-  onSave: (config: DeviceConfig) => void;
+  onSave: (config: any) => void;
   interfaceName: string;
 }
 
@@ -141,7 +141,10 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     slaveId: "",
     registerCount: "",
     registerAddress: "",
-    dataType: "" as DataType | "",
+    dataType: "",
+    pollingAddress: "",
+    commandSet: "",
+    variableType: "",
     manufacturer: "",
     serialNumber: "",
     model: "",
@@ -156,27 +159,32 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     coeff4: "",
   });
 
-  type FormErrors = Partial<Record<keyof typeof formState, string>>;
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleStateChange = (field: keyof typeof formState, value: string) => {
+  const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
     }
   };
 
-  const requiredFields: (keyof typeof formState)[] = [
-    "slaveId",
-    "registerCount",
-    "registerAddress",
-    "dataType",
+  const requiredFields = [
     "manufacturer",
     "serialNumber",
     "model",
     "tagName",
+    "tmin",
+    "tmax",
+    ...(interfaceName === "MOD"
+      ? ["slaveId", "registerCount", "registerAddress", "dataType"]
+      : ["pollingAddress", "commandSet", "variableType"]),
   ];
-  const numericFields: (keyof typeof formState)[] = [
+
+  const numericFields = [
     "slaveId",
     "registerCount",
     "registerAddress",
@@ -191,12 +199,12 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
 
   const isFormValid = useMemo(() => {
     const allRequiredFilled = requiredFields.every(
-      (field) => formState[field]?.trim() !== ""
+      (field) => formState[field as keyof typeof formState]?.trim() !== ""
     );
     if (!allRequiredFilled) return false;
 
     const allNumericValid = numericFields.every((field) => {
-      const value = formState[field];
+      const value = formState[field as keyof typeof formState];
       return !value || /^-?\d*\.?\d*$/.test(value);
     });
     if (!allNumericValid) return false;
@@ -205,13 +213,13 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   }, [formState, requiredFields, numericFields]);
 
   const validateAndSave = () => {
-    const newErrors: FormErrors = {};
+    const newErrors: Record<string, string> = {};
     requiredFields.forEach((field) => {
-      if (!formState[field]?.trim())
+      if (!formState[field as keyof typeof formState]?.trim())
         newErrors[field] = "This field is required.";
     });
     numericFields.forEach((field) => {
-      const value = formState[field];
+      const value = formState[field as keyof typeof formState];
       if (value && !/^-?\d*\.?\d*$/.test(value)) {
         newErrors[field] = "Please enter a valid number.";
       }
@@ -219,12 +227,19 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      const finalConfig: DeviceConfig = {
+      const finalConfig = {
         general: {
-          slaveId: parseInt(formState.slaveId, 10) || null,
-          registerCount: parseInt(formState.registerCount, 10) || null,
-          registerAddress: parseInt(formState.registerAddress, 10) || null,
-          dataType: formState.dataType as DataType,
+          slaveId:
+            interfaceName === "MOD" ? parseInt(formState.slaveId, 10) : null,
+          registerCount:
+            interfaceName === "MOD"
+              ? parseInt(formState.registerCount, 10)
+              : null,
+          registerAddress:
+            interfaceName === "MOD"
+              ? parseInt(formState.registerAddress, 10)
+              : null,
+          dataType: interfaceName === "MOD" ? formState.dataType : "INT16",
           manufacturer: formState.manufacturer,
           model: formState.model,
           serialNumber: formState.serialNumber,
@@ -234,98 +249,18 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
           version: "",
         },
       };
-
-      console.log("Validation successful. Saving data:", finalConfig);
       onSave(finalConfig);
-    } else {
-      console.log("Validation failed. Please correct errors.");
     }
   };
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600">
-            Slave ID
-          </label>
-          <CustomCombobox
-            hasError={!!errors.slaveId}
-            value={formState.slaveId}
-            onChange={(val) => handleStateChange("slaveId", val)}
-            placeholder="Please set slave ID"
-            options={[
-              { value: "1", label: "1" },
-              { value: "2", label: "2" },
-            ]}
-          />
-          {errors.slaveId && (
-            <p className="text-xs text-red-600 mt-1">{errors.slaveId}</p>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600">
-            Register Count
-          </label>
-          <CustomCombobox
-            hasError={!!errors.registerCount}
-            value={formState.registerCount}
-            onChange={(val) => handleStateChange("registerCount", val)}
-            placeholder="Number of registers..."
-            options={[
-              { value: "2", label: "2 (for 1 float32)" },
-              { value: "4", label: "4" },
-            ]}
-          />
-          {errors.registerCount && (
-            <p className="text-xs text-red-600 mt-1">{errors.registerCount}</p>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600">
-            Register Address
-          </label>
-          <CustomCombobox
-            hasError={!!errors.registerAddress}
-            value={formState.registerAddress}
-            onChange={(val) => handleStateChange("registerAddress", val)}
-            placeholder="Please set register address"
-            options={[
-              { value: "40001", label: "40001" },
-              { value: "40002", label: "40002" },
-            ]}
-          />
-          {errors.registerAddress && (
-            <p className="text-xs text-red-600 mt-1">
-              {errors.registerAddress}
-            </p>
-          )}
-        </div>
-
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600">
-            Data Type
-          </label>
-          <CustomCombobox
-            hasError={!!errors.dataType}
-            value={formState.dataType}
-            onChange={(val) => handleStateChange("dataType", val)}
-            placeholder="INT16, FLOAT..."
-            options={[
-              { value: "INT16", label: "INT16" },
-              { value: "INT32", label: "INT32" },
-              { value: "FLOAT", label: "FLOAT" },
-              { value: "DOUBLE", label: "DOUBLE" },
-              { value: "STRING", label: "STRING" },
-            ]}
-          />
-          {errors.dataType && (
-            <p className="text-xs text-red-600 mt-1">{errors.dataType}</p>
-          )}
-        </div>
-      </div>
+      <BridgeComponent
+        interfaceName={interfaceName}
+        formState={formState}
+        errors={errors}
+        handleStateChange={handleStateChange}
+      />
 
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button

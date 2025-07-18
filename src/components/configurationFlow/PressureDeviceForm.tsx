@@ -1,22 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-
-// --- Type Definitions (for context) ---
-type DataType = "INT16" | "INT32" | "FLOAT" | "DOUBLE" | "STRING";
-interface DeviceConfig {
-  general: {
-    slaveId: number | null;
-    registerCount: number | null;
-    registerAddress: number | null;
-    dataType: DataType;
-    manufacturer: string;
-    model: string;
-    serialNumber: string;
-    tagName: string;
-    deviceId: string;
-    buildYear: number | null;
-    version: string;
-  };
-}
+import BridgeComponent from "./BridgeComponent";
 
 function useOnClickOutside(
   ref: React.RefObject<HTMLDivElement | null>,
@@ -38,8 +21,6 @@ function useOnClickOutside(
   }, [ref, handler]);
 }
 
-// --- CustomCombobox Component (Simplified) ---
-// The `hasError` prop has been removed to simplify this component.
 interface CustomComboboxProps {
   options: { value: string; label: string }[];
   value: string;
@@ -65,7 +46,6 @@ const CustomCombobox: React.FC<CustomComboboxProps> = ({
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setIsOpen(true)}
         placeholder={placeholder}
-        // The className is now simpler, with no conditional red border.
         className="w-full border border-gray-300 rounded-md py-1.5 pl-3 pr-8 text-sm placeholder:text-gray-400 bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
       />
       <button
@@ -126,25 +106,20 @@ const CustomCombobox: React.FC<CustomComboboxProps> = ({
   );
 };
 
-// --- Custom Input Component (Simplified) ---
-// The `hasError` prop has been removed here as well.
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 
 const Input = (props: InputProps) => (
   <input
     {...props}
-    // The className is now simpler, with no conditional red border.
     className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
   />
 );
-
-// --- Form Logic and State ---
 
 const initialFormState = {
   slaveId: "",
   registerCount: "",
   registerAddress: "",
-  dataType: "" as DataType | "",
+  dataType: "",
   pollingAddress: "",
   commandSet: "",
   variableType: "",
@@ -158,11 +133,10 @@ const initialFormState = {
   pressureUnit: "psi",
   correctionCoefficient: "",
 };
-export type PressureFormState = typeof initialFormState;
 
 interface PressureDeviceFormProps {
   onBack: () => void;
-  onSave: (config: DeviceConfig) => void;
+  onSave: (config: any) => void;
   interfaceName: string;
 }
 
@@ -176,14 +150,12 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   );
   const [formState, setFormState] = useState(initialFormState);
 
-  const handleStateChange = (field: keyof typeof formState, value: string) => {
+  const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
-  // This function determines which fields are required based on the interfaceName.
-  // We keep this because it's important for deciding when the form is ready to be saved.
   const getRequiredFields = () => {
-    const baseFields: (keyof typeof formState)[] = [
+    const baseFields = [
       "manufacturer",
       "serialNumber",
       "model",
@@ -204,17 +176,12 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   };
   const requiredFields = getRequiredFields();
 
-  // This simple check determines if the save button should be enabled.
-  // It checks if all the required fields have a value.
   const isFormValid = requiredFields.every(
     (field) => formState[field as keyof typeof formState]?.trim() !== ""
   );
 
-  // This function is now much simpler. It doesn't need to check for errors
-  // because the "Save" button will be disabled if the form isn't valid.
   const handleSave = () => {
-    // We can directly create the final configuration object.
-    const finalConfig: DeviceConfig = {
+    const finalConfig = {
       general: {
         slaveId:
           interfaceName === "MOD" ? parseInt(formState.slaveId, 10) : null,
@@ -226,8 +193,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
           interfaceName === "MOD"
             ? parseInt(formState.registerAddress, 10)
             : null,
-        dataType:
-          interfaceName === "MOD" ? (formState.dataType as DataType) : "INT16",
+        dataType: interfaceName === "MOD" ? formState.dataType : "INT16",
         manufacturer: formState.manufacturer,
         model: formState.model,
         serialNumber: formState.serialNumber,
@@ -242,78 +208,13 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
 
   return (
     <div className="flex flex-col space-y-6">
-      {/* Top section of the form (always visible) */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-        {/* Slave ID */}
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600">
-            Slave ID
-          </label>
-          <CustomCombobox
-            value={formState.slaveId}
-            onChange={(val) => handleStateChange("slaveId", val)}
-            placeholder="Please set slave ID"
-            options={[
-              { value: "1", label: "1" },
-              { value: "2", label: "2" },
-            ]}
-          />
-          {/* SIMPLIFICATION: The error message <p> tag is removed. */}
-        </div>
+      <BridgeComponent
+        interfaceName={interfaceName}
+        formState={formState}
+        errors={{}}
+        handleStateChange={handleStateChange}
+      />
 
-        {/* Register Count */}
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600">
-            Register Count
-          </label>
-          <CustomCombobox
-            value={formState.registerCount}
-            onChange={(val) => handleStateChange("registerCount", val)}
-            placeholder="Number of registers..."
-            options={[
-              { value: "2", label: "2 (for 1 float32)" },
-              { value: "4", label: "4" },
-            ]}
-          />
-        </div>
-
-        {/* Register Address */}
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600">
-            Register Address
-          </label>
-          <CustomCombobox
-            value={formState.registerAddress}
-            onChange={(val) => handleStateChange("registerAddress", val)}
-            placeholder="Please set register address"
-            options={[
-              { value: "40001", label: "40001" },
-              { value: "40002", label: "40002" },
-            ]}
-          />
-        </div>
-
-        {/* Data Type */}
-        <div className="space-y-1">
-          <label className="block text-xs font-medium text-gray-600">
-            Data Type
-          </label>
-          <CustomCombobox
-            value={formState.dataType}
-            onChange={(val) => handleStateChange("dataType", val)}
-            placeholder="INT16, FLOAT..."
-            options={[
-              { value: "INT16", label: "INT16" },
-              { value: "INT32", label: "INT32" },
-              { value: "FLOAT", label: "FLOAT" },
-              { value: "DOUBLE", label: "DOUBLE" },
-              { value: "STRING", label: "STRING" },
-            ]}
-          />
-        </div>
-      </div>
-
-      {/* Tab switcher */}
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab("general")}
@@ -337,7 +238,6 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
         </button>
       </div>
 
-      {/* Content for the tabs */}
       <div>
         {activeTab === "general" && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
