@@ -248,7 +248,18 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
           buildYear: null,
           version: "",
         },
+        parameters: {
+          gSize: formState.gSize ? parseFloat(formState.gSize) : null,
+          tmin: formState.tmin ? parseFloat(formState.tmin) : null,
+          tmax: formState.tmax ? parseFloat(formState.tmax) : null,
+          tempUnit: formState.tempUnit,
+          coeff1: formState.coeff1 ? parseFloat(formState.coeff1) : null,
+          coeff2: formState.coeff2 ? parseFloat(formState.coeff2) : null,
+          coeff3: formState.coeff3 ? parseFloat(formState.coeff3) : null,
+          coeff4: formState.coeff4 ? parseFloat(formState.coeff4) : null,
+        },
       };
+
       onSave(finalConfig);
     }
   };

@@ -33,6 +33,7 @@ const HartInterfaceSettingsForm: React.FC<HartInterfaceSettingsFormProps> = ({
 
     const handleSave = () => {
         onSave(formData);
+        console.log("Saving config:", formData);
     };
 
     return (
