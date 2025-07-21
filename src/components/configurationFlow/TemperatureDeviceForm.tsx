@@ -212,6 +212,8 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     return true;
   }, [formState, requiredFields, numericFields]);
 
+  // In TemperatureDeviceForm.tsx
+
   const validateAndSave = () => {
     const newErrors: Record<string, string> = {};
     requiredFields.forEach((field) => {
@@ -227,8 +229,10 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
+      // This is the corrected object construction
       const finalConfig = {
         general: {
+          // Modbus fields
           slaveId:
             interfaceName === "MOD" ? parseInt(formState.slaveId, 10) : null,
           registerCount:
@@ -240,6 +244,19 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
               ? parseInt(formState.registerAddress, 10)
               : null,
           dataType: interfaceName === "MOD" ? formState.dataType : "INT16",
+
+          // HART fields --- THIS IS THE MISSING LOGIC ---
+          pollingAddress: interfaceName.includes("HART")
+            ? parseInt(formState.pollingAddress, 10)
+            : null,
+          commandSet: interfaceName.includes("HART")
+            ? formState.commandSet
+            : null,
+          variableType: interfaceName.includes("HART")
+            ? formState.variableType
+            : null,
+
+          // General fields
           manufacturer: formState.manufacturer,
           model: formState.model,
           serialNumber: formState.serialNumber,

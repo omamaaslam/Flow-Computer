@@ -1,6 +1,7 @@
 // src/components/configurationFlow/ConfigureInterface.tsx
-
+import { toJS } from "mobx";
 import { useState } from "react";
+import globalStore from "../../stores/GlobalStore";
 import { Thermometer, Settings, ArrowLeft } from "lucide-react";
 import MuiModalWrapper from "./MuiModalWrapper";
 import TemperatureDeviceForm from "./TemperatureDeviceForm.tsx";
@@ -98,7 +99,25 @@ const ConfigureInterface = observer(
 
       if (!isEditing) {
         anInterface.addDevice(Date.now(), deviceTypeToConfigure, config);
-        console.log(anInterface);
+        const allStreams = toJS(globalStore.streams);
+        const allConfiguredInterfaces: { [key: string]: any } = {};
+
+        // 3. Loop through all the data to find configured interfaces
+        allStreams.forEach((stream) => {
+          stream.ioCards.forEach((ioCard) => {
+            ioCard.interfaces.forEach((iface) => {
+              // Only include interfaces that have devices
+              if (iface.devices && iface.devices.length > 0) {
+                // Add the interface data to our final object
+                allConfiguredInterfaces[iface.name] = iface;
+              }
+            });
+          });
+        });
+        // Using JSON.stringify makes the output clean and readable
+        console.log(
+          JSON.stringify({ interfaces: allConfiguredInterfaces }, null, 2)
+        );
       }
       closeModal();
     };

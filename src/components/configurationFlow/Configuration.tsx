@@ -39,7 +39,6 @@ const ConfigurationPage = () => {
     return `${baseClasses} ${inactiveClasses}`;
   };
 
-  // Find the real interface object from the global store
   const foundInterface = configuringInterfaceId
     ? globalStore.streams
         .flatMap((s) => s.ioCards)

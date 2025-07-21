@@ -1,3 +1,10 @@
+// src/types/InterfaceConfig.tsx
+
+import type { Device, DeviceProtocolConfig } from "./device";
+
+// Import the necessary device types from the other file
+
+// NO CHANGE to this interface itself. It remains the same.
 export interface InterfaceConfig {
   // --- Modbus Specific Fields ---
   baudrate?: string;
@@ -25,9 +32,30 @@ export interface InterfaceConfig {
   hartPhysicalLayer?: "RS-485" | "RS-232";
 
   // --- DI Configuration Specific Fields ---
-  diInputType?: string; // Options might be "Dry Contact", "Wet Contact", etc.
-  diDebounceTime?: number; // Value between 0-10,000
+  diInputType?: string;
+  diDebounceTime?: number;
   diSignalLogic?: "Active High" | "Active Low";
   diEdgeDetection?: "Rising" | "Falling" | "Both";
   diPullUpDown?: "Pull-up" | "Pull-down";
+}
+
+
+// ===================================================================
+// NEW TYPES ADDED BELOW TO DESCRIBE THE FULL STRUCTURE
+// ===================================================================
+
+// This describes the structure for one complete interface (e.g., HART1)
+// It uses Record<string, T> for our key-mapped objects.
+export interface ConfiguredInterface {
+  id: number;
+  name: string;
+  config: InterfaceConfig;
+  
+  list: Record<string, DeviceProtocolConfig>;
+  devices: Record<string, Device>;
+}
+
+// This is the type for the entire JSON payload from your backend.
+export interface FullConfiguration {
+  interfaces: Record<string, ConfiguredInterface>;
 }

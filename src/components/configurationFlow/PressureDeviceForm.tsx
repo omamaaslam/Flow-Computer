@@ -172,8 +172,13 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
         "dataType",
       ];
     }
+    // THIS WAS THE MISSING PART FOR VALIDATION
+    if (interfaceName.includes("HART")) {
+      return [...baseFields, "pollingAddress", "commandSet", "variableType"];
+    }
     return baseFields;
   };
+
   const requiredFields = getRequiredFields();
 
   const isFormValid = requiredFields.every(
@@ -181,8 +186,10 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   );
 
   const handleSave = () => {
+    // This is the corrected function
     const finalConfig = {
       general: {
+        // Modbus fields
         slaveId:
           interfaceName === "MOD" ? parseInt(formState.slaveId, 10) : null,
         registerCount:
@@ -194,6 +201,19 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
             ? parseInt(formState.registerAddress, 10)
             : null,
         dataType: interfaceName === "MOD" ? formState.dataType : "INT16",
+
+        // HART fields --- THIS IS THE MISSING LOGIC ---
+        pollingAddress: interfaceName.includes("HART")
+          ? parseInt(formState.pollingAddress, 10)
+          : null,
+        commandSet: interfaceName.includes("HART")
+          ? formState.commandSet
+          : null,
+        variableType: interfaceName.includes("HART")
+          ? formState.variableType
+          : null,
+
+        // General fields
         manufacturer: formState.manufacturer,
         model: formState.model,
         serialNumber: formState.serialNumber,
@@ -201,6 +221,16 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
         deviceId: "",
         buildYear: null,
         version: "",
+      },
+      // PARAMETERS OBJECT WAS ALSO MISSING
+      parameters: {
+        gSize: formState.gSize ? parseFloat(formState.gSize) : null,
+        pmin: formState.pmin ? parseFloat(formState.pmin) : null,
+        pmax: formState.pmax ? parseFloat(formState.pmax) : null,
+        pressureUnit: formState.pressureUnit,
+        correctionCoefficient: formState.correctionCoefficient
+          ? parseFloat(formState.correctionCoefficient)
+          : null,
       },
     };
     onSave(finalConfig);
