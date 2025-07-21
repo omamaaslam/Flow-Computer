@@ -78,7 +78,7 @@ const App = observer(() => {
         <Header />
         <div className="overflow-y-auto">
           <Breadcrumb />
-          <div className="p-6">
+          <div className="px-6">
             <Routes>
               <Route path={ROUTES.Home} element={<Home />} />
               <Route path={ROUTES.Alarms} element={<h1>Alarms Page</h1>} />

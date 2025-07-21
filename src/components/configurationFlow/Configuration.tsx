@@ -47,7 +47,7 @@ const ConfigurationPage = () => {
     : null;
 
   return (
-    <div className="py-6 w-full max-w-screen-xl mx-auto space-y-6">
+    <div className="py-2 md:py-0 w-full max-w-screen-xl mx-auto space-y-6">
       <div className="flex justify-end gap-2 md:gap-4 px-2 md:px-0">
         <button
           onClick={() => handleTabClick("stream")}

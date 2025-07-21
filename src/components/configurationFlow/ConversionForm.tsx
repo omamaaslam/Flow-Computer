@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ArrowUpDown } from "lucide-react";
-
 // --- Data Structure for Dynamic Content ---
 const conversionMethodsData = {
   GERG88_1: {
@@ -56,6 +55,11 @@ const ConversionForm = ({ onClose }: ConversionFormProps) => {
     return <span>{unit}</span>;
   };
 
+const getDevicesList = () => {
+  
+}
+
+getDevicesList();
   return (
     // --- Overall gap between sections reduced ---
     <div className="flex flex-col gap-4">

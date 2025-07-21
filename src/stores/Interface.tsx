@@ -20,7 +20,7 @@ export class Interface {
   addDevice(id: number, name: string, config: DeviceConfig) {
     const device = new Device(id, name, config);
     this.devices.push(device);
-    return device;
+    return this.devices;
   }
 
   removeDevice(deviceId: number) {
