@@ -1,47 +1,86 @@
-// src/components/configurationFlow/StreamConfiguration.tsx
 import { useState } from "react";
 import { observer } from "mobx-react-lite";
-import { Thermometer, MoveHorizontal, List, Wind } from "lucide-react";
+import {
+  Thermometer,
+  MoveHorizontal,
+  List,
+  Wind,
+  GitCompareArrows,
+} from "lucide-react";
 import MuiModalWrapper from "./MuiModalWrapper";
 import VolumeForm from "./VolumeForm";
 import TemperatureForm from "./TemperatureForm";
-import FlowRateForm from "./FlowRateForm";
 import PressureForm from "./PressureForm";
+import FlowRateForm from "./FlowRateForm";
 import ConversionForm from "./ConversionForm";
 import globalStore from "../../stores/GlobalStore";
 import { useParams } from "react-router-dom";
-import type {
-  TemperatureConfig,
-  PressureConfig,
-  VolumeConfig,
-} from "../../types/streamConfig";
+import { toJS } from "mobx";
 
-type ModalType = "volume" | "temperature" | "pressure" | "conversion" | "flowRate";
+type ModalType =
+  | "volume"
+  | "temperature"
+  | "pressure"
+  | "flowRate"
+  | "conversion";
 
 const StreamConfiguration = observer(() => {
   const [activeModal, setActiveModal] = useState<ModalType | null>(null);
   const { streamId } = useParams<{ streamId: string }>();
 
-  // Find the current stream from the global store using the ID from the URL
   const currentStream = globalStore.streams.find(
     (s) => s.id.toString() === streamId
   );
 
-  const closeModal = () => setActiveModal(null);
-  const openModal = (modalType: ModalType) => setActiveModal(modalType);
+  const openModal = (modalType: ModalType) => {
+    if (!currentStream) return;
+    switch (modalType) {
+      case "volume":
+        currentStream.startEditingVolume();
+        break;
+      case "temperature":
+        currentStream.startEditingTemperature();
+        break;
+      case "pressure":
+        currentStream.startEditingPressure();
+        break;
+      case "flowRate":
+        currentStream.startEditingFlowRate();
+        break;
+      case "conversion":
+        currentStream.startEditingConversion();
+        break;
+    }
+    setActiveModal(modalType);
+  };
 
-  // --- SAVE HANDLERS ---
-  const handleSaveTemperatureConfig = (config: TemperatureConfig) => {
-    currentStream?.updateTemperatureConfig(config);
-    console.log("Saved Temperature Config to MobX:", config);
+  const closeModal = () => {
+    if (!currentStream) return;
+    switch (activeModal) {
+      case "volume":
+        currentStream.cancelEditingVolume();
+        break;
+      case "temperature":
+        currentStream.cancelEditingTemperature();
+        break;
+      case "pressure":
+        currentStream.cancelEditingPressure();
+        break;
+      case "flowRate":
+        currentStream.cancelEditingFlowRate();
+        break;
+      case "conversion":
+        currentStream.cancelEditingConversion();
+        break;
+    }
+    setActiveModal(null);
   };
-  const handleSavePressureConfig = (config: PressureConfig) => {
-    currentStream?.updatePressureConfig(config);
-    console.log("Saved Pressure Config to MobX:", config);
-  };
-  const handleSaveVolumeConfig = (config: VolumeConfig) => {
-    currentStream?.updateVolumeConfig(config);
-    console.log("Saved Volume Config to MobX:", config);
+
+  const commitAndClose = (commitFn: () => void) => {
+    commitFn();
+    // Log the entire globalStore state as a plain object after the commit
+    console.log("Global Store State After Save:", toJS(globalStore));
+    setActiveModal(null);
   };
 
   if (!currentStream) {
@@ -51,36 +90,63 @@ const StreamConfiguration = observer(() => {
   const modalConfig = {
     volume: {
       title: "Configure Volume",
-      Component: (props: any) => (
-        <VolumeForm
-          {...props}
-          initialData={currentStream.config.volume}
-          onSave={handleSaveVolumeConfig}
-        />
-      ),
+      Component: () =>
+        currentStream.editingVolume && (
+          <VolumeForm
+            config={currentStream.editingVolume}
+            onCommit={() => commitAndClose(currentStream.commitVolumeChanges)}
+            onClose={closeModal}
+          />
+        ),
     },
     temperature: {
       title: "Configure Temperature",
-      Component: (props: any) => (
-        <TemperatureForm
-          {...props}
-          initialData={currentStream.config.temperature}
-          onSave={handleSaveTemperatureConfig}
-        />
-      ),
+      Component: () =>
+        currentStream.editingTemperature && (
+          <TemperatureForm
+            config={currentStream.editingTemperature}
+            onCommit={() =>
+              commitAndClose(currentStream.commitTemperatureChanges)
+            }
+            onClose={closeModal}
+          />
+        ),
     },
     pressure: {
       title: "Configure Pressure",
-      Component: (props: any) => (
-        <PressureForm
-          {...props}
-          initialData={currentStream.config.pressure}
-          onSave={handleSavePressureConfig}
-        />
-      ),
+      Component: () =>
+        currentStream.editingPressure && (
+          <PressureForm
+            config={currentStream.editingPressure}
+            onCommit={() => commitAndClose(currentStream.commitPressureChanges)}
+            onClose={closeModal}
+          />
+        ),
     },
-    conversion: { title: "Conversion Settings", Component: ConversionForm },
-    flowRate: { title: "Configure FlowRate", Component: FlowRateForm },
+    flowRate: {
+      title: "Configure Flow Rate",
+      Component: () =>
+        currentStream.editingFlowRate && (
+          <FlowRateForm
+            config={currentStream.editingFlowRate}
+            onCommit={() => commitAndClose(currentStream.commitFlowRateChanges)}
+            onClose={closeModal}
+          />
+        ),
+    },
+    conversion: {
+      title: "Conversion Settings",
+      Component: () =>
+        currentStream.editingConversion && (
+          <ConversionForm
+            config={currentStream.editingConversion}
+            onCommit={() =>
+              commitAndClose(currentStream.commitConversionChanges)
+            }
+            onClose={closeModal}
+          />
+        ),
+    },
   };
 
   const cardData = [
@@ -111,12 +177,13 @@ const StreamConfiguration = observer(() => {
     {
       id: "conversion" as ModalType,
       label: "Conversion",
-      Icon: MoveHorizontal,
-      Illustration: "/streamSVG/PressureMeter.svg",
+      Icon: GitCompareArrows,
+      Illustration: "/streamSVG/ConversionIcon.svg", // Assumed new icon path
     },
   ];
 
   const ModalContent = activeModal ? modalConfig[activeModal].Component : null;
+  const modalTitle = activeModal ? modalConfig[activeModal].title : "";
 
   return (
     <>
@@ -129,7 +196,6 @@ const StreamConfiguration = observer(() => {
                 onClick={() => openModal(id)}
                 className="bg-[#FAFAFA] border border-[#DEDEDE] rounded-2xl shadow-sm p-6 flex flex-col justify-between h-[305px] text-left transition-all duration-200 ease-in-out hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-yellow-500"
               >
-                {/* Top Section: Title */}
                 <div className="flex items-center gap-3">
                   <Icon
                     className="text-yellow-500"
@@ -138,27 +204,14 @@ const StreamConfiguration = observer(() => {
                   />
                   <h3 className="font-bold text-gray-800 text-xl">{label}</h3>
                 </div>
-
-                {/* Bottom Section: Content */}
                 <div className="w-full flex flex-row items-center justify-between">
-                  {/* Left Side: Illustration */}
                   <div className="flex-1">
-                    {typeof Illustration === "string" ? (
-                      <img
-                        src={Illustration}
-                        alt={`${label} illustration`}
-                        className="w-[120px] h-[157.7px]"
-                      />
-                    ) : (
-                      <img
-                        src={Illustration}
-                        alt={`${label} illustration`}
-                        className="w-[120px] h-[157.7px]"
-                      />
-                    )}
+                    <img
+                      src={Illustration}
+                      alt={`${label} illustration`}
+                      className="w-[120px] h-[157.7px]"
+                    />
                   </div>
-
-                  {/* Right Side: Min/Max Values */}
                   <div className="flex flex-col items-end space-y-4">
                     <div>
                       <span className="text-lg text-gray-500">Min:</span>
@@ -183,34 +236,20 @@ const StreamConfiguration = observer(() => {
                 onClick={() => openModal(id)}
                 className="bg-[#FAFAFA] border border-[#DEDEDE] rounded-lg shadow p-2 flex flex-col text-left transition-all duration-200 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
               >
-                {/* Top Section: Title */}
                 <div className="flex items-center gap-1">
                   <Icon className="text-yellow-500" size={14} strokeWidth={3} />
                   <h3 className="font-bold text-gray-800 text-xs whitespace-nowrap">
                     {label}
                   </h3>
                 </div>
-
-                {/* Bottom Section: Content */}
                 <div className="w-full flex flex-row items-center justify-between">
-                  {/* Left Side: Illustration */}
                   <div className="flex-1">
-                    {typeof Illustration === "string" ? (
-                      <img
-                        src={Illustration}
-                        alt={`${label} illustration`}
-                        className="w-[64px] h-[84.11px]"
-                      />
-                    ) : (
-                      <img
-                        src={Illustration}
-                        alt={`${label} illustration`}
-                        className="w-[64px] h-auto"
-                      />
-                    )}
+                    <img
+                      src={Illustration}
+                      alt={`${label} illustration`}
+                      className="w-[64px] h-auto"
+                    />
                   </div>
-
-                  {/* Right Side: Min/Max Values */}
                   <div className="flex flex-col items-end ">
                     <div>
                       <span className="text-[10px] text-gray-500">min:</span>
@@ -231,9 +270,9 @@ const StreamConfiguration = observer(() => {
       <MuiModalWrapper
         open={activeModal !== null}
         onClose={closeModal}
-        title={activeModal ? modalConfig[activeModal].title : ""}
+        title={modalTitle}
       >
-        {ModalContent && <ModalContent onClose={closeModal} />}
+        {ModalContent && <ModalContent />}
       </MuiModalWrapper>
     </>
   );
