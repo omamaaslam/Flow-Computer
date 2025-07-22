@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+    import React, { useState, useRef, useEffect, useMemo } from "react";
 import BridgeComponent from "./BridgeComponent";
 
 function useOnClickOutside(
@@ -26,6 +26,7 @@ interface CustomComboboxProps {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
+  hasError?: boolean;
 }
 
 const CustomCombobox: React.FC<CustomComboboxProps> = ({
@@ -33,6 +34,7 @@ const CustomCombobox: React.FC<CustomComboboxProps> = ({
   value,
   onChange,
   placeholder,
+  hasError,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const comboboxRef = useRef<HTMLDivElement>(null);
@@ -46,7 +48,9 @@ const CustomCombobox: React.FC<CustomComboboxProps> = ({
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setIsOpen(true)}
         placeholder={placeholder}
-        className="w-full border border-gray-300 rounded-md py-1.5 pl-3 pr-8 text-sm placeholder:text-gray-400 bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+        className={`w-full border rounded-md py-1.5 pl-3 pr-8 text-sm placeholder:text-gray-400 bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 ${
+          hasError ? "border-red-500" : "border-gray-300"
+        }`}
       />
       <button
         type="button"
@@ -106,12 +110,16 @@ const CustomCombobox: React.FC<CustomComboboxProps> = ({
   );
 };
 
-interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
+interface InputProps extends React.ComponentPropsWithoutRef<"input"> {
+  hasError?: boolean;
+}
 
-const Input = (props: InputProps) => (
+const Input = ({ hasError, ...props }: InputProps) => (
   <input
     {...props}
-    className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+    className={`w-full border rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 ${
+      hasError ? "border-red-500" : "border-gray-300"
+    }`}
   />
 );
 
@@ -131,7 +139,10 @@ const initialFormState = {
   pmin: "",
   pmax: "",
   pressureUnit: "psi",
-  correctionCoefficient: "",
+  coeff1: "",
+  coeff2: "",
+  coeff3: "",
+  coeff4: "",
 };
 
 interface PressureDeviceFormProps {
@@ -149,9 +160,17 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     "general"
   );
   const [formState, setFormState] = useState(initialFormState);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const getRequiredFields = () => {
@@ -172,7 +191,6 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
         "dataType",
       ];
     }
-    // THIS WAS THE MISSING PART FOR VALIDATION
     if (interfaceName.includes("HART")) {
       return [...baseFields, "pollingAddress", "commandSet", "variableType"];
     }
@@ -181,59 +199,93 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
 
   const requiredFields = getRequiredFields();
 
-  const isFormValid = requiredFields.every(
-    (field) => formState[field as keyof typeof formState]?.trim() !== ""
-  );
+  const numericFields = [
+    "slaveId",
+    "registerCount",
+    "registerAddress",
+    "pollingAddress",
+    "gSize",
+    "pmin",
+    "pmax",
+    "coeff1",
+    "coeff2",
+    "coeff3",
+    "coeff4",
+  ];
 
-  const handleSave = () => {
-    // This is the corrected function
-    const finalConfig = {
-      general: {
-        // Modbus fields
-        slaveId:
-          interfaceName === "MOD" ? parseInt(formState.slaveId, 10) : null,
-        registerCount:
-          interfaceName === "MOD"
-            ? parseInt(formState.registerCount, 10)
+  const isFormValid = useMemo(() => {
+    const allRequiredFilled = requiredFields.every(
+      (field) => formState[field as keyof typeof formState]?.trim() !== ""
+    );
+    if (!allRequiredFilled) return false;
+
+    const allNumericValid = numericFields.every((field) => {
+      const value = formState[field as keyof typeof formState];
+      return !value || /^-?\d*\.?\d*$/.test(value);
+    });
+    if (!allNumericValid) return false;
+
+    return true;
+  }, [formState, requiredFields, numericFields]);
+
+  const validateAndSave = () => {
+    const newErrors: Record<string, string> = {};
+    requiredFields.forEach((field) => {
+      if (!formState[field as keyof typeof formState]?.trim())
+        newErrors[field] = "This field is required.";
+    });
+    numericFields.forEach((field) => {
+      const value = formState[field as keyof typeof formState];
+      if (value && !/^-?\d*\.?\d*$/.test(value)) {
+        newErrors[field] = "Please enter a valid number.";
+      }
+    });
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
+      const finalConfig = {
+        general: {
+          slaveId:
+            interfaceName === "MOD" ? parseInt(formState.slaveId, 10) : null,
+          registerCount:
+            interfaceName === "MOD"
+              ? parseInt(formState.registerCount, 10)
+              : null,
+          registerAddress:
+            interfaceName === "MOD"
+              ? parseInt(formState.registerAddress, 10)
+              : null,
+          dataType: interfaceName === "MOD" ? formState.dataType : "INT16",
+          pollingAddress: interfaceName.includes("HART")
+            ? parseInt(formState.pollingAddress, 10)
             : null,
-        registerAddress:
-          interfaceName === "MOD"
-            ? parseInt(formState.registerAddress, 10)
+          commandSet: interfaceName.includes("HART")
+            ? formState.commandSet
             : null,
-        dataType: interfaceName === "MOD" ? formState.dataType : "INT16",
-
-        // HART fields --- THIS IS THE MISSING LOGIC ---
-        pollingAddress: interfaceName.includes("HART")
-          ? parseInt(formState.pollingAddress, 10)
-          : null,
-        commandSet: interfaceName.includes("HART")
-          ? formState.commandSet
-          : null,
-        variableType: interfaceName.includes("HART")
-          ? formState.variableType
-          : null,
-
-        // General fields
-        manufacturer: formState.manufacturer,
-        model: formState.model,
-        serialNumber: formState.serialNumber,
-        tagName: formState.tagName,
-        deviceId: "",
-        buildYear: null,
-        version: "",
-      },
-      // PARAMETERS OBJECT WAS ALSO MISSING
-      parameters: {
-        gSize: formState.gSize ? parseFloat(formState.gSize) : null,
-        pmin: formState.pmin ? parseFloat(formState.pmin) : null,
-        pmax: formState.pmax ? parseFloat(formState.pmax) : null,
-        pressureUnit: formState.pressureUnit,
-        correctionCoefficient: formState.correctionCoefficient
-          ? parseFloat(formState.correctionCoefficient)
-          : null,
-      },
-    };
-    onSave(finalConfig);
+          variableType: interfaceName.includes("HART")
+            ? formState.variableType
+            : null,
+          manufacturer: formState.manufacturer,
+          model: formState.model,
+          serialNumber: formState.serialNumber,
+          tagName: formState.tagName,
+          deviceId: "",
+          buildYear: null,
+          version: "",
+        },
+        parameters: {
+          gSize: formState.gSize ? parseFloat(formState.gSize) : null,
+          pmin: formState.pmin ? parseFloat(formState.pmin) : null,
+          pmax: formState.pmax ? parseFloat(formState.pmax) : null,
+          pressureUnit: formState.pressureUnit,
+          coeff1: formState.coeff1 ? parseFloat(formState.coeff1) : null,
+          coeff2: formState.coeff2 ? parseFloat(formState.coeff2) : null,
+          coeff3: formState.coeff3 ? parseFloat(formState.coeff3) : null,
+          coeff4: formState.coeff4 ? parseFloat(formState.coeff4) : null,
+        },
+      };
+      onSave(finalConfig);
+    }
   };
 
   return (
@@ -241,7 +293,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       <BridgeComponent
         interfaceName={interfaceName}
         formState={formState}
-        errors={{}}
+        errors={errors}
         handleStateChange={handleStateChange}
       />
 
@@ -276,6 +328,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                 Device Manufacturer
               </label>
               <CustomCombobox
+                hasError={!!errors.manufacturer}
                 value={formState.manufacturer}
                 onChange={(val) => handleStateChange("manufacturer", val)}
                 placeholder="Please set manufacturer"
@@ -284,48 +337,71 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                   { value: "Siemens", label: "Siemens" },
                 ]}
               />
+              {errors.manufacturer && (
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.manufacturer}
+                </p>
+              )}
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Serial Number
               </label>
               <Input
+                hasError={!!errors.serialNumber}
                 value={formState.serialNumber}
                 onChange={(e) =>
                   handleStateChange("serialNumber", e.target.value)
                 }
                 placeholder="Please set serial number"
               />
+              {errors.serialNumber && (
+                <p className="text-xs text-red-600 mt-1">
+                  {errors.serialNumber}
+                </p>
+              )}
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Model
               </label>
               <Input
+                hasError={!!errors.model}
                 value={formState.model}
                 onChange={(e) => handleStateChange("model", e.target.value)}
                 placeholder="Please set Device model"
               />
+              {errors.model && (
+                <p className="text-xs text-red-600 mt-1">{errors.model}</p>
+              )}
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Tag Name
               </label>
               <Input
+                hasError={!!errors.tagName}
                 value={formState.tagName}
                 onChange={(e) => handleStateChange("tagName", e.target.value)}
                 placeholder="Please set tag name"
               />
+              {errors.tagName && (
+                <p className="text-xs text-red-600 mt-1">{errors.tagName}</p>
+              )}
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 G-Size
               </label>
               <Input
+                hasError={!!errors.gSize}
                 value={formState.gSize}
                 onChange={(e) => handleStateChange("gSize", e.target.value)}
                 placeholder="Please set G-size"
               />
+              {errors.gSize && (
+                <p className="text-xs text-red-600 mt-1">{errors.gSize}</p>
+              )}
             </div>
           </div>
         )}
@@ -338,20 +414,28 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                   Pmin
                 </label>
                 <Input
+                  hasError={!!errors.pmin}
                   value={formState.pmin}
                   onChange={(e) => handleStateChange("pmin", e.target.value)}
                   placeholder="Please set Pmin"
                 />
+                {errors.pmin && (
+                  <p className="text-xs text-red-600 mt-1">{errors.pmin}</p>
+                )}
               </div>
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
                   Pmax
                 </label>
                 <Input
+                  hasError={!!errors.pmax}
                   value={formState.pmax}
                   onChange={(e) => handleStateChange("pmax", e.target.value)}
                   placeholder="Please set Pmax"
                 />
+                {errors.pmax && (
+                  <p className="text-xs text-red-600 mt-1">{errors.pmax}</p>
+                )}
               </div>
             </div>
             <div className="space-y-1">
@@ -371,15 +455,62 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Correction Coefficient
+                Correction Coefficients
               </label>
-              <Input
-                value={formState.correctionCoefficient}
-                onChange={(e) =>
-                  handleStateChange("correctionCoefficient", e.target.value)
-                }
-                placeholder="Enter value"
-              />
+              <div className="grid grid-cols-4 gap-x-3">
+                <div>
+                  <Input
+                    hasError={!!errors.coeff1}
+                    value={formState.coeff1}
+                    onChange={(e) =>
+                      handleStateChange("coeff1", e.target.value)
+                    }
+                    placeholder="Enter value"
+                  />
+                  {errors.coeff1 && (
+                    <p className="text-xs text-red-600 mt-1">{errors.coeff1}</p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    hasError={!!errors.coeff2}
+                    value={formState.coeff2}
+                    onChange={(e) =>
+                      handleStateChange("coeff2", e.target.value)
+                    }
+                    placeholder="Enter value"
+                  />
+                  {errors.coeff2 && (
+                    <p className="text-xs text-red-600 mt-1">{errors.coeff2}</p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    hasError={!!errors.coeff3}
+                    value={formState.coeff3}
+                    onChange={(e) =>
+                      handleStateChange("coeff3", e.target.value)
+                    }
+                    placeholder="Enter value"
+                  />
+                  {errors.coeff3 && (
+                    <p className="text-xs text-red-600 mt-1">{errors.coeff3}</p>
+                  )}
+                </div>
+                <div>
+                  <Input
+                    hasError={!!errors.coeff4}
+                    value={formState.coeff4}
+                    onChange={(e) =>
+                      handleStateChange("coeff4", e.target.value)
+                    }
+                    placeholder="Enter value"
+                  />
+                  {errors.coeff4 && (
+                    <p className="text-xs text-red-600 mt-1">{errors.coeff4}</p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -393,7 +524,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
           Cancel
         </button>
         <button
-          onClick={handleSave}
+          onClick={validateAndSave}
           disabled={!isFormValid}
           className="px-6 py-2 rounded-full font-semibold text-sm bg-yellow-400 text-black hover:bg-yellow-500 transition-colors shadow-sm disabled:bg-gray-300 disabled:cursor-not-allowed"
         >

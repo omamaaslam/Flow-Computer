@@ -1,7 +1,7 @@
 // src/components/configurationFlow/StreamConfiguration.tsx
 import { useState } from "react";
 import { observer } from "mobx-react-lite";
-import { Thermometer, Gauge, MoveHorizontal, List, Wind } from "lucide-react";
+import { Thermometer, MoveHorizontal, List, Wind } from "lucide-react";
 import MuiModalWrapper from "./MuiModalWrapper";
 import VolumeForm from "./VolumeForm";
 import TemperatureForm from "./TemperatureForm";
@@ -119,7 +119,6 @@ const StreamConfiguration = observer(() => {
   return (
     <>
       <div className="bg-white rounded-2xl shadow-md border border-gray-200">
-        {/* Your existing JSX for visualization and buttons... */}
         <div className="hidden md:block bg-white rounded-2xl p-6 border border-gray-200">
           <div className="grid grid-cols-3 gap-6">
             {cardData.map(({ id, label, Icon, Illustration }) => (
@@ -174,45 +173,6 @@ const StreamConfiguration = observer(() => {
           </div>
         </div>
 
-        {/* ya old wala hai 
-        <div className="bg-white rounded-2xl py-6 px-2 border border-gray-200">
-          <div className="flex flex-wrap justify-between gap-2 sm:gap-4">
-            <button
-              onClick={() => openModal("volume")}
-              className="flex-1 min-w-[70px] sm:min-w-[100px] max-w-[150px] flex items-center justify-center gap-1 sm:gap-2 py-2 px-3 sm:py-3 sm:px-4 text-xs sm:text-sm border rounded-xl shadow-sm hover:bg-gray-100 transition"
-            >
-              <List className="text-yellow-500" size={18} />{" "}
-              <span className="font-medium">Volume</span>
-            </button>
-            <button
-              onClick={() => openModal("temperature")}
-              className="flex-1 min-w-[70px] sm:min-w-[100px] max-w-[150px] flex items-center justify-center gap-1 sm:gap-2 py-2 px-3 sm:py-3 sm:px-4 text-xs sm:text-sm border rounded-xl shadow-sm hover:bg-gray-100 transition"
-            >
-              <Thermometer className="text-yellow-500" size={18} />{" "}
-              <span className="font-medium">Temperature</span>
-            </button>
-            <button
-              onClick={() => openModal("pressure")}
-              className="flex-1 min-w-[70px] sm:min-w-[100px] max-w-[150px] flex items-center justify-center gap-1 sm:gap-2 py-2 px-3 sm:py-3 sm:px-4 text-xs sm:text-sm border rounded-xl shadow-sm hover:bg-gray-100 transition"
-            >
-              <Gauge className="text-yellow-500" size={18} />{" "}
-              <span className="font-medium">Pressure</span>
-            </button>
-            <button
-              onClick={() => openModal("conversion")}
-              className="flex-1 min-w-[70px] sm:min-w-[100px] max-w-[150px] flex items-center justify-center gap-1 sm:gap-2 py-2 px-3 sm:py-3 sm:px-4 text-xs sm:text-sm border rounded-xl shadow-sm hover:bg-gray-100 transition"
-            >
-              <MoveHorizontal className="text-yellow-500" size={18} />{" "}
-              <span className="font-medium">Conversion</span>
-            </button>
-          </div>
-        </div> 
-        ya old wala khartum hua
-        */}
-
-        {/* ================================================= */}
-        {/* TABLET/MOBILE LAYOUT (Visible on screens smaller than lg) */}
-        {/* ================================================= */}
         <div className="block lg:hidden p-6">
           <div className="grid grid-cols-3 gap-4">
             {cardData.map(({ id, label, Icon, Illustration }) => (
