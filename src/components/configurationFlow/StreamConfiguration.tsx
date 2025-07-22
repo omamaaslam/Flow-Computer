@@ -5,6 +5,7 @@ import { Thermometer, MoveHorizontal, List, Wind } from "lucide-react";
 import MuiModalWrapper from "./MuiModalWrapper";
 import VolumeForm from "./VolumeForm";
 import TemperatureForm from "./TemperatureForm";
+import FlowRateForm from "./FlowRateForm";
 import PressureForm from "./PressureForm";
 import ConversionForm from "./ConversionForm";
 import globalStore from "../../stores/GlobalStore";
@@ -15,7 +16,7 @@ import type {
   VolumeConfig,
 } from "../../types/streamConfig";
 
-type ModalType = "volume" | "temperature" | "pressure" | "conversion";
+type ModalType = "volume" | "temperature" | "pressure" | "conversion" | "flowRate";
 
 const StreamConfiguration = observer(() => {
   const [activeModal, setActiveModal] = useState<ModalType | null>(null);
@@ -79,6 +80,7 @@ const StreamConfiguration = observer(() => {
       ),
     },
     conversion: { title: "Conversion Settings", Component: ConversionForm },
+    flowRate: { title: "Configure FlowRate", Component: FlowRateForm },
   };
 
   const cardData = [
