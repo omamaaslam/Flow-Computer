@@ -9,6 +9,7 @@ import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import Home from "./components/Home";
 import Configuration from "./components/configurationFlow/Configuration";
+import { websocketConnection } from "./utils/api";
 
 const App = observer(() => {
   const navigate = useNavigate();
@@ -61,15 +62,8 @@ const App = observer(() => {
   }, []);
 
   useEffect(() => {
-    const socket = new WebSocket("ws://192.168.1.254:8888");
-    socket.addEventListener("open", () => {
-      console.log("✅ WebSocket connected");
-      socket.send(JSON.stringify({ state: "bulk-start" }));
-    });
-    return () => {
-      socket.close();
-    };
-  }, []);
+    websocketConnection();
+  });
 
   return (
     <div className="flex h-screen">
