@@ -149,12 +149,12 @@ const StreamConfiguration = observer(() => {
     },
   };
 
-  const cardData = [
+   const cardData = [
     {
       id: "volume" as ModalType,
       label: "Volume",
       Icon: List,
-      Illustration: "/streamSVG/VolumeMeter.svg",
+      Illustration: "/streamSVG/TemperatureSencor.svg",
     },
     {
       id: "flowRate" as ModalType,
@@ -166,7 +166,7 @@ const StreamConfiguration = observer(() => {
       id: "temperature" as ModalType,
       label: "Temperature",
       Icon: Thermometer,
-      Illustration: "/streamSVG/TemperatureSencor.svg",
+      Illustration: "/streamSVG/TemperatureTransmeter.svg",
     },
     {
       id: "pressure" as ModalType,
@@ -177,9 +177,10 @@ const StreamConfiguration = observer(() => {
     {
       id: "conversion" as ModalType,
       label: "Conversion",
-      Icon: GitCompareArrows,
-      Illustration: "/streamSVG/ConversionIcon.svg", // Assumed new icon path
+      Icon:GitCompareArrows,
+      Illustration: "/streamSVG/Conversion.svg",
     },
+    
   ];
 
   const ModalContent = activeModal ? modalConfig[activeModal].Component : null;

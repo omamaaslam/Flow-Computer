@@ -16,6 +16,11 @@ import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
 import HartInterfaceSettingsForm from "./HartInterfaceSettingsForm.tsx";
 import PressureDeviceForm from "./PressureDeviceForm.tsx";
 import DI_InterfaceSettingsForm from "./DI_InterfaceSettingsForm.tsx";
+import VolumeDeviceForm from "./VolumeDeviceForm.tsx";
+import PulseVolumeDeviceForm from "./PulseVolumeDeviceForm.tsx";
+import PulseFlowRateDeviceForm from "./PulseFlowRateDeviceForm.tsx";
+import FlowRateDeviceForm from "./FlowRateDeviceForm.tsx";
+import GasDeviceForm from "./GasDeviceForm.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
@@ -275,6 +280,25 @@ const ConfigureInterface = observer(
                   interfaceName={anInterface.name}
                 />
               )}
+            {modalView === "addDevice_configure" &&
+              deviceTypeToConfigure === "Volume" && <VolumeDeviceForm />}
+
+            {modalView === "addDevice_configure" &&
+              deviceTypeToConfigure === "PulseVolume" && (
+                <PulseVolumeDeviceForm />
+              )}
+
+            {modalView === "addDevice_configure" &&
+              deviceTypeToConfigure === "PulseFlowRate" && (
+                <PulseFlowRateDeviceForm />
+              )}
+
+            {modalView === "addDevice_configure" &&
+              deviceTypeToConfigure === "FlowRate" && (
+                <FlowRateDeviceForm />
+                // <GasDeviceForm/>
+              )}
+
             {modalView === "addDevice_configure" &&
               deviceTypeToConfigure === "Pressure" && (
                 <PressureDeviceForm
