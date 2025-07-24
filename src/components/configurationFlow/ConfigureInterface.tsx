@@ -281,7 +281,13 @@ const ConfigureInterface = observer(
                 />
               )}
             {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "Volume" && <VolumeDeviceForm />}
+              deviceTypeToConfigure === "Volume" && (
+                <VolumeDeviceForm
+                  onSave={handleSaveDeviceConfiguration}
+                  onBack={() => setModalView("addDevice_selectType")}
+                  interfaceName={anInterface.name}
+                />
+              )}
 
             {modalView === "addDevice_configure" &&
               deviceTypeToConfigure === "PulseVolume" && (
