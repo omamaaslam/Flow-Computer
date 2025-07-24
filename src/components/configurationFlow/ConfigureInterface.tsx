@@ -309,7 +309,11 @@ const ConfigureInterface = observer(
 
             {modalView === "addDevice_configure" &&
               deviceTypeToConfigure === "FlowRate" && (
-                <FlowRateDeviceForm />
+                <FlowRateDeviceForm
+                  onSave={handleSaveDeviceConfiguration}
+                  onBack={() => setModalView("addDevice_selectType")}
+                  interfaceName={anInterface.name}
+                />
                 // <GasDeviceForm/>
               )}
 
