@@ -300,7 +300,11 @@ const ConfigureInterface = observer(
 
             {modalView === "addDevice_configure" &&
               deviceTypeToConfigure === "PulseFlowRate" && (
-                <PulseFlowRateDeviceForm />
+                <PulseFlowRateDeviceForm
+                  onSave={handleSaveDeviceConfiguration}
+                  onBack={() => setModalView("addDevice_selectType")}
+                  interfaceName={anInterface.name}
+                />
               )}
 
             {modalView === "addDevice_configure" &&
