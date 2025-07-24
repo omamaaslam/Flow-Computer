@@ -1,0 +1,91 @@
+import { useState } from "react";
+
+// A simple, error-free UI component for the Flow Rate Device Form.
+const FlowRateDeviceForm = () => {
+  const [activeTab, setActiveTab] = useState<"general" | "parameters">("general");
+
+  return (
+    <div className="flex flex-col space-y-6 p-4">
+      {/* Tab Switcher */}
+      <div className="flex bg-gray-200 p-1 rounded-lg">
+        <button 
+          onClick={() => setActiveTab("general")} 
+          className={`w-1/2 py-2.5 text-sm font-semibold rounded-md transition-all duration-300 ${ activeTab === "general" ? "bg-yellow-400 text-black shadow-md" : "text-gray-500 hover:bg-gray-300" }`}
+        >
+          General
+        </button>
+        <button 
+          onClick={() => setActiveTab("parameters")} 
+          className={`w-1/2 py-2.5 text-sm font-semibold rounded-md transition-all duration-300 ${ activeTab === "parameters" ? "bg-yellow-400 text-black shadow-md" : "text-gray-500 hover:bg-gray-300" }`}
+        >
+          Parameters
+        </button>
+      </div>
+      
+      {/* Form Fields based on active tab */}
+      <div>
+        {activeTab === "general" && (
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            {/* Device Manufacturer */}
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">Device Manufacturer</label>
+              <select className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm text-gray-400 bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500">
+                <option value="" disabled selected>Please set device manufacturer</option>
+                <option value="RMA">RMA</option>
+                <option value="Siemens">Siemens</option>
+              </select>
+            </div>
+
+            {/* Serial Number */}
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">Serial Number</label>
+              <input type="text" placeholder="Please set serial number" className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+
+            {/* Model */}
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">Model</label>
+              <input type="text" placeholder="Please set Device model" className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+
+            {/* Tag Name */}
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">Tag Name</label>
+              <input type="text" placeholder="Please set tag name" className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+
+            {/* G-Size */}
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">G-Size</label>
+              <input type="text" placeholder="Please set G-size" className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+          </div>
+        )}
+
+        {activeTab === "parameters" && (
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            {/* Minimum Flowrate */}
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">Minimum Flowrate</label>
+              <input type="text" placeholder="Please set Minimum Flowrate" className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+
+            {/* Maximum Flowrate */}
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">Maximum Flowrate</label>
+              <input type="text" placeholder="Please set Maximum Flowrate" className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500" />
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <button className="px-6 py-2 rounded-full font-semibold text-sm bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors shadow-sm">Cancel</button>
+        <button className="px-6 py-2 rounded-full font-semibold text-sm bg-yellow-400 text-black hover:bg-yellow-500 transition-colors shadow-sm">Save</button>
+      </div>
+    </div>
+  );
+};
+
+export default FlowRateDeviceForm;
