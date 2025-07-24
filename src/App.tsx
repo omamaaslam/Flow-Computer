@@ -9,8 +9,7 @@ import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import Home from "./components/Home";
 import Configuration from "./components/configurationFlow/Configuration";
-import { websocketConnection } from "./utils/api";
-
+import { connectWebSocket } from "./utils/api";
 const App = observer(() => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,8 +61,8 @@ const App = observer(() => {
   }, []);
 
   useEffect(() => {
-    websocketConnection();
-  });
+    connectWebSocket();
+  }, []);
 
   return (
     <div className="flex h-screen">
