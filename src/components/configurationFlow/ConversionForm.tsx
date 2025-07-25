@@ -2,19 +2,19 @@ import React from "react";
 import { observer } from "mobx-react-lite";
 import { ArrowUpDown } from "lucide-react";
 import type { ConversionConfig, ConversionRow } from "../../types/streamConfig";
-
+import globalStore from "../../stores/GlobalStore";
 interface ConversionFormProps {
+  store: typeof globalStore;
   config: ConversionConfig;
   onCommit: () => void;
   onClose: () => void;
 }
 
 const ConversionForm: React.FC<ConversionFormProps> = observer(
-  ({ config, onCommit, onClose }) => {
+  ({ store, config, onCommit, onClose }) => {
+    const availableDevices = store.allDevices;
     const handleMethodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
       config.method = e.target.value;
-      // NOTE: In a real app, you would likely fetch or look up the rows for the new method here
-      // and update config.rows. For this example, we keep it simple.
     };
 
     const handleRowInputChange = (
@@ -90,8 +90,14 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
                     }
                     className="w-full border border-gray-300 rounded-sm px-2 py-1 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
                   >
-                    <option value="">Device list</option>
-                    <option value="Device A">Device A</option>
+                    <option value="" selected disabled>
+                      Select Device
+                    </option>
+                    {availableDevices.map((device) => (
+                      <option key={device.id} value={device.name}>
+                        {device.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div className="px-2 py-1.5">

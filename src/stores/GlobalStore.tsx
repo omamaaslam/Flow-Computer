@@ -1,8 +1,9 @@
 import { makeAutoObservable } from "mobx";
 import { Stream } from "./Stream";
 import { createDefaultStreamConfig } from "../types/streamConfig";
+import type { Device } from "./Device";
 
-export class GlobalStore {
+class GlobalStore {
   public globalSnapshot: any = null;
   public streams: Stream[] = [];
 
@@ -28,6 +29,15 @@ export class GlobalStore {
     }
     this.streams = newStreams;
   }
+
+  get allDevices(): Device[] {
+    return this.streams.flatMap((stream) =>
+      stream.ioCards.flatMap((card) =>
+        card.interfaces.flatMap((iface) => iface.devices)
+      )
+    );
+  }
+
 }
 const globalStore = new GlobalStore();
 export default globalStore;

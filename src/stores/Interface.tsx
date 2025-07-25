@@ -10,6 +10,7 @@ export class Interface {
   public config: InterfaceConfig;
   public devices: Device[] = [];
 
+
   constructor(id: number, name: string, config: InterfaceConfig = {}) {
     makeAutoObservable(this);
     this.id = id;

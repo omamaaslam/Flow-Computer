@@ -139,6 +139,7 @@ const StreamConfiguration = observer(() => {
       Component: () =>
         currentStream.editingConversion && (
           <ConversionForm
+            store={globalStore}
             config={currentStream.editingConversion}
             onCommit={() =>
               commitAndClose(currentStream.commitConversionChanges)
@@ -149,7 +150,7 @@ const StreamConfiguration = observer(() => {
     },
   };
 
-   const cardData = [
+  const cardData = [
     {
       id: "volume" as ModalType,
       label: "Volume",
@@ -177,10 +178,9 @@ const StreamConfiguration = observer(() => {
     {
       id: "conversion" as ModalType,
       label: "Conversion",
-      Icon:GitCompareArrows,
+      Icon: GitCompareArrows,
       Illustration: "/streamSVG/Conversion.svg",
     },
-    
   ];
 
   const ModalContent = activeModal ? modalConfig[activeModal].Component : null;

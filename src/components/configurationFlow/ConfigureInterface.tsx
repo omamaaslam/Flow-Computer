@@ -8,8 +8,8 @@ import TemperatureDeviceForm from "./TemperatureDeviceForm.tsx";
 import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import AddDeviceForm from "./AddDeviceForm.tsx";
 import { observer } from "mobx-react-lite";
-import { Interface } from "../../stores/Interface.tsx"; // Note: Adjust path if needed
-import { Device } from "../../stores/Device.tsx"; // Note: Adjust path if needed
+import { Interface } from "../../stores/Interface.tsx";
+import { Device } from "../../stores/Device.tsx";
 import type { InterfaceConfig } from "../../types/interfaceConfig.tsx";
 import type { DeviceConfig } from "../../types/device.tsx";
 import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
@@ -20,7 +20,6 @@ import VolumeDeviceForm from "./VolumeDeviceForm.tsx";
 import PulseVolumeDeviceForm from "./PulseVolumeDeviceForm.tsx";
 import PulseFlowRateDeviceForm from "./PulseFlowRateDeviceForm.tsx";
 import FlowRateDeviceForm from "./FlowRateDeviceForm.tsx";
-import GasDeviceForm from "./GasDeviceForm.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
