@@ -55,10 +55,14 @@ export const removeListener = (callback: (event: MessageEvent) => void) => {
 
 export const getDataFromWebSocketServer = (message: object): Promise<any> => {
   return new Promise((resolve, reject) => {
+    // --- FIX: Use 'number' for browser environments ---
+    let timeout: number;
+
     const temporaryListener = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
         if (data.command === "get_global_state_snapshot") {
+          clearTimeout(timeout);
           resolve(data);
           removeListener(temporaryListener);
         }
@@ -67,7 +71,7 @@ export const getDataFromWebSocketServer = (message: object): Promise<any> => {
       }
     };
 
-    const timeout = setTimeout(() => {
+    timeout = setTimeout(() => {
       removeListener(temporaryListener);
       reject(new Error("Request for global state timed out."));
     }, 10000);

@@ -28,17 +28,11 @@ export class Stream {
     this.config = config;
   }
 
-  private startEditing<T>(
-    configType: keyof StreamConfig,
-    stateKey: keyof this
-  ) {
+  private startEditing(configType: keyof StreamConfig, stateKey: keyof this) {
     (this[stateKey] as any) = makeAutoObservable(toJS(this.config[configType]));
   }
 
-  private commitChanges<T>(
-    configType: keyof StreamConfig,
-    stateKey: keyof this
-  ) {
+  private commitChanges(configType: keyof StreamConfig, stateKey: keyof this) {
     if (this[stateKey]) {
       this.config[configType] = toJS(this[stateKey] as any);
       (this[stateKey] as any) = null;
