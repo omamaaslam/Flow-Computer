@@ -69,8 +69,8 @@ export class Stream {
     this.commitChanges("conversion", "editingConversion");
   cancelEditingConversion = () => this.cancelEditing("editingConversion");
 
-  addIOCard(cardId: number, config: any) {
-    const ioCard = new IOCard(cardId, config);
+  addIOCard(card_type:string) {
+    const ioCard = new IOCard(card_type);
     this.ioCards.push(ioCard);
     return ioCard;
   }

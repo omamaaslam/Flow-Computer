@@ -3,13 +3,11 @@ import { Interface } from "./Interface";
 import type { InterfaceConfig } from "../types/interfaceConfig";
 
 export class IOCard {
-  id: number;
-  config: any[] = [];
+  card_type: string;
   interfaces: Interface[] = [];
 
-  constructor(cardId: number, config: any[]) {
-    this.id = cardId;
-    this.config = config;
+  constructor(card_type: string) {
+    this.card_type = card_type;
     makeAutoObservable(this);
   }
 

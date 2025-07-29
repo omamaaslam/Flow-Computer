@@ -14,12 +14,12 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
     const defaultConfig: InterfaceConfig = {
       baud_rate: "",
       dataBits: 8,
-      maxSlaves: 32,
+      max_slaves: 32,
       parity: "Even",
-      stopBits: 1,
-      pullUpDown: "Enabled",
-      timeoutMs: 1000,
-      pollIntervalMs: 5000,
+      stop_bits: 1,
+      pull_up_enabled: "Enabled",
+      timeout_ms: 1000,
+      poll_interval_ms: 5000,
       retryCount: 3,
     };
 
@@ -35,9 +35,9 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
       const key = name as keyof InterfaceConfig;
       const processedValue =
         key === "dataBits" ||
-        key === "maxSlaves" ||
-        key === "timeoutMs" ||
-        key === "pollIntervalMs" ||
+        key === "max_slaves" ||
+        key === "timeout_ms" ||
+        key === "poll_interval_ms" ||
         key === "retryCount"
           ? Number(value)
           : value;
@@ -85,9 +85,9 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
           <div className="space-y-1">
             <label className="block font-medium text-xs">Max Slaves</label>
             <input
-              name="maxSlaves"
+              name="max_slaves"
               type="number"
-              value={formData.maxSlaves || 32}
+              value={formData.max_slaves}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             />
@@ -111,8 +111,8 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
           <div className="space-y-1">
             <label className="block font-medium text-xs">Stop Bits</label>
             <select
-              name="stopBits"
-              value={formData.stopBits || 1}
+              name="stop_bits"
+              value={formData.stop_bits}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
@@ -126,8 +126,8 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
               Pull-Up/Pull-Down
             </label>
             <select
-              name="pullUpDown"
-              value={formData.pullUpDown || "Enabled"}
+              name="pull_up_enabled"
+              value={formData.pull_up_enabled}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
@@ -139,9 +139,9 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
           <div className="space-y-1">
             <label className="block font-medium text-xs">Time-out (ms)</label>
             <input
-              name="timeoutMs"
+              name="timeout_ms"
               type="number"
-              value={formData.timeoutMs || 1000}
+              value={formData.timeout_ms}
               onChange={handleChange}
               placeholder="Time-out for read/write operations eg. 1000"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -153,9 +153,9 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
               Poll Interval (ms)
             </label>
             <input
-              name="pollIntervalMs"
+              name="poll_interval_ms"
               type="number"
-              value={formData.pollIntervalMs || 5000}
+              value={formData.poll_interval_ms}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             />

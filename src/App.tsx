@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import Home from "./components/Home";
 import Configuration from "./components/configurationFlow/Configuration";
 import { connectWebSocket } from "./utils/api";
+
 const App = observer(() => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -39,7 +40,7 @@ const App = observer(() => {
 
     const firstStream = globalStore.streams[0];
     if (firstStream) {
-      const ioCard = firstStream.addIOCard(1, []);
+      const ioCard = firstStream.addIOCard("IOCardTypeA");
       ioCard.addInterface(1, "MOD");
       ioCard.addInterface(2, "DI1");
       ioCard.addInterface(3, "DI2");
@@ -61,7 +62,16 @@ const App = observer(() => {
   }, []);
 
   useEffect(() => {
-    connectWebSocket();
+    const initializeConnection = async () => {
+      try {
+        await connectWebSocket();
+        await globalStore.fetchGlobalState();
+      } catch (error) {
+        console.error("🚨 Failed to connect to WebSocket:", error);
+      }
+    };
+
+    initializeConnection();
   }, []);
 
   return (

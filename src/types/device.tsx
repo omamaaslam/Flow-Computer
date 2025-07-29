@@ -3,13 +3,13 @@
 // NEW: This interface holds the communication settings for ONE device.
 // This is for the items that will go inside the "list" object.
 export interface DeviceProtocolConfig {
-  deviceId: number;
+  device_id: number;
 
   // --- Modbus Specific Fields ---
   slaveId?: number | null;
-  registerCount?: number | null;
-  registerAddress?: number | null;
-  dataType?: "INT16" | "INT32" | "FLOAT" | "DOUBLE" | "STRING";
+  register_count?: number | null;
+  register_address?: number | null;
+  data_type?: "INT16" | "INT32" | "FLOAT" | "DOUBLE" | "STRING";
 
   // --- HART Specific Fields ---
   pollingAddress?: number | null;
@@ -19,13 +19,14 @@ export interface DeviceProtocolConfig {
 
 // UPDATED: This is now clean and only has general info.
 export interface GeneralDeviceConfig {
-  // REMOVED: slaveId, registerCount, registerAddress, dataType
+  // REMOVED: slaveId, register_count, register_address, data_type
   manufacturer: string;
   model: string;
-  serialNumber: string;
-  tagName: string;
-  deviceId: string;
-  buildYear: number | null;
+  serial_number: string;
+  tag_name: string;
+  device_id: string;
+  build_year: string;
+  g_size: string;
   version: string;
 }
 
@@ -50,13 +51,14 @@ export interface Device {
 // UPDATED: The helper function now creates the new, cleaner config.
 export const createDefaultDeviceConfig = (): DeviceConfig => ({
   general: {
-    // REMOVED: slaveId, registerCount, registerAddress, etc.
+    // REMOVED: slaveId, register_count, register_address, etc.
     manufacturer: "",
     model: "",
-    serialNumber: "",
-    tagName: "",
-    deviceId: "",
-    buildYear: null,
+    serial_number: "",
+    tag_name: "",
+    device_id: "",
+    build_year: "",
+    g_size: "",
     version: "",
   },
   parameters: {},

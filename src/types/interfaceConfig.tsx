@@ -4,12 +4,12 @@ export interface InterfaceConfig {
   // --- Modbus Specific Fields ---
   baud_rate?: string;
   dataBits?: number;
-  maxSlaves?: number;
+  max_slaves?: number;
   parity?: "Even" | "Odd" | "None";
-  stopBits?: 1 | 2;
-  pullUpDown?: "Enabled" | "Disabled";
-  timeoutMs?: number;
-  pollIntervalMs?: number;
+  stop_bits?: 1 | 2;
+  pull_up_enabled?: "Enabled" | "Disabled";
+  timeout_ms?: number;
+  poll_interval_ms?: number;
   retryCount?: 1 | 2 | 3;
 
   // --- RTD Specific Fields ---

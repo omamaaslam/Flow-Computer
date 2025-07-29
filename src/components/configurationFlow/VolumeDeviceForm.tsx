@@ -35,7 +35,7 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
     manufacturer: "",
     serialNumber: "",
     model: "",
-    tagName: "",
+    build_year: "",
     gSize: "",
     minVolume: "",
     maxVolume: "",
@@ -76,7 +76,7 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
         manufacturer: formState.manufacturer,
         model: formState.model,
         serialNumber: formState.serialNumber,
-        tagName: formState.tagName,
+        build_year: formState.build_year,
         deviceId: "",
         buildYear: null,
         version: "",
@@ -179,8 +179,8 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
                 Tag Name
               </label>
               <Input
-                value={formState.tagName}
-                onChange={(e) => handleStateChange("tagName", e.target.value)}
+                value={formState.build_year}
+                onChange={(e) => handleStateChange("build_year", e.target.value)}
                 placeholder="Please set tag name"
               />
             </div>

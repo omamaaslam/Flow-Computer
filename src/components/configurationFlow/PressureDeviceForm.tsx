@@ -125,17 +125,17 @@ const Input = ({ hasError, ...props }: InputProps) => (
 
 const initialFormState = {
   slaveId: "",
-  registerCount: "",
-  registerAddress: "",
-  dataType: "",
+  register_count: "",
+  register_address: "",
+  data_type: "",
   pollingAddress: "",
   commandSet: "",
   variableType: "",
   manufacturer: "",
-  serialNumber: "",
+  serial_number: "",
   model: "",
-  tagName: "",
-  gSize: "",
+  tag_name: "",
+  g_size: "",
   pmin: "",
   pmax: "",
   pressureUnit: "psi",
@@ -176,9 +176,9 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   const getRequiredFields = () => {
     const baseFields = [
       "manufacturer",
-      "serialNumber",
+      "serial_number",
       "model",
-      "tagName",
+      "tag_name",
       "pmin",
       "pmax",
     ];
@@ -186,9 +186,9 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       return [
         ...baseFields,
         "slaveId",
-        "registerCount",
-        "registerAddress",
-        "dataType",
+        "register_count",
+        "register_address",
+        "data_type",
       ];
     }
     if (interfaceName.includes("HART")) {
@@ -201,10 +201,10 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
 
   const numericFields = [
     "slaveId",
-    "registerCount",
-    "registerAddress",
+    "register_count",
+    "register_address",
     "pollingAddress",
-    "gSize",
+    "g_size",
     "pmin",
     "pmax",
     "coeff1",
@@ -247,15 +247,15 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
         general: {
           slaveId:
             interfaceName === "MOD" ? parseInt(formState.slaveId, 10) : null,
-          registerCount:
+          register_count:
             interfaceName === "MOD"
-              ? parseInt(formState.registerCount, 10)
+              ? parseInt(formState.register_count, 10)
               : null,
-          registerAddress:
+          register_address:
             interfaceName === "MOD"
-              ? parseInt(formState.registerAddress, 10)
+              ? parseInt(formState.register_address, 10)
               : null,
-          dataType: interfaceName === "MOD" ? formState.dataType : "INT16",
+          data_type: interfaceName === "MOD" ? formState.data_type : "INT16",
           pollingAddress: interfaceName.includes("HART")
             ? parseInt(formState.pollingAddress, 10)
             : null,
@@ -267,14 +267,14 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
             : null,
           manufacturer: formState.manufacturer,
           model: formState.model,
-          serialNumber: formState.serialNumber,
-          tagName: formState.tagName,
+          serial_number: formState.serial_number,
+          tag_name: formState.tag_name,
           deviceId: "",
           buildYear: null,
           version: "",
         },
         parameters: {
-          gSize: formState.gSize ? parseFloat(formState.gSize) : null,
+          g_size: formState.g_size ? parseFloat(formState.g_size) : null,
           pmin: formState.pmin ? parseFloat(formState.pmin) : null,
           pmax: formState.pmax ? parseFloat(formState.pmax) : null,
           pressureUnit: formState.pressureUnit,
@@ -348,16 +348,16 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                 Serial Number
               </label>
               <Input
-                hasError={!!errors.serialNumber}
-                value={formState.serialNumber}
+                hasError={!!errors.serial_number}
+                value={formState.serial_number}
                 onChange={(e) =>
-                  handleStateChange("serialNumber", e.target.value)
+                  handleStateChange("serial_number", e.target.value)
                 }
                 placeholder="Please set serial number"
               />
-              {errors.serialNumber && (
+              {errors.serial_number && (
                 <p className="text-xs text-red-600 mt-1">
-                  {errors.serialNumber}
+                  {errors.serial_number}
                 </p>
               )}
             </div>
@@ -380,13 +380,13 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                 Tag Name
               </label>
               <Input
-                hasError={!!errors.tagName}
-                value={formState.tagName}
-                onChange={(e) => handleStateChange("tagName", e.target.value)}
+                hasError={!!errors.tag_name}
+                value={formState.tag_name}
+                onChange={(e) => handleStateChange("tag_name", e.target.value)}
                 placeholder="Please set tag name"
               />
-              {errors.tagName && (
-                <p className="text-xs text-red-600 mt-1">{errors.tagName}</p>
+              {errors.tag_name && (
+                <p className="text-xs text-red-600 mt-1">{errors.tag_name}</p>
               )}
             </div>
             <div className="space-y-1">
@@ -394,13 +394,13 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                 G-Size
               </label>
               <Input
-                hasError={!!errors.gSize}
-                value={formState.gSize}
-                onChange={(e) => handleStateChange("gSize", e.target.value)}
+                hasError={!!errors.g_size}
+                value={formState.g_size}
+                onChange={(e) => handleStateChange("g_size", e.target.value)}
                 placeholder="Please set G-size"
               />
-              {errors.gSize && (
-                <p className="text-xs text-red-600 mt-1">{errors.gSize}</p>
+              {errors.g_size && (
+                <p className="text-xs text-red-600 mt-1">{errors.g_size}</p>
               )}
             </div>
           </div>
