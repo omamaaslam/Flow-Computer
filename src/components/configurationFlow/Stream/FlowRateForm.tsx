@@ -53,9 +53,9 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
           <div className="space-y-1">
             <label className="block font-medium text-xs">Qmin Alarm</label>
             <input
-              name="minAlarmFlowrate"
+              name="min_alarm_flow_rate"
               type="text"
-              value={config.minAlarmFlowrate}
+              value={config.min_alarm_flow_rate}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -64,9 +64,9 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
           <div className="space-y-1">
             <label className="block font-medium text-xs">Qmax Alarm</label>
             <input
-              name="maxAlarmFlowrate"
+              name="max_alarm_flow_rate"
               type="text"
-              value={config.maxAlarmFlowrate}
+              value={config.max_alarm_flow_rate}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -75,9 +75,9 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
           <div className="space-y-1">
             <label className="block font-medium text-xs">Qmin Warn</label>
             <input
-              name="minWarningFlowrate"
+              name="min_warning_flow_rate"
               type="text"
-              value={config.minWarningFlowrate}
+              value={config.min_warning_flow_rate}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -86,9 +86,9 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
           <div className="space-y-1">
             <label className="block font-medium text-xs">Qmax Warn</label>
             <input
-              name="maxWarningFlowrate"
+              name="max_warning_flow_rate"
               type="text"
-              value={config.maxWarningFlowrate}
+              value={config.max_warning_flow_rate}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -97,8 +97,8 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
           <div className="space-y-1 col-span-2">
             <label className="block font-medium text-xs">Creep Mode</label>
             <select
-              name="creepMode"
-              value={config.creepMode}
+              name="creep_mode_enabled"
+              value={config.creep_mode_enabled}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
@@ -106,16 +106,16 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
               <option value="Enable">Enable</option>
             </select>
           </div>
-          {config.creepMode === "Enable" && (
+          {config.creep_mode_enabled === "Enable" && (
             <>
               <div className="space-y-1">
                 <label className="block font-medium text-xs">
                   Creep flowrate
                 </label>
                 <input
-                  name="creepFlowrate"
+                  name="creep_flow_rate"
                   type="text"
-                  value={config.creepFlowrate}
+                  value={config.creep_flow_rate}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
                   className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -124,9 +124,9 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
               <div className="space-y-1">
                 <label className="block font-medium text-xs">Creep Time</label>
                 <input
-                  name="creepTime"
+                  name="creep_time_seconds"
                   type="text"
-                  value={config.creepTime}
+                  value={config.creep_time_seconds}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
                   className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"

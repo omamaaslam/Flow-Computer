@@ -19,10 +19,10 @@ const HartInterfaceSettingsForm: React.FC<HartInterfaceSettingsFormProps> = ({
     ) => {
         const { name, value } = e.target;
         const isNumeric = [
-            "hartBaudrate",
-            "hartScanInterval",
-            "hartRetryCount",
-            "hartMaxDevices"
+            "baud_rate",
+            "scan_interval_ms",
+            "retry_count",
+            "max_devices"
         ].includes(name);
 
         setFormData((prev) => ({
@@ -45,10 +45,10 @@ const HartInterfaceSettingsForm: React.FC<HartInterfaceSettingsFormProps> = ({
                         Baudrate
                     </label>
                     <input
-                        name="hartBaudrate"
+                        name="baud_rate"
                         type="number"
                         placeholder="Please add Value"
-                        value={formData.hartBaudrate || ""}
+                        value={formData.baud_rate}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md py-2 px-3 text-[12px] shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
                     />
@@ -59,10 +59,10 @@ const HartInterfaceSettingsForm: React.FC<HartInterfaceSettingsFormProps> = ({
                         Scan Interval (ms)
                     </label>
                     <input
-                        name="hartScanInterval"
+                        name="scan_interval_ms"
                         type="number"
                         placeholder="How often to poll devices, e.g., 1000"
-                        value={formData.hartScanInterval || ""}
+                        value={formData.scan_interval_ms}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-md py-2 px-3 text-[12px] shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
                     />
@@ -74,9 +74,9 @@ const HartInterfaceSettingsForm: React.FC<HartInterfaceSettingsFormProps> = ({
                             Retry Count
                         </label>
                         <input
-                            name="hartRetryCount"
+                            name="retry_count"
                             type="number"
-                            value={formData.hartRetryCount || 3}
+                            value={formData.retry_count}
                             onChange={handleChange}
                             className="w-full border border-gray-300 rounded-md py-2 px-3 text-[12px] shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
                         />
@@ -86,9 +86,9 @@ const HartInterfaceSettingsForm: React.FC<HartInterfaceSettingsFormProps> = ({
                             Max Devices
                         </label>
                         <input
-                            name="hartMaxDevices"
+                            name="max_devices"
                             type="number"
-                            value={formData.hartMaxDevices || 15}
+                            value={formData.max_devices}
                             onChange={handleChange}
                             className="w-full border border-gray-300 rounded-md py-2 px-3 text-[12px] shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
                         />

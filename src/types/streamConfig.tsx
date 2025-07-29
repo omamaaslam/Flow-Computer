@@ -1,21 +1,21 @@
 export interface TemperatureConfig {
-  liveTemp: string;
-  substituteTemp: string;
+  live_temperature: string;
+  substitute_temperature: string;
   device: string;
-  minOpTemp: string;
-  baseTemp: string;
-  maxOpTemp: string;
-  tempUnit: "°C" | "°F" | "K";
+  min_operating_temperature: string;
+  base_temperature: string;
+  max_operating_temperature: string;
+  temp_unit: "°C" | "°F" | "K";
 }
 
 export interface PressureConfig {
-  livePressure: string;
-  substitutePressure: string;
+  live_pressure: string;
+  substitute_pressure: string;
   device: string;
-  minOpPressure: string;
-  basePressure: string;
-  maxOpPressure: string;
-  pressureUnit: "bar" | "psi" | "kPa" | "atm";
+  min_operating_pressure: string;
+  base_pressure: string;
+  max_operating_pressure: string;
+  pressureUnit: "Bar" | "Pascal" | "PSI";
 }
 
 export interface VolumeConfig {
@@ -23,21 +23,21 @@ export interface VolumeConfig {
   gasMeter1: string;
   gasMeter2: string;
   maxFlowRate: number | string;
-  maxTotalVolume: number | string;
-  minOperationalVolume: number | string;
-  isBiDirectional: "enable" | "disable";
+  max_total_volume: number | string;
+  min_operating_volume: number | string;
+  bidirectional: "enable" | "disable";
 }
 
 export interface FlowRateConfig {
   calculationMethod: string;
   device: string;
-  minAlarmFlowrate: string;
-  maxAlarmFlowrate: string;
-  minWarningFlowrate: string;
-  maxWarningFlowrate: string;
-  creepMode: string;
-  creepFlowrate: string;
-  creepTime: string;
+  min_alarm_flow_rate: string;
+  max_alarm_flow_rate: string;
+  min_warning_flow_rate: string;
+  max_warning_flow_rate: string;
+  creep_mode_enabled: string;
+  creep_flow_rate: string;
+  creep_time_seconds: string;
 }
 
 export interface ConversionRow {
@@ -63,42 +63,42 @@ export interface StreamConfig {
 
 export const createDefaultStreamConfig = (): StreamConfig => ({
   temperature: {
-    liveTemp: "21.5 °C",
-    substituteTemp: "",
+    live_temperature: "21.5 °C",
+    substitute_temperature: "",
     device: "Temperature S1",
-    minOpTemp: "",
-    baseTemp: "",
-    maxOpTemp: "",
-    tempUnit: "°C",
+    min_operating_temperature: "",
+    base_temperature: "",
+    max_operating_temperature: "",
+    temp_unit: "°C",
   },
   pressure: {
-    livePressure: "1.01 bar",
-    substitutePressure: "",
+    live_pressure: "1.01 Bar",
+    substitute_pressure: "",
     device: "Pressure S1",
-    minOpPressure: "",
-    basePressure: "",
-    maxOpPressure: "",
-    pressureUnit: "bar",
+    min_operating_pressure: "",
+    base_pressure: "",
+    max_operating_pressure: "",
+    pressureUnit: "Bar",
   },
   volume: {
     operatingMode: "",
     gasMeter1: "Encoder only",
     gasMeter2: "Encoder only",
     maxFlowRate: "",
-    maxTotalVolume: "",
-    minOperationalVolume: "",
-    isBiDirectional: "disable",
+    max_total_volume: "",
+    min_operating_volume: "",
+    bidirectional: "disable",
   },
   flowRate: {
     calculationMethod: "Software Based",
     device: "",
-    minAlarmFlowrate: "",
-    maxAlarmFlowrate: "",
-    minWarningFlowrate: "",
-    maxWarningFlowrate: "",
-    creepMode: "Disable",
-    creepFlowrate: "",
-    creepTime: "",
+    min_alarm_flow_rate: "",
+    max_alarm_flow_rate: "",
+    min_warning_flow_rate: "",
+    max_warning_flow_rate: "",
+    creep_mode_enabled: "Disable",
+    creep_flow_rate: "",
+    creep_time_seconds: "",
   },
   conversion: {
     method: "GERG88_1",

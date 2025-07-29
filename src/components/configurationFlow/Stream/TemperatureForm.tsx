@@ -28,7 +28,7 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               </label>
               <Thermometer className="text-yellow-500" size={16} />
               <span className="font-semibold text-xs text-yellow-500">
-                {config.liveTemp}
+                {config.live_temperature}
               </span>
             </div>
           </div>
@@ -37,9 +37,9 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               Substitute Temperature (T)
             </label>
             <input
-              name="substituteTemp"
+              name="substitute_temperature"
               type="text"
-              value={config.substituteTemp}
+              value={config.substitute_temperature}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -63,9 +63,9 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               Min Op. Temp. (Tmin)
             </label>
             <input
-              name="minOpTemp"
+              name="min_operating_temperature"
               type="text"
-              value={config.minOpTemp}
+              value={config.min_operating_temperature}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -76,9 +76,9 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               Base Temperature (BT)
             </label>
             <input
-              name="baseTemp"
+              name="base_temperature"
               type="text"
-              value={config.baseTemp}
+              value={config.base_temperature}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -89,9 +89,9 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               Max Op. Temp. (Tmax)
             </label>
             <input
-              name="maxOpTemp"
+              name="max_operating_temperature"
               type="text"
-              value={config.maxOpTemp}
+              value={config.max_operating_temperature}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -102,8 +102,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               Temperature Unit
             </label>
             <select
-              name="tempUnit"
-              value={config.tempUnit}
+              name="temp_unit"
+              value={config.temp_unit}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >

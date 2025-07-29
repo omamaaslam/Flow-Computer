@@ -365,6 +365,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
                 value={formState.model}
                 onChange={(e) => handleStateChange("model", e.target.value)}
                 placeholder="Please set Device model"
+                type="text"
               />
               {errors.model && (
                 <p className="text-xs text-red-600 mt-1">{errors.model}</p>

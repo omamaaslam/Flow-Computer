@@ -116,8 +116,8 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
               <div className="space-y-1">
                 <label className="block font-medium">Max Total Volume</label>
                 <input
-                  name="maxTotalVolume"
-                  value={config.maxTotalVolume}
+                  name="max_total_volume"
+                  value={config.max_total_volume}
                   onChange={handleInputChange}
                   type="number"
                   placeholder="Please add Value"
@@ -129,8 +129,8 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                   Min Operational Volume
                 </label>
                 <input
-                  name="minOperationalVolume"
-                  value={config.minOperationalVolume}
+                  name="min_operating_volume"
+                  value={config.min_operating_volume}
                   onChange={handleInputChange}
                   type="number"
                   placeholder="Please add Value"
@@ -140,8 +140,8 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
               <div className="space-y-1">
                 <label className="block font-medium">Bi-Directional</label>
                 <select
-                  name="isBiDirectional"
-                  value={config.isBiDirectional}
+                  name="bidirectional"
+                  value={config.bidirectional}
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500"
                 >

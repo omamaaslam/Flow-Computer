@@ -53,12 +53,12 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
         
         {/* Input Type */}
         <div className="space-y-1">
-          <label htmlFor="diInputType" className={labelClass}>Input Type</label>
+          <label htmlFor="interface_type" className={labelClass}>Input Type</label>
           <div className="relative">
             <select
-              id="diInputType"
-              name="diInputType"
-              value={formData.diInputType || ""}
+              id="interface_type"
+              name="interface_type"
+              value={formData.interface_type || ""}
               onChange={handleChange}
               className={selectClass}
             >
@@ -93,12 +93,12 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
 
         {/* Signal Logic */}
         <div className="space-y-1">
-          <label htmlFor="diSignalLogic" className={labelClass}>Signal Logic</label>
+          <label htmlFor="signal_logic" className={labelClass}>Signal Logic</label>
            <div className="relative">
             <select
-              id="diSignalLogic"
-              name="diSignalLogic"
-              value={formData.diSignalLogic || "Active High"}
+              id="signal_logic"
+              name="signal_logic"
+              value={formData.signal_logic || "Active High"}
               onChange={handleChange}
               className={selectClass}
             >
@@ -111,12 +111,12 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
 
         {/* Edge Detection */}
         <div className="space-y-1">
-          <label htmlFor="diEdgeDetection" className={labelClass}>Edge Detection</label>
+          <label htmlFor="edge_detection" className={labelClass}>Edge Detection</label>
           <div className="relative">
             <select
-              id="diEdgeDetection"
-              name="diEdgeDetection"
-              value={formData.diEdgeDetection || "Rising"}
+              id="edge_detection"
+              name="edge_detection"
+              value={formData.edge_detection || "Rising"}
               onChange={handleChange}
               className={selectClass}
             >
@@ -130,12 +130,12 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
 
         {/* Pull-up/Pull-down */}
         <div className="space-y-1">
-          <label htmlFor="diPullUpDown" className={labelClass}>Pull-up/Pull-down</label>
+          <label htmlFor="pull_config" className={labelClass}>Pull-up/Pull-down</label>
           <div className="relative">
             <select
-              id="diPullUpDown"
-              name="diPullUpDown"
-              value={formData.pullUpDown || "Pull-down"}
+              id="pull_config"
+              name="pull_config"
+              value={formData.pull_config}
               onChange={handleChange}
               className={selectClass}
             >

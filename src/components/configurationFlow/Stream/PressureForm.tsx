@@ -28,7 +28,7 @@ const PressureForm: React.FC<PressureFormProps> = observer(
               </label>
               <Gauge className="text-yellow-500" size={16} />
               <span className="font-semibold text-xs text-yellow-500">
-                {config.livePressure}
+                {config.live_pressure}
               </span>
             </div>
           </div>
@@ -37,9 +37,9 @@ const PressureForm: React.FC<PressureFormProps> = observer(
               Substitute Pressure (P)
             </label>
             <input
-              name="substitutePressure"
+              name="substitute_pressure"
               type="text"
-              value={config.substitutePressure}
+              value={config.substitute_pressure}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -63,9 +63,9 @@ const PressureForm: React.FC<PressureFormProps> = observer(
               Min Op. Pressure (Pmin)
             </label>
             <input
-              name="minOpPressure"
+              name="min_operating_pressure"
               type="text"
-              value={config.minOpPressure}
+              value={config.min_operating_pressure}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -76,9 +76,9 @@ const PressureForm: React.FC<PressureFormProps> = observer(
               Base Pressure (BP)
             </label>
             <input
-              name="basePressure"
+              name="base_pressure"
               type="text"
-              value={config.basePressure}
+              value={config.base_pressure}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -89,9 +89,9 @@ const PressureForm: React.FC<PressureFormProps> = observer(
               Max Op. Pressure (Pmax)
             </label>
             <input
-              name="maxOpPressure"
+              name="max_operating_pressure"
               type="text"
-              value={config.maxOpPressure}
+              value={config.max_operating_pressure}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -105,10 +105,9 @@ const PressureForm: React.FC<PressureFormProps> = observer(
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
-              <option value="bar">bar</option>
-              <option value="psi">psi</option>
-              <option value="kPa">kPa</option>
-              <option value="atm">atm</option>
+              <option value="Bar">Bar</option>
+              <option value="Pascal">Pascal</option>
+              <option value="PSI">PSI</option>
             </select>
           </div>
         </div>

@@ -12,7 +12,7 @@ interface ModbusInterfaceSettingsFormProps {
 const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
   observer(({ currentConfig, onSave, onClose }) => {
     const defaultConfig: InterfaceConfig = {
-      baudrate: "",
+      baud_rate: "",
       dataBits: 8,
       maxSlaves: 32,
       parity: "Even",
@@ -58,11 +58,11 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
         <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm text-gray-800">
           {/* Left Column */}
           <div className="space-y-1">
-            <label className="block font-medium text-xs">Baudrate</label>
+            <label className="block font-medium text-xs">Baud Rate</label>
             <input
-              name="baudrate"
+              name="baud_rate"
               type="text"
-              value={formData.baudrate || ""}
+              value={formData.baud_rate}
               onChange={handleChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"

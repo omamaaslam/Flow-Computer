@@ -1,5 +1,3 @@
-// src/components/configurationFlow/RTDInterfaceSettingsForm.tsx
-
 import React, { useState } from "react";
 import type { InterfaceConfig } from "../../types/interfaceConfig";
 interface RTDInterfaceSettingsFormProps {
@@ -20,9 +18,9 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
     const { name, value } = e.target;
 
     const isNumeric = [
-      "excitationCurrent",
-      "samplingInterval",
-      "referenceResistor",
+      "excitation_current_ma",
+      "sampling_interval_ms",
+      "reference_resistor_ohms",
     ].includes(name);
 
     setFormData((prev) => ({
@@ -43,8 +41,8 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
             Wire Type
           </label>
           <select
-            name="wireType"
-            value={formData.wireType || "2-wire"}
+            name="wire_type"
+            value={formData.wire_type}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
@@ -60,10 +58,10 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
           </label>
           <div className="relative">
             <input
-              name="excitationCurrent"
+              name="excitation_current_ma"
               type="number"
               placeholder="Please enter value between 0.1-1.0"
-              value={formData.excitationCurrent || ""}
+              value={formData.excitation_current_ma}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-md py-2 px-3 pr-12 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             />
@@ -79,8 +77,8 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
             Measurement Mode
           </label>
           <select
-            name="measurementMode"
-            value={formData.measurementMode || "Continuous"}
+            name="measurement_mode"
+            value={formData.measurement_mode}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
@@ -96,10 +94,10 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
           </label>
           <div className="relative">
             <input
-              name="samplingInterval"
+              name="sampling_interval_ms"
               type="number"
               placeholder="Please enter value between 600-60,000"
-              value={formData.samplingInterval || ""}
+              value={formData.sampling_interval_ms}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-md py-2 px-3 pr-12 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             />
@@ -116,10 +114,10 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
           </label>
           <div className="relative">
             <input
-              name="referenceResistor"
+              name="reference_resistor_ohms"
               type="number"
               placeholder="Please enter value between 10-10,000"
-              value={formData.referenceResistor || ""}
+              value={formData.reference_resistor_ohms}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-md py-2 px-3 pr-12 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             />

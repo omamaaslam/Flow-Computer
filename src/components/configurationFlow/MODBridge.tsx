@@ -132,11 +132,11 @@ const MODBridge: React.FC<MODBridgeProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-      <FormField label="Slave ID" error={errors.slaveId}>
+      <FormField label="Slave ID" error={errors.slave_id}>
         <CustomCombobox
-          hasError={!!errors.slaveId}
-          value={formState.slaveId}
-          onChange={(val:any) => handleStateChange("slaveId", val)}
+          hasError={!!errors.slave_id}
+          value={formState.slave_id}
+          onChange={(val:any) => handleStateChange("slave_id", val)}
           placeholder="Please set slave ID"
           options={[
             { value: "1", label: "1" },
@@ -144,11 +144,11 @@ const MODBridge: React.FC<MODBridgeProps> = ({
           ]}
         />
       </FormField>
-      <FormField label="Register Count" error={errors.registerCount}>
+      <FormField label="Register Count" error={errors.register_count}>
         <CustomCombobox
-          hasError={!!errors.registerCount}
-          value={formState.registerCount}
-          onChange={(val:any) => handleStateChange("registerCount", val)}
+          hasError={!!errors.register_count}
+          value={formState.register_count}
+          onChange={(val:any) => handleStateChange("register_count", val)}
           placeholder="Number of registers..."
           options={[
             { value: "2", label: "2 (for 1 float32)" },
@@ -156,11 +156,11 @@ const MODBridge: React.FC<MODBridgeProps> = ({
           ]}
         />
       </FormField>
-      <FormField label="Register Address" error={errors.registerAddress}>
+      <FormField label="Register Address" error={errors.register_address}>
         <CustomCombobox
-          hasError={!!errors.registerAddress}
-          value={formState.registerAddress}
-          onChange={(val) => handleStateChange("registerAddress", val)}
+          hasError={!!errors.register_address}
+          value={formState.register_address}
+          onChange={(val) => handleStateChange("register_address", val)}
           placeholder="Please set register address"
           options={[
             { value: "40001", label: "40001" },
@@ -168,11 +168,11 @@ const MODBridge: React.FC<MODBridgeProps> = ({
           ]}
         />
       </FormField>
-      <FormField label="Data Type" error={errors.dataType}>
+      <FormField label="Data Type" error={errors.data_type}>
         <CustomCombobox
-          hasError={!!errors.dataType}
-          value={formState.dataType}
-          onChange={(val) => handleStateChange("dataType", val)}
+          hasError={!!errors.data_type}
+          value={formState.data_type}
+          onChange={(val) => handleStateChange("data_type", val)}
           placeholder="INT16, FLOAT..."
           options={[
             { value: "INT16", label: "INT16" },

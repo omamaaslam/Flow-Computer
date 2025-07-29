@@ -1,13 +1,8 @@
-// src/types/InterfaceConfig.tsx
-
 import type { Device, DeviceProtocolConfig } from "./device";
 
-// Import the necessary device types from the other file
-
-// NO CHANGE to this interface itself. It remains the same.
 export interface InterfaceConfig {
   // --- Modbus Specific Fields ---
-  baudrate?: string;
+  baud_rate?: string;
   dataBits?: number;
   maxSlaves?: number;
   parity?: "Even" | "Odd" | "None";
@@ -18,25 +13,24 @@ export interface InterfaceConfig {
   retryCount?: 1 | 2 | 3;
 
   // --- RTD Specific Fields ---
-  wireType?: "2-wire" | "3-wire" | "4-wire";
-  excitationCurrent?: number;
-  measurementMode?: "Continuous" | "On-Demand";
-  samplingInterval?: number;
-  referenceResistor?: number;
+  wire_type?: "2-wire" | "3-wire" | "4-wire";
+  excitation_current_ma?: number;
+  measurement_mode?: "Continuous" | "On-Demand";
+  sampling_interval_ms?: number;
+  reference_resistor_ohms?: number;
 
   // --- HART1 Specific Fields ---
-  hartBaudrate?: number;
-  hartScanInterval?: number;
-  hartRetryCount?: number;
-  hartMaxDevices?: number;
+  scan_interval_ms?: number;
+  retry_count?: number;
+  max_devices?: number;
   hartPhysicalLayer?: "RS-485" | "RS-232";
 
   // --- DI Configuration Specific Fields ---
-  diInputType?: string;
+  interface_type?: string;
   diDebounceTime?: number;
-  diSignalLogic?: "Active High" | "Active Low";
-  diEdgeDetection?: "Rising" | "Falling" | "Both";
-  diPullUpDown?: "Pull-up" | "Pull-down";
+  signal_logic?: "Active High" | "Active Low";
+  edge_detection?: "Rising" | "Falling" | "Both";
+  pull_config?: "Pull-up" | "Pull-down";
 }
 
 
