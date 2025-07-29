@@ -8,14 +8,14 @@ import {
   GitCompareArrows,
 } from "lucide-react";
 import MuiModalWrapper from "./MuiModalWrapper";
-import VolumeForm from "./VolumeForm";
-import TemperatureForm from "./TemperatureForm";
-import PressureForm from "./PressureForm";
-import FlowRateForm from "./FlowRateForm";
-import ConversionForm from "./ConversionForm";
 import globalStore from "../../stores/GlobalStore";
 import { useParams } from "react-router-dom";
 import { toJS } from "mobx";
+import ConversionForm from "./Stream/ConversionForm";
+import FlowRateForm from "./Stream/FlowRateForm";
+import PressureForm from "./Stream/PressureForm";
+import TemperatureForm from "./Stream/TemperatureForm";
+import VolumeForm from "./Stream/VolumeForm";
 
 type ModalType =
   | "volume"

@@ -1,6 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
-import type { VolumeConfig } from "../../types/streamConfig";
+import type { VolumeConfig } from "../../../types/streamConfig";
 
 const operatingModes = [
   { value: "encoderOnly", label: "Encoder Only" },

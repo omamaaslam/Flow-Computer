@@ -1,7 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { Gauge } from "lucide-react";
-import type { PressureConfig } from "../../types/streamConfig";
+import type { PressureConfig } from  "../../../types/streamConfig";
 
 interface PressureFormProps {
   config: PressureConfig;

@@ -1,7 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { Thermometer } from "lucide-react";
-import type { TemperatureConfig } from "../../types/streamConfig";
+import type { TemperatureConfig } from  "../../../types/streamConfig";
 
 interface TemperatureFormProps {
   config: TemperatureConfig;

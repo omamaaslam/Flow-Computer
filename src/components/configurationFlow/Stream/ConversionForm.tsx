@@ -1,8 +1,8 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { ArrowUpDown } from "lucide-react";
-import type { ConversionConfig, ConversionRow } from "../../types/streamConfig";
-import globalStore from "../../stores/GlobalStore";
+import type { ConversionConfig, ConversionRow } from "../../../types/streamConfig";
+import type globalStore from "../../../stores/GlobalStore";
 interface ConversionFormProps {
   store: typeof globalStore;
   config: ConversionConfig;
