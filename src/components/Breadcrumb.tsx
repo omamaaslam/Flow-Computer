@@ -1,29 +1,41 @@
+// Breadcrumb.tsx
+import { useLocation, useParams } from "react-router-dom";
 import { observer } from "mobx-react-lite";
-import { useLocation } from "react-router-dom";
-import { ROUTES } from "../routes";
-import type { RouteKey } from "../routes";
-
-const getRouteKeyFromPath = (path: string): string => {
-  if (path === "/") return "Home";
-
-  for (const [key, value] of Object.entries(ROUTES)) {
-    if (value.includes(":")) {
-      const base = value.split("/:")[0];
-      if (path.startsWith(base)) return key as RouteKey;
-    } else if (value === path) {
-      return key as RouteKey;
-    }
-  }
-  return path.slice(1);
-};
+import globalStore from "../stores/GlobalStore";
 
 const Breadcrumb = observer(() => {
   const location = useLocation();
-  const currentRouteName = getRouteKeyFromPath(location.pathname);
+  const pathSegments = location.pathname.split("/").filter(Boolean);
+
+  const breadcrumbs = [{ name: "Home", path: "/" }];
+
+  if (pathSegments[0] === "configuration") {
+    const streamId = pathSegments[1];
+    const stream = globalStore.streams.find(
+      (s) => s.id.toString() === streamId
+    );
+    if (stream) {
+      breadcrumbs.push({
+        name: stream.name,
+        path: `/configuration/${streamId}`,
+      });
+    }
+    if (pathSegments.length > 2) {
+      breadcrumbs.push({
+        name: "Interface Configuration",
+        path: location.pathname,
+      });
+    }
+  }
 
   return (
-    <div className="hidden md:block text-sm text-gray-500 px-4 mt-2 font-sans">
-      <span className="text-yellow-500">→</span> {currentRouteName}
+    <div className="hidden md:flex items-center gap-2 text-sm text-gray-500 px-4 mt-2 font-sans">
+      {breadcrumbs.map((crumb, idx) => (
+        <span key={idx} className="flex items-center gap-1">
+          {idx > 0 && <span className="text-yellow-500">→</span>}
+          <span>{crumb.name}</span>
+        </span>
+      ))}
     </div>
   );
 });
