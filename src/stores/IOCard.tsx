@@ -1,19 +1,19 @@
 import { makeAutoObservable } from "mobx";
 import { Interface } from "./Interface";
-import type { InterfaceConfig } from "../types/interfaceConfig";
 
 export class IOCard {
   card_type: string;
   interfaces: Interface[] = [];
 
-  constructor(card_type: string) {
-    this.card_type = card_type;
+  constructor(ioCardData: any) {
+    this.card_type = ioCardData.card_type;
     makeAutoObservable(this);
-  }
 
-  addInterface(id: number, name: string, config: InterfaceConfig = {}) {
-    const iface = new Interface(id, name, config);
-    this.interfaces.push(iface);
-    return iface;
+    // interfaces object ko parse karke Interface instances banayein
+    if (ioCardData.interfaces) {
+      this.interfaces = Object.values<any>(ioCardData.interfaces).map(
+        (interfaceData) => new Interface(interfaceData)
+      );
+    }
   }
 }

@@ -1,4 +1,4 @@
-export interface TemperatureConfig {
+export interface temperatureConfig {
   live_temperature: string;
   substitute_temperature: string;
   device: string;
@@ -8,7 +8,7 @@ export interface TemperatureConfig {
   temp_unit: "°C" | "°F" | "K";
 }
 
-export interface PressureConfig {
+export interface pressureConfig {
   live_pressure: string;
   substitute_pressure: string;
   device: string;
@@ -18,7 +18,7 @@ export interface PressureConfig {
   pressureUnit: "Bar" | "Pascal" | "PSI";
 }
 
-export interface VolumeConfig {
+export interface volumeConfiguration {
   operatingMode: string;
   gasMeter1: string;
   gasMeter2: string;
@@ -28,7 +28,7 @@ export interface VolumeConfig {
   bidirectional: "enable" | "disable";
 }
 
-export interface FlowRateConfig {
+export interface flowRateConfig {
   calculationMethod: string;
   device: string;
   min_alarm_flow_rate: string;
@@ -48,21 +48,21 @@ export interface ConversionRow {
   keyboardInput: string;
 }
 
-export interface ConversionConfig {
+export interface compressibilityKFactorConfig {
   method: string;
   rows: ConversionRow[];
 }
 
-export interface StreamConfig {
-  temperature: TemperatureConfig;
-  pressure: PressureConfig;
-  volume: VolumeConfig;
-  flowRate: FlowRateConfig;
-  conversion: ConversionConfig;
+export interface calculator {
+  temperatureConfig: temperatureConfig;
+  pressureConfig: pressureConfig;
+  volumeConfiguration: volumeConfiguration;
+  flowRateConfig: flowRateConfig;
+  compressibilityKFactorConfig: compressibilityKFactorConfig;
 }
 
-export const createDefaultStreamConfig = (): StreamConfig => ({
-  temperature: {
+export const createDefaultStreamConfig = (): calculator => ({
+  temperatureConfig: {
     live_temperature: "21.5 °C",
     substitute_temperature: "",
     device: "Temperature S1",
@@ -71,7 +71,7 @@ export const createDefaultStreamConfig = (): StreamConfig => ({
     max_operating_temperature: "",
     temp_unit: "°C",
   },
-  pressure: {
+  pressureConfig: {
     live_pressure: "1.01 Bar",
     substitute_pressure: "",
     device: "Pressure S1",
@@ -80,7 +80,7 @@ export const createDefaultStreamConfig = (): StreamConfig => ({
     max_operating_pressure: "",
     pressureUnit: "Bar",
   },
-  volume: {
+  volumeConfiguration: {
     operatingMode: "",
     gasMeter1: "Encoder only",
     gasMeter2: "Encoder only",
@@ -89,7 +89,7 @@ export const createDefaultStreamConfig = (): StreamConfig => ({
     min_operating_volume: "",
     bidirectional: "disable",
   },
-  flowRate: {
+  flowRateConfig: {
     calculationMethod: "Software Based",
     device: "",
     min_alarm_flow_rate: "",
@@ -100,7 +100,7 @@ export const createDefaultStreamConfig = (): StreamConfig => ({
     creep_flow_rate: "",
     creep_time_seconds: "",
   },
-  conversion: {
+  compressibilityKFactorConfig: {
     method: "GERG88_1",
     rows: [
       {

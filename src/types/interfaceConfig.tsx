@@ -1,55 +1,41 @@
-import type { Device, DeviceProtocolConfig } from "./device";
+// src/types/interfaceConfig.ts
+
+// Yeh type unn sabhi possible configuration properties ko define karta hai
+// jo kisi bhi interface type (Modbus, RTD, HART, DI) se aa sakti hain.
+// Sabhi properties optional hain (?) kyunki ek interface me sirf uske
+// relevant properties hi hongi.
 
 export interface InterfaceConfig {
-  // --- Modbus Specific Fields ---
-  baud_rate?: string;
-  dataBits?: number;
-  max_slaves?: number;
-  parity?: "Even" | "Odd" | "None";
-  stop_bits?: 1 | 2;
-  pull_up_enabled?: "Enabled" | "Disabled";
-  timeout_ms?: number;
-  poll_interval_ms?: number;
-  retryCount?: 1 | 2 | 3;
+  // Common property for all interfaces
+  enabled?: boolean;
 
-  // --- RTD Specific Fields ---
-  wire_type?: "2-wire" | "3-wire" | "4-wire";
+  // --- Modbus Specific Fields (JSON names ke mutabiq) ---
+  baud_rate?: number;
+  data_bits?: number;
+  parity?: "Even" | "Odd" | "None";
+  stop_bits?: number;
+  timeout_ms?: number;
+  retry_count?: number; // JSON me 'retry_count' hai, so it's ok
+  max_slaves?: number;
+  poll_interval_ms?: number;
+  pull_up_enabled?: boolean;
+
+  // --- RTD Specific Fields (JSON names ke mutabiq) ---
+  wire_type?: "TwoWire" | "ThreeWire" | "FourWire"; // JSON se match karein
   excitation_current_ma?: number;
   measurement_mode?: "Continuous" | "On-Demand";
   sampling_interval_ms?: number;
   reference_resistor_ohms?: number;
 
-  // --- HART1 Specific Fields ---
+  // --- HART Specific Fields (JSON names ke mutabiq) ---
+  // `retry_count` aur `max_devices` Modbus ke saath common ho sakte hain
   scan_interval_ms?: number;
-  retry_count?: number;
-  max_devices?: number;
-  hartPhysicalLayer?: "RS-485" | "RS-232";
+  // hartPhysicalLayer?: "RS-485" | "RS-232"; // Agar JSON me hai to rakhein
 
-  // --- DI Configuration Specific Fields ---
-  interface_type?: string;
-  diDebounceTime?: number;
-  signal_logic?: "Active High" | "Active Low";
-  edge_detection?: "Rising" | "Falling" | "Both";
-  pull_config?: "Pull-up" | "Pull-down";
-}
-
-
-// ===================================================================
-// NEW TYPES ADDED BELOW TO DESCRIBE THE FULL STRUCTURE
-// ===================================================================
-
-// This describes the structure for one complete interface (e.g., HART1)
-// It uses Record<string, T> for our key-mapped objects.
-export interface ConfiguredInterface {
-  id: number;
-  name: string;
-  config: InterfaceConfig;
-  
-  list: Record<string, DeviceProtocolConfig>;
-  devices: Record<string, Device>;
-}
-
-// This is the type for the entire JSON payload from your backend.
-export interface FullConfiguration {
-  interfaces: Record<string, ConfiguredInterface>;
+  // --- Digital Input (DI) Specific Fields (JSON names ke mutabiq) ---
+  debounce_time_ms?: number;
+  signal_logic?: number; // JSON me 0 hai (e.g., Active High)
+  edge_detection?: number; // JSON me 0 hai (e.g., Disabled/None)
+  pull_config?: number; // JSON me 0 hai (e.g., None)
+  input_type?: number; // JSON me 0 hai (e.g., Dry Contact)
 }

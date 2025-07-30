@@ -1,20 +1,29 @@
-// models/Device.tsx
 import { makeAutoObservable } from "mobx";
-import type { DeviceConfig } from "../types/device";
+import type { DeviceConfig, GeneralDeviceConfig } from "../types/device";
+
 
 export class Device {
-  public id: number;
+  public id: string;
   public name: string;
   public config: DeviceConfig;
 
-  constructor(id: number, name: string, config: DeviceConfig) {
+  constructor(deviceData: any) {
     makeAutoObservable(this);
-    this.id = id;
-    this.name = name;
-    this.config = config;
+    // device_id ya name na hone par crash se bachne ke liye fallback add karein
+    this.id = deviceData.device_id || `temp-id-${Date.now()}`;
+    this.name = deviceData.device_name || "Unnamed Device";
+
+    // Agar deviceData.config nahi hai, to khaali object ki jagah
+    // poora default config object use karein.
+    this.config = deviceData.config;
   }
 
-  updateGeneralConfig(updatedConfig: Partial<DeviceConfig["general"]>) {
+  // Is method ko bhi thoda behtar kar sakte hain
+  updateGeneralConfig(updatedConfig: Partial<GeneralDeviceConfig>) {
+    // Ab `this.config.general` hamesha maujood hoga,
+    // to `if` check ki zaroorat nahi hai.
     Object.assign(this.config.general, updatedConfig);
   }
 }
+
+
