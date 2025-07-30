@@ -15,6 +15,56 @@ class GlobalStore {
 
   public setGlobalSnapshot(data: any) {
     this.globalSnapshot = data;
+    this._parseAndSetStreams(data);
+  }
+
+  private _parseAndSetStreams(snapshotData: any) {
+    const rawStreams = snapshotData?.streams;
+    if (!rawStreams || typeof rawStreams !== "object") {
+      this.streams = [];
+      return;
+    }
+
+    const newStreams: Stream[] = [];
+
+    for (const streamData of Object.values<any>(rawStreams)) {
+      const streamId = parseInt(streamData.stream_id, 10);
+      const streamName = streamData.stream_name;
+
+      // Step 1: Create a new Stream instance
+      const streamInstance = new Stream(
+        streamId,
+        streamName,
+        createDefaultStreamConfig() // Abhi ke liye default config
+      );
+
+      // Step 2: Parse and add the IO Card
+      const ioCardData = streamData.io_card;
+      if (ioCardData) {
+        const ioCardInstance = streamInstance.addIOCard(ioCardData.card_type);
+
+        // Step 3: Parse and add Interfaces to the IO Card
+        const interfacesData = ioCardData.interfaces;
+        if (interfacesData) {
+          for (const interfaceData of Object.values<any>(interfacesData)) {
+            ioCardInstance.addInterface(
+              interfaceData.interface_id,
+              interfaceData.interface_type
+            );
+            // TODO: Yahan par har interface ke devices ko parse karne ka logic aayega.
+            // For example:
+            // if (interfaceData.devices) {
+            //   for (const deviceData of interfaceData.devices) {
+            //     newlyAddedInterface.addDevice(...)
+            //   }
+            // }
+          }
+        }
+      }
+      newStreams.push(streamInstance);
+    }
+
+    this.streams = newStreams;
   }
 
   public async fetchAndSetGlobalSnapshot() {
@@ -23,32 +73,17 @@ class GlobalStore {
     });
     try {
       const data = await getGlobalStateSnapshot();
-      console.log("✅ SUCCESS! Data from WebSocket:", data);
+      console.log("SUCCESS! Data from WebSocket:", data);
       runInAction(() => {
         this.setGlobalSnapshot(data);
         this.isLoading = false;
       });
     } catch (error) {
-      console.error("❌ FAILED to get global state snapshot:", error);
+      console.error("FAILED to get global state snapshot:", error);
       runInAction(() => {
         this.isLoading = false;
       });
     }
-  }
-
-  public initializeStreams(initialStreamData: { id: number; name: string }[]) {
-    if (this.streams.length > 0) return;
-
-    const newStreams: Stream[] = [];
-    for (const data of initialStreamData) {
-      const streamInstance = new Stream(
-        data.id,
-        data.name,
-        createDefaultStreamConfig()
-      );
-      newStreams.push(streamInstance);
-    }
-    this.streams = newStreams;
   }
 
   get allDevices(): Device[] {
