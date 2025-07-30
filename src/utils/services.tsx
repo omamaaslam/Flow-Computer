@@ -1,41 +1,89 @@
-import { getDataFromWebSocketServer } from "./api";
+import { sendMessage, addListener, removeListener } from "./api";
 
-export const getFullGlobalState = (message: object) => {
-  getDataFromWebSocketServer(message)
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      console.error("❌ Error fetching global state:", error);
-    });
+const sendAndWait = (
+  message: object,
+  matcher: (response: any) => boolean,
+  timeoutMs = 10000
+): Promise<any> => {
+  return new Promise((resolve, reject) => {
+    let timeoutId: number;
+
+    const temporaryListener = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (matcher(data)) {
+          clearTimeout(timeoutId);
+          removeListener(temporaryListener);
+          resolve(data);
+        }
+      } catch (error) {
+        // Ignore non-JSON messages
+      }
+    };
+
+    timeoutId = window.setTimeout(() => {
+      removeListener(temporaryListener);
+      reject(new Error(`Request timed out after ${timeoutMs / 1000}s`));
+    }, timeoutMs);
+
+    addListener(temporaryListener);
+    sendMessage(message);
+  });
 };
 
-export const getSreamById = (message: object) => {
-  getDataFromWebSocketServer(message)
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      console.error("❌ Error fetching stream by ID:", error);
-    });
+export const getGlobalStateSnapshot = () => {
+  const msg = {
+    command: "get_global_state_snapshot",
+    scope: "full",
+  };
+  const isMatch = (res: any) => res && typeof res.streams === "object";
+  return sendAndWait(msg, isMatch);
 };
 
-export const getInterfcaeById = (message: object) => {
-  getDataFromWebSocketServer(message)
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      console.error("❌ Error fetching interface by ID:", error);
-    });
+export const getStreamSnapshot = (streamId: string) => {
+  const msg = {
+    command: "get_global_state_snapshot",
+    scope: "stream",
+    stream_id: streamId,
+  };
+  const isMatch = (res: any) => res?.streams?.[streamId] !== undefined;
+  return sendAndWait(msg, isMatch);
 };
 
-export const getDeviceById = (message: object) => {
-  getDataFromWebSocketServer(message)
-    .then((data) => {
-      return data;
-    })
-    .catch((error) => {
-      console.error("❌ Error fetching device by ID:", error);
-    });
+export const getIoCardSnapshot = (streamId: string, ioCardId: string) => {
+  const msg = {
+    command: "get_global_state_snapshot",
+    scope: "io_card",
+    stream_id: streamId,
+    io_card_id: ioCardId,
+  };
+  const isMatch = (res: any) => res?.io_card?.io_card_id === ioCardId;
+  return sendAndWait(msg, isMatch);
+};
+
+export const getInterfaceSnapshot = (streamId: string, interfaceId: string) => {
+  const msg = {
+    command: "get_global_state_snapshot",
+    scope: "interface",
+    stream_id: streamId,
+    interface_id: interfaceId,
+  };
+  const isMatch = (res: any) => res?.interfaces?.[interfaceId] !== undefined;
+  return sendAndWait(msg, isMatch);
+};
+
+export const getDeviceSnapshot = (
+  streamId: string,
+  interfaceId: string,
+  deviceId: string
+) => {
+  const msg = {
+    command: "get_global_state_snapshot",
+    scope: "device",
+    stream_id: streamId,
+    interface_id: interfaceId,
+    device_id: deviceId,
+  };
+  const isMatch = (res: any) => res?.devices?.[deviceId] !== undefined;
+  return sendAndWait(msg, isMatch);
 };
