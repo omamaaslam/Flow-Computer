@@ -1,79 +1,68 @@
-// src/components/configurationFlow/ModbusInterfaceSettingsForm.tsx
 import React from "react";
 import { observer } from "mobx-react-lite";
-import type { InterfaceConfig } from "../../types/interfaceConfig";
+import type { ModbusConfig } from "../../types/interfaceConfig";
 
 interface ModbusInterfaceSettingsFormProps {
-  currentConfig: InterfaceConfig;
-  onSave: (config: InterfaceConfig) => void;
+  currentConfig: ModbusConfig;
+  onSave: (config: ModbusConfig) => void;
   onClose: () => void;
 }
 
 const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
   observer(({ currentConfig, onSave, onClose }) => {
-    const defaultConfig: InterfaceConfig = {
-      baud_rate: "",
-      dataBits: 8,
-      max_slaves: 32,
-      parity: "Even",
-      stop_bits: 1,
-      pull_up_enabled: "Enabled",
-      timeout_ms: 1000,
-      poll_interval_ms: 5000,
-      retryCount: 3,
-    };
-
-    const [formData, setFormData] = React.useState<InterfaceConfig>({
-      ...defaultConfig,
-      ...currentConfig,
-    });
+    const [formData, setFormData] = React.useState<ModbusConfig>(currentConfig);
 
     const handleChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
       const { name, value } = e.target;
-      const key = name as keyof InterfaceConfig;
-      const processedValue =
-        key === "dataBits" ||
-        key === "max_slaves" ||
-        key === "timeout_ms" ||
-        key === "poll_interval_ms" ||
-        key === "retryCount"
-          ? Number(value)
-          : value;
+
+      let processedValue: string | number | boolean = value;
+
+      if (name === "pull_up_enabled") {
+        processedValue = value === "true";
+      } else if (
+        [
+          "baud_rate",
+          "data_bits",
+          "max_slaves",
+          "stop_bits",
+          "timeout_ms",
+          "poll_interval_ms",
+          "retry_count",
+        ].includes(name)
+      ) {
+        processedValue = Number(value);
+      }
 
       setFormData((prev) => ({
         ...prev,
-        [key]: processedValue,
+        [name]: processedValue,
       }));
     };
 
     const handleSave = () => {
-      console.log("Saving config:", formData);
       onSave(formData);
     };
 
     return (
       <>
         <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm text-gray-800">
-          {/* Left Column */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">Baud Rate</label>
             <input
               name="baud_rate"
-              type="text"
+              type="number"
               value={formData.baud_rate}
               onChange={handleChange}
-              placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             />
           </div>
-
           <div className="space-y-1">
             <label className="block font-medium text-xs">Data Bits</label>
             <select
-              name="dataBits"
-              value={formData.dataBits || 8}
+              name="data_bits"
+              value={formData.data_bits}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
@@ -81,7 +70,6 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
               <option value={7}>7</option>
             </select>
           </div>
-
           <div className="space-y-1">
             <label className="block font-medium text-xs">Max Slaves</label>
             <input
@@ -92,12 +80,11 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             />
           </div>
-
           <div className="space-y-1">
             <label className="block font-medium text-xs">Parity</label>
             <select
               name="parity"
-              value={formData.parity || "Even"}
+              value={formData.parity}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
@@ -106,8 +93,6 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
               <option value="None">None</option>
             </select>
           </div>
-
-          {/* Right Column */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">Stop Bits</label>
             <select
@@ -120,22 +105,20 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
               <option value={2}>2</option>
             </select>
           </div>
-
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Pull-Up/Pull-Down
             </label>
             <select
               name="pull_up_enabled"
-              value={formData.pull_up_enabled}
+              value={String(formData.pull_up_enabled)}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
-              <option value="Enabled">Enabled</option>
-              <option value="Disabled">Disabled</option>
+              <option value="true">Enabled</option>
+              <option value="false">Disabled</option>
             </select>
           </div>
-
           <div className="space-y-1">
             <label className="block font-medium text-xs">Time-out (ms)</label>
             <input
@@ -143,11 +126,9 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
               type="number"
               value={formData.timeout_ms}
               onChange={handleChange}
-              placeholder="Time-out for read/write operations eg. 1000"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             />
           </div>
-
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Poll Interval (ms)
@@ -160,12 +141,11 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             />
           </div>
-
           <div className="space-y-1">
             <label className="block font-medium text-xs">Retry Count</label>
             <select
-              name="retryCount"
-              value={formData.retryCount || 3}
+              name="retry_count"
+              value={formData.retry_count}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
@@ -175,7 +155,6 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
             </select>
           </div>
         </div>
-
         <div className="flex justify-end gap-2 mt-4 pt-3">
           <button
             onClick={onClose}

@@ -49,7 +49,7 @@ const statusStyles: Record<
 
 const ConfigureInterface = observer(
   ({ anInterface, onBack }: ConfigureInterfaceProps) => {
-    const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(
+    const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
       null
     );
     const [modalView, setModalView] = useState<ModalView>("closed");
@@ -102,23 +102,19 @@ const ConfigureInterface = observer(
       }
 
       if (!isEditing) {
-        anInterface.addDevice(Date.now(), deviceTypeToConfigure, config);
+        anInterface.addDevice(deviceTypeToConfigure, config);
         const allStreams = toJS(globalStore.streams);
         const allConfiguredInterfaces: { [key: string]: any } = {};
 
-        // 3. Loop through all the data to find configured interfaces
         allStreams.forEach((stream) => {
           stream.ioCards.forEach((ioCard) => {
             ioCard.interfaces.forEach((iface) => {
-              // Only include interfaces that have devices
               if (iface.devices && iface.devices.length > 0) {
-                // Add the interface data to our final object
                 allConfiguredInterfaces[iface.name] = iface;
               }
             });
           });
         });
-        // Using JSON.stringify makes the output clean and readable
         console.log(
           JSON.stringify({ interfaces: allConfiguredInterfaces }, null, 2)
         );
@@ -151,6 +147,9 @@ const ConfigureInterface = observer(
       }
     };
 
+    const currentConfig = anInterface.getConfig();
+    console.log("Current Modal View:", modalView);
+    console.log("Device Type To Configure:", deviceTypeToConfigure);
     return (
       <>
         <div className="w-full bg-white p-4 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8 border border-gray-200">
@@ -214,7 +213,6 @@ const ConfigureInterface = observer(
 
           <div className="border-t pt-6 md:pt-8 space-y-4">
             <div className="flex justify-center">
-              {/* --- UPDATED: This button now uses the smart handler --- */}
               <button
                 onClick={handleOpenSettingsModal}
                 className="w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
@@ -232,38 +230,47 @@ const ConfigureInterface = observer(
           title={getModalTitle()}
         >
           <>
-            {/* This conditional rendering now works perfectly */}
-            {modalView === "modbusSettings" && (
-              <ModbusInterfaceSettingsForm
-                currentConfig={anInterface.getConfig()}
-                onSave={handleSaveInterfaceConfig}
-                onClose={closeModal}
-              />
-            )}
+            {/* 
+              ▼▼▼ THE MAJOR CHANGE IS HERE ▼▼▼ 
+              We add a check for `currentConfig.interface_type` before rendering each form.
+              This acts as a type guard, assuring TypeScript that the prop being passed
+              has the correct, specific type that the child component expects.
+            */}
+            {modalView === "modbusSettings" &&
+              currentConfig.interface_type === "ModbusInterface" && (
+                <ModbusInterfaceSettingsForm
+                  currentConfig={currentConfig}
+                  onSave={handleSaveInterfaceConfig}
+                  onClose={closeModal}
+                />
+              )}
 
-            {modalView === "RTDSettings" && (
-              <RTDInterfaceSettingsForm
-                currentConfig={anInterface.getConfig()}
-                onSave={handleSaveInterfaceConfig}
-                onClose={closeModal}
-              />
-            )}
+            {modalView === "RTDSettings" &&
+              currentConfig.interface_type === "RtdInterface" && (
+                <RTDInterfaceSettingsForm
+                  currentConfig={currentConfig}
+                  onSave={handleSaveInterfaceConfig}
+                  onClose={closeModal}
+                />
+              )}
 
-            {modalView === "HART1" && (
-              <HartInterfaceSettingsForm
-                currentConfig={anInterface.getConfig()}
-                onSave={handleSaveInterfaceConfig}
-                onClose={closeModal}
-              />
-            )}
+            {modalView === "HART1" &&
+              currentConfig.interface_type === "HartInterface" && (
+                <HartInterfaceSettingsForm
+                  currentConfig={currentConfig}
+                  onSave={handleSaveInterfaceConfig}
+                  onClose={closeModal}
+                />
+              )}
 
-            {modalView === "Di_InterfaceSettings" && (
-              <DI_InterfaceSettingsForm
-                currentConfig={anInterface.getConfig()}
-                onSave={handleSaveInterfaceConfig}
-                onClose={closeModal}
-              />
-            )}
+            {modalView === "Di_InterfaceSettings" &&
+              currentConfig.interface_type === "DigitalInputInterface" && (
+                <DI_InterfaceSettingsForm
+                  currentConfig={currentConfig}
+                  onSave={handleSaveInterfaceConfig}
+                  onClose={closeModal}
+                />
+              )}
 
             {modalView === "addDevice_selectType" && (
               <AddDeviceForm
@@ -313,7 +320,6 @@ const ConfigureInterface = observer(
                   onBack={() => setModalView("addDevice_selectType")}
                   interfaceName={anInterface.name}
                 />
-                // <GasDeviceForm/>
               )}
 
             {modalView === "addDevice_configure" &&

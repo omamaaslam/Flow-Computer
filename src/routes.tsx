@@ -11,12 +11,10 @@ export const ROUTES = {
   Monitor: "/monitor",
   Configuration: "/configuration/:streamId",
 
-
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
 
-// Internal route component mapping (YOU control this, UI dev can't change)
 export const RouteComponentMap: Record<RouteKey, JSX.Element> = {
   Home: <Home />,
   Alarms: <h1>Alarms Page</h1>,

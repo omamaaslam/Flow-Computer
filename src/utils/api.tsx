@@ -1,5 +1,6 @@
+// const WEBSOCKET_API_URL = "ws://192.168.1.254:8888";
 const WEBSOCKET_API_URL = "ws://localhost:4200";
-const RECONNECT_DELAY = 5000;
+const RECONNECT_DELAY = 3000;
 
 let socket: WebSocket | null = null;
 const listeners = new Set<(event: MessageEvent) => void>();

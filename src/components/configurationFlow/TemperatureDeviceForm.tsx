@@ -203,11 +203,9 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
       <BridgeComponent
         interfaceName={interfaceName}
         formState={formState}
-        // Pass an empty object for the errors prop as it's no longer managed here
         errors={{}}
         handleStateChange={handleStateChange}
       />
-
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab("general")}
