@@ -1,7 +1,5 @@
 // src/components/configurationFlow/ConfigureInterface.tsx
-import { toJS } from "mobx";
 import { useState } from "react";
-import globalStore from "../../stores/GlobalStore";
 import { Thermometer, Settings, ArrowLeft } from "lucide-react";
 import MuiModalWrapper from "./MuiModalWrapper";
 import TemperatureDeviceForm from "./TemperatureDeviceForm.tsx";
@@ -25,9 +23,7 @@ interface ConfigureInterfaceProps {
   anInterface: Interface;
   onBack: () => void;
 }
-
 type DeviceStatus = "ok" | "warning" | "error";
-
 type ModalView =
   | "closed"
   | "modbusSettings"
@@ -36,7 +32,6 @@ type ModalView =
   | "Di_InterfaceSettings"
   | "addDevice_selectType"
   | "addDevice_configure";
-
 const statusStyles: Record<
   DeviceStatus | "inactive",
   { gradient: string; icon: string }
@@ -56,6 +51,7 @@ const ConfigureInterface = observer(
     const [deviceTypeToConfigure, setDeviceTypeToConfigure] =
       useState<string>("");
     const [isEditing, setIsEditing] = useState(false);
+    const [editingDevice, setEditingDevice] = useState<Device | null>(null);
 
     const handleSaveInterfaceConfig = (config: InterfaceConfig) => {
       anInterface.updateConfig(config);
@@ -76,6 +72,7 @@ const ConfigureInterface = observer(
 
     const handleAddNewDeviceClick = () => {
       setIsEditing(false);
+      setEditingDevice(null);
       setModalView("addDevice_selectType");
     };
 
@@ -88,6 +85,10 @@ const ConfigureInterface = observer(
 
     const handleDeviceClick = (device: Device) => {
       setSelectedDeviceId(device.id);
+      setEditingDevice(device);
+      setDeviceTypeToConfigure(device.name);
+      setIsEditing(true);
+      setModalView("addDevice_configure");
     };
 
     const handleDeviceTypeSelection = (deviceType: string) => {
@@ -96,28 +97,10 @@ const ConfigureInterface = observer(
     };
 
     const handleSaveDeviceConfiguration = (config: DeviceConfig) => {
-      if (!deviceTypeToConfigure) {
-        closeModal();
-        return;
-      }
-
-      if (!isEditing) {
+      if (isEditing && editingDevice) {
+        anInterface.updateDevice(editingDevice.id, config);
+      } else if (!isEditing && deviceTypeToConfigure) {
         anInterface.addDevice(deviceTypeToConfigure, config);
-        const allStreams = toJS(globalStore.streams);
-        const allConfiguredInterfaces: { [key: string]: any } = {};
-
-        allStreams.forEach((stream) => {
-          stream.ioCards.forEach((ioCard) => {
-            ioCard.interfaces.forEach((iface) => {
-              if (iface.devices && iface.devices.length > 0) {
-                allConfiguredInterfaces[iface.name] = iface;
-              }
-            });
-          });
-        });
-        console.log(
-          JSON.stringify({ interfaces: allConfiguredInterfaces }, null, 2)
-        );
       }
       closeModal();
     };
@@ -126,9 +109,16 @@ const ConfigureInterface = observer(
       setModalView("closed");
       setDeviceTypeToConfigure("");
       setIsEditing(false);
+      setEditingDevice(null);
+      setSelectedDeviceId(null);
     };
 
     const getModalTitle = () => {
+      if (isEditing) {
+        return `Edit ${deviceTypeToConfigure} Device: ${
+          editingDevice?.config.tag_name || editingDevice?.id
+        }`;
+      }
       switch (modalView) {
         case "modbusSettings":
           return `Modbus Settings: ${anInterface.name}`;
@@ -148,8 +138,7 @@ const ConfigureInterface = observer(
     };
 
     const currentConfig = anInterface.getConfig();
-    console.log("Current Modal View:", modalView);
-    console.log("Device Type To Configure:", deviceTypeToConfigure);
+
     return (
       <>
         <div className="w-full bg-white p-4 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8 border border-gray-200">
@@ -165,7 +154,6 @@ const ConfigureInterface = observer(
               Configure: {anInterface.name}
             </h1>
           </div>
-
           <div className="space-y-4 md:space-y-6">
             <h2 className="text-base md:text-xl font-bold font-sans text-gray-800">
               Devices on {anInterface.name}
@@ -189,7 +177,7 @@ const ConfigureInterface = observer(
                     strokeWidth={2.5}
                   />
                   <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
-                    {device.name}
+                    {device.config.tag_name || device.name}
                   </span>
                 </button>
               ))}
@@ -210,7 +198,6 @@ const ConfigureInterface = observer(
               </button>
             </div>
           </div>
-
           <div className="border-t pt-6 md:pt-8 space-y-4">
             <div className="flex justify-center">
               <button
@@ -223,19 +210,12 @@ const ConfigureInterface = observer(
             </div>
           </div>
         </div>
-
         <MuiModalWrapper
           open={modalView !== "closed"}
           onClose={closeModal}
           title={getModalTitle()}
         >
           <>
-            {/* 
-              ▼▼▼ THE MAJOR CHANGE IS HERE ▼▼▼ 
-              We add a check for `currentConfig.interface_type` before rendering each form.
-              This acts as a type guard, assuring TypeScript that the prop being passed
-              has the correct, specific type that the child component expects.
-            */}
             {modalView === "modbusSettings" &&
               currentConfig.interface_type === "ModbusInterface" && (
                 <ModbusInterfaceSettingsForm
@@ -244,7 +224,6 @@ const ConfigureInterface = observer(
                   onClose={closeModal}
                 />
               )}
-
             {modalView === "RTDSettings" &&
               currentConfig.interface_type === "RtdInterface" && (
                 <RTDInterfaceSettingsForm
@@ -253,7 +232,6 @@ const ConfigureInterface = observer(
                   onClose={closeModal}
                 />
               )}
-
             {modalView === "HART1" &&
               currentConfig.interface_type === "HartInterface" && (
                 <HartInterfaceSettingsForm
@@ -262,7 +240,6 @@ const ConfigureInterface = observer(
                   onClose={closeModal}
                 />
               )}
-
             {modalView === "Di_InterfaceSettings" &&
               currentConfig.interface_type === "DigitalInputInterface" && (
                 <DI_InterfaceSettingsForm
@@ -271,7 +248,6 @@ const ConfigureInterface = observer(
                   onClose={closeModal}
                 />
               )}
-
             {modalView === "addDevice_selectType" && (
               <AddDeviceForm
                 onClose={closeModal}
@@ -281,56 +257,54 @@ const ConfigureInterface = observer(
             {modalView === "addDevice_configure" &&
               deviceTypeToConfigure === "Temperature" && (
                 <TemperatureDeviceForm
+                  initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
-                  onBack={() => setModalView("addDevice_selectType")}
+                  onBack={closeModal}
+                  interfaceName={anInterface.name}
+                />
+              )}
+            {modalView === "addDevice_configure" &&
+              deviceTypeToConfigure === "Pressure" && (
+                <PressureDeviceForm
+                  initialData={isEditing ? editingDevice?.config : null}
+                  onSave={handleSaveDeviceConfiguration}
+                  onBack={closeModal}
                   interfaceName={anInterface.name}
                 />
               )}
             {modalView === "addDevice_configure" &&
               deviceTypeToConfigure === "Volume" && (
                 <VolumeDeviceForm
+                  initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
-                  onBack={() => setModalView("addDevice_selectType")}
+                  onBack={closeModal}
                   interfaceName={anInterface.name}
                 />
               )}
-
             {modalView === "addDevice_configure" &&
               deviceTypeToConfigure === "PulseVolume" && (
                 <PulseVolumeDeviceForm
+                  initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
-                  onBack={() => setModalView("addDevice_selectType")}
+                  onBack={closeModal}
                   interfaceName={anInterface.name}
                 />
               )}
-
             {modalView === "addDevice_configure" &&
               deviceTypeToConfigure === "PulseFlowRate" && (
                 <PulseFlowRateDeviceForm
+                  initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
-                  onBack={() => setModalView("addDevice_selectType")}
+                  onBack={closeModal}
                   interfaceName={anInterface.name}
                 />
               )}
-
             {modalView === "addDevice_configure" &&
               deviceTypeToConfigure === "FlowRate" && (
                 <FlowRateDeviceForm
+                  initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
-                  onBack={() => setModalView("addDevice_selectType")}
-                  interfaceName={anInterface.name}
-                />
-              )}
-
-            {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "Pressure" && (
-                <PressureDeviceForm
-                  onSave={handleSaveDeviceConfiguration}
-                  onBack={
-                    isEditing
-                      ? closeModal
-                      : () => setModalView("addDevice_selectType")
-                  }
+                  onBack={closeModal}
                   interfaceName={anInterface.name}
                 />
               )}
@@ -340,5 +314,4 @@ const ConfigureInterface = observer(
     );
   }
 );
-
 export default ConfigureInterface;

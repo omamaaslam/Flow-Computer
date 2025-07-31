@@ -1,3 +1,4 @@
+// src/stores/Interface.tsx
 import { makeAutoObservable } from "mobx";
 import { Device } from "./Device";
 import type { InterfaceConfig } from "../types/interfaceConfig";
@@ -5,23 +6,23 @@ import type { DeviceConfig } from "../types/device";
 
 export class Interface {
   public id: string;
-  public name: string; // This will hold the interface_type, e.g., "DigitalInputInterface"
+  public name: string;
   public config: InterfaceConfig;
   public devices: Device[] = [];
 
   constructor(interfaceData: any) {
     makeAutoObservable(this);
 
-    // Destructure all properties from the incoming data object
     const { interface_id, interface_type, devices, ...configData } =
       interfaceData;
 
     this.id = interface_id;
     this.name = interface_type;
 
-    // Devices are parsed the same way
-    if (devices && Array.isArray(devices)) {
-      this.devices = devices.map((devData) => new Device(devData));
+    if (devices) {
+      this.devices = Object.values<any>(devices).map(
+        (devData) => new Device(devData)
+      );
     }
 
     this.config = {
@@ -30,23 +31,30 @@ export class Interface {
     } as InterfaceConfig;
   }
 
-   addDevice(name: string, config: DeviceConfig) {
-    // We create a new Device instance.
-    // The new device's data is constructed from the provided name and config.
-    // We generate a simple unique ID using the current timestamp.
+  addDevice(name: string, config: DeviceConfig) {
     const newDeviceData = {
-      device_id: `device_${Date.now()}`, // Or use a proper UUID library
-      device_type: name,
       ...config,
+      device_id: `device_${Date.now()}`,
+      device_type: name,
     };
     const newDevice = new Device(newDeviceData);
     this.devices.push(newDevice);
   }
+
+  updateDevice(deviceId: string, newConfig: DeviceConfig) {
+    const deviceToUpdate = this.devices.find(
+      (device) => device.id === deviceId
+    );
+    if (deviceToUpdate) {
+      // Pass the partial flat config to the device's update method
+      deviceToUpdate.updateConfig(newConfig);
+    }
+  }
+
   updateConfig(newConfig: Partial<this["config"]>) {
     this.config = { ...this.config, ...newConfig };
   }
 
-  // These methods remain the same.
   removeDevice(deviceId: string) {
     this.devices = this.devices.filter((device) => device.id !== deviceId);
   }

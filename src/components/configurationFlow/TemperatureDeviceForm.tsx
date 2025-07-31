@@ -1,123 +1,46 @@
-import React, { useState } from "react";
+// src/components/configurationFlow/TemperatureDeviceForm.tsx
+import React, { useState, useEffect } from "react";
 import BridgeComponent from "./BridgeComponent";
+import type { DeviceConfig } from "../../types/device";
 
-interface CustomComboboxProps {
-  options: { value: string; label: string }[];
-  value: string;
-  onChange: (value: string) => void;
-  placeholder: string;
-  // REMOVED: hasError prop
-}
-
-const CustomCombobox: React.FC<CustomComboboxProps> = ({
-  options,
-  value,
-  onChange,
-  placeholder,
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleBlur = (event: React.FocusEvent<HTMLDivElement>) => {
-    if (!event.currentTarget.contains(event.relatedTarget as Node)) {
-      setIsOpen(false);
-    }
-  };
-
-  return (
-    <div className="relative w-full" onBlur={handleBlur} tabIndex={-1}>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => setIsOpen(true)}
-        placeholder={placeholder}
-        // REMOVED: Conditional border class
-        className="w-full border rounded-md py-1.5 pl-3 pr-8 text-sm placeholder:text-gray-400 bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 border-gray-300"
-      />
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="absolute inset-y-0 right-0 flex items-center px-2"
-        aria-label="Toggle options"
-      >
-        <svg
-          className="h-4 w-4 text-gray-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M19 9l-7 7-7-7"
-          ></path>
-        </svg>
-      </button>
-
-      {isOpen && (
-        <div className="absolute z-[2000] top-full mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 animate-fadeIn p-2">
-          <div className="max-h-60 overflow-y-auto">
-            {options.map((option) => (
-              <div
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                className={`flex items-center gap-4 p-2.5 rounded-md cursor-pointer text-sm transition-colors ${
-                  value === option.value
-                    ? "bg-yellow-100/50"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <div
-                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                    value === option.value
-                      ? "border-yellow-500"
-                      : "border-gray-400"
-                  }`}
-                >
-                  {value === option.value && (
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  )}
-                </div>
-                <span>{option.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// REMOVED: hasError prop from InputProps
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
   <input
     {...props}
-    // REMOVED: Conditional border class
     className="w-full border rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 border-gray-300"
   />
 );
 
 interface TemperatureDeviceFormProps {
   onBack: () => void;
-  onSave: (config: any) => void;
+  onSave: (config: DeviceConfig) => void;
   interfaceName: string;
+  initialData?: DeviceConfig | null;
 }
 
 const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   onBack,
   onSave,
   interfaceName,
+  initialData,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
 
   const [formState, setFormState] = useState({
+    manufacturer: "",
+    serial_number: "",
+    model: "",
+    tag_name: "",
+    g_size: "",
+    temp_min: "",
+    temp_max: "",
+    unit: "Celsius",
+    correction_c0: "",
+    correction_c1: "",
+    correction_c2: "",
+    correction_c3: "",
     slaveId: "",
     register_count: "",
     register_address: "",
@@ -125,74 +48,52 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     pollingAddress: "",
     commandSet: "",
     variableType: "",
-    manufacturer: "",
-    serial_number: "",
-    model: "",
-    tag_name: "",
-    tempUnit: "C",
-    gSize: "",
-    tmin: "",
-    tmax: "",
-    coeff1: "",
-    coeff2: "",
-    coeff3: "",
-    coeff4: "",
   });
 
-  // REMOVED: 'errors' state
-  // const [errors, setErrors] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (initialData) {
+      setFormState({
+        manufacturer: initialData.manufacturer || "",
+        serial_number: initialData.serial_number || "",
+        model: initialData.model || "",
+        tag_name: initialData.tag_name || "",
+        g_size: String(initialData.g_size || ""),
+        temp_min: String(initialData.temp_min || ""),
+        temp_max: String(initialData.temp_max || ""),
+        unit: initialData.unit || "Celsius",
+        correction_c0: String(initialData.correction_c0 || ""),
+        correction_c1: String(initialData.correction_c1 || ""),
+        correction_c2: String(initialData.correction_c2 || ""),
+        correction_c3: String(initialData.correction_c3 || ""),
+        slaveId: String(initialData.slaveId || ""),
+        register_count: String(initialData.register_count || ""),
+        register_address: String(initialData.register_address || ""),
+        data_type: initialData.data_type || "",
+        pollingAddress: String(initialData.pollingAddress || ""),
+        commandSet: initialData.commandSet || "",
+        variableType: initialData.variableType || "",
+      });
+    }
+  }, [initialData]);
 
   const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
-    // REMOVED: Logic to clear errors
   };
 
-  // REMOVED: All validation-related constants and functions
-  // ('requiredFields', 'numericFields', 'calculateIsFormValid', 'isFormValid')
-
   const validateAndSave = () => {
-    // REMOVED: All validation logic
-
-    const finalConfig = {
-      general: {
-        slaveId:
-          interfaceName === "MOD" ? parseInt(formState.slaveId, 10) : null,
-        register_count:
-          interfaceName === "MOD"
-            ? parseInt(formState.register_count, 10)
-            : null,
-        register_address:
-          interfaceName === "MOD"
-            ? parseInt(formState.register_address, 10)
-            : null,
-        data_type: interfaceName === "MOD" ? formState.data_type : "INT16",
-        pollingAddress: interfaceName.includes("HART")
-          ? parseInt(formState.pollingAddress, 10)
-          : null,
-        commandSet: interfaceName.includes("HART")
-          ? formState.commandSet
-          : null,
-        variableType: interfaceName.includes("HART")
-          ? formState.variableType
-          : null,
-        manufacturer: formState.manufacturer,
-        model: formState.model,
-        serial_number: formState.serial_number,
-        tag_name: formState.tag_name,
-        device_id: "",
-        build_year: "",
-        version: "",
-      },
-      parameters: {
-        gSize: formState.gSize ? parseFloat(formState.gSize) : null,
-        tmin: formState.tmin ? parseFloat(formState.tmin) : null,
-        tmax: formState.tmax ? parseFloat(formState.tmax) : null,
-        tempUnit: formState.tempUnit,
-        coeff1: formState.coeff1 ? parseFloat(formState.coeff1) : null,
-        coeff2: formState.coeff2 ? parseFloat(formState.coeff2) : null,
-        coeff3: formState.coeff3 ? parseFloat(formState.coeff3) : null,
-        coeff4: formState.coeff4 ? parseFloat(formState.coeff4) : null,
-      },
+    const finalConfig: DeviceConfig = {
+      manufacturer: formState.manufacturer,
+      model: formState.model,
+      serial_number: formState.serial_number,
+      tag_name: formState.tag_name,
+      g_size: formState.g_size,
+      temp_min: parseFloat(formState.temp_min),
+      temp_max: parseFloat(formState.temp_max),
+      unit: formState.unit,
+      correction_c0: parseFloat(formState.correction_c0),
+      correction_c1: parseFloat(formState.correction_c1),
+      correction_c2: parseFloat(formState.correction_c2),
+      correction_c3: parseFloat(formState.correction_c3),
     };
 
     onSave(finalConfig);
@@ -228,7 +129,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
           Parameters
         </button>
       </div>
-
       <div>
         {activeTab === "general" && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
@@ -236,18 +136,14 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
               <label className="block text-xs font-medium text-gray-600">
                 Device Manufacturer
               </label>
-              <CustomCombobox
+              <Input
                 value={formState.manufacturer}
-                onChange={(val) => handleStateChange("manufacturer", val)}
+                onChange={(e) =>
+                  handleStateChange("manufacturer", e.target.value)
+                }
                 placeholder="Please set manufacturer"
-                options={[
-                  { value: "RMA", label: "RMA" },
-                  { value: "Siemens", label: "Siemens" },
-                ]}
               />
-              {/* REMOVED: Error message */}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Serial Number
@@ -259,9 +155,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
                 }
                 placeholder="Please set serial number"
               />
-              {/* REMOVED: Error message */}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Model
@@ -272,9 +166,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
                 placeholder="Please set Device model"
                 type="text"
               />
-              {/* REMOVED: Error message */}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Tag Name
@@ -284,19 +176,16 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
                 onChange={(e) => handleStateChange("tag_name", e.target.value)}
                 placeholder="Please set tag name"
               />
-              {/* REMOVED: Error message */}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 G-Size
               </label>
               <Input
-                value={formState.gSize}
-                onChange={(e) => handleStateChange("gSize", e.target.value)}
+                value={formState.g_size}
+                onChange={(e) => handleStateChange("g_size", e.target.value)}
                 placeholder="Please set G-size"
               />
-              {/* REMOVED: Error message */}
             </div>
           </div>
         )}
@@ -308,94 +197,74 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
                   Tmin
                 </label>
                 <Input
-                  value={formState.tmin}
-                  onChange={(e) => handleStateChange("tmin", e.target.value)}
+                  value={formState.temp_min}
+                  onChange={(e) =>
+                    handleStateChange("temp_min", e.target.value)
+                  }
                   placeholder="Please set Tmin"
                 />
-                {/* REMOVED: Error message */}
               </div>
-
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
                   Tmax
                 </label>
                 <Input
-                  value={formState.tmax}
-                  onChange={(e) => handleStateChange("tmax", e.target.value)}
+                  value={formState.temp_max}
+                  onChange={(e) =>
+                    handleStateChange("temp_max", e.target.value)
+                  }
                   placeholder="Please set Tmax"
                 />
-                {/* REMOVED: Error message */}
               </div>
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Temperature Unit
               </label>
-              <CustomCombobox
-                value={formState.tempUnit}
-                onChange={(val) => handleStateChange("tempUnit", val)}
+              <Input
+                value={formState.unit}
+                onChange={(e) => handleStateChange("unit", e.target.value)}
                 placeholder="Select Unit"
-                options={[
-                  { value: "C", label: "C" },
-                  { value: "F", label: "F" },
-                  { value: "K", label: "K" },
-                ]}
               />
-              {/* REMOVED: Error message */}
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Correction Coefficients
               </label>
               <div className="grid grid-cols-4 gap-x-3">
-                <div>
-                  <Input
-                    value={formState.coeff1}
-                    onChange={(e) =>
-                      handleStateChange("coeff1", e.target.value)
-                    }
-                    placeholder="Enter value"
-                  />
-                  {/* REMOVED: Error message */}
-                </div>
-                <div>
-                  <Input
-                    value={formState.coeff2}
-                    onChange={(e) =>
-                      handleStateChange("coeff2", e.target.value)
-                    }
-                    placeholder="Enter value"
-                  />
-                  {/* REMOVED: Error message */}
-                </div>
-                <div>
-                  <Input
-                    value={formState.coeff3}
-                    onChange={(e) =>
-                      handleStateChange("coeff3", e.target.value)
-                    }
-                    placeholder="Enter value"
-                  />
-                  {/* REMOVED: Error message */}
-                </div>
-                <div>
-                  <Input
-                    value={formState.coeff4}
-                    onChange={(e) =>
-                      handleStateChange("coeff4", e.target.value)
-                    }
-                    placeholder="Enter value"
-                  />
-                  {/* REMOVED: Error message */}
-                </div>
+                <Input
+                  value={formState.correction_c0}
+                  onChange={(e) =>
+                    handleStateChange("correction_c0", e.target.value)
+                  }
+                  placeholder="C0"
+                />
+                <Input
+                  value={formState.correction_c1}
+                  onChange={(e) =>
+                    handleStateChange("correction_c1", e.target.value)
+                  }
+                  placeholder="C1"
+                />
+                <Input
+                  value={formState.correction_c2}
+                  onChange={(e) =>
+                    handleStateChange("correction_c2", e.target.value)
+                  }
+                  placeholder="C2"
+                />
+                <Input
+                  value={formState.correction_c3}
+                  onChange={(e) =>
+                    handleStateChange("correction_c3", e.target.value)
+                  }
+                  placeholder="C3"
+                />
               </div>
             </div>
           </div>
         )}
       </div>
-
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <button
           onClick={onBack}
@@ -405,7 +274,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
         </button>
         <button
           onClick={validateAndSave}
-          // REMOVED: disabled prop
           className="px-6 py-2 rounded-full font-semibold text-sm bg-yellow-400 text-black hover:bg-yellow-500 transition-colors shadow-sm"
         >
           Save
@@ -414,5 +282,4 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     </div>
   );
 };
-
 export default TemperatureDeviceForm;

@@ -1,65 +1,46 @@
-// src/types/DeviceConfig.tsx
+// src/types/device.tsx
 
-// NEW: This interface holds the communication settings for ONE device.
-// This is for the items that will go inside the "list" object.
-export interface DeviceProtocolConfig {
-  device_id: number;
+// NEW: A single, flat interface for all device properties
+// All properties are optional to handle different device types.
+export interface DeviceConfig {
+  // General Info
+  device_id?: string;
+  device_type?: string;
+  manufacturer?: string;
+  model?: string;
+  serial_number?: string;
+  tag_name?: string;
+  build_year?: string;
+  version?: string;
+  g_size?: string;
 
-  // --- Modbus Specific Fields ---
-  slaveId?: number | null;
-  register_count?: number | null;
-  register_address?: number | null;
-  data_type?: "INT16" | "INT32" | "FLOAT" | "DOUBLE" | "STRING";
+  // Temperature Parameters
+  temp_min?: number;
+  temp_max?: number;
+  unit?: string;
+  correction_c0?: number;
+  correction_c1?: number;
+  correction_c2?: number;
+  correction_c3?: number;
 
-  // --- HART Specific Fields ---
-  pollingAddress?: number | null;
-  commandSet?: "Universal" | "Common Practice" | "Device-Specific";
-  variableType?: "PV" | "SV" | "TV" | "QV";
-}
+  // Pressure Parameters
+  pressure_min?: number;
+  pressure_max?: number;
 
-// UPDATED: This is now clean and only has general info.
-export interface GeneralDeviceConfig {
-  // REMOVED: slaveId, register_count, register_address, data_type
-  manufacturer: string;
-  model: string;
-  serial_number: string;
-  tag_name: string;
-  device_id: string;
-  build_year: string;
-  g_size: string;
-  version: string;
-}
+  // Pulse Parameters
+  frequency_hz?: number;
+  frequency_type?: string;
+  pulse_duration_ms?: number;
+  pulse_pause_ms?: number;
+  pulse_volume?: number;
 
-// NEW: This is for extra parameters like G-Size, tmin, tmax etc.
-export interface DeviceParameters {
+  // A fallback for any other property
   [key: string]: any;
 }
 
-// UPDATED: The main config object for a device.
-export interface DeviceConfig {
-  general: GeneralDeviceConfig;
-  parameters?: DeviceParameters;
-}
-
-// NEW: This type describes a single device in the "devices" dictionary
+// This remains the same, but 'config' now refers to the flat type above
 export interface Device {
-  id: number;
+  id: string;
   name: string;
   config: DeviceConfig;
 }
-
-// UPDATED: The helper function now creates the new, cleaner config.
-export const createDefaultDeviceConfig = (): DeviceConfig => ({
-  general: {
-    // REMOVED: slaveId, register_count, register_address, etc.
-    manufacturer: "",
-    model: "",
-    serial_number: "",
-    tag_name: "",
-    device_id: "",
-    build_year: "",
-    g_size: "",
-    version: "",
-  },
-  parameters: {},
-});

@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+// src/components/configurationFlow/VolumeDeviceForm.tsx
+import React, { useState, useEffect } from "react";
 import BridgeComponent from "./BridgeComponent";
+import type { DeviceConfig } from "../../types/device";
 
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
@@ -11,86 +13,61 @@ const Input = (props: InputProps) => (
 
 interface VolumeDeviceFormProps {
   onBack: () => void;
-  onSave: (config: any) => void;
+  onSave: (config: DeviceConfig) => void;
   interfaceName: string;
+  initialData?: DeviceConfig | null;
 }
 
 const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
   onBack,
   onSave,
   interfaceName,
+  initialData,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
-
   const [formState, setFormState] = useState({
-    slaveId: "",
-    registerCount: "",
-    registerAddress: "",
-    dataType: "",
-    pollingAddress: "",
-    commandSet: "",
-    variableType: "",
     manufacturer: "",
-    serialNumber: "",
+    serial_number: "",
     model: "",
+    tag_name: "",
     build_year: "",
-    gSize: "",
-    minVolume: "",
-    maxVolume: "",
+    g_size: "",
+    volume_min: "",
+    volume_max: "",
   });
+
+  useEffect(() => {
+    if (initialData) {
+      setFormState({
+        manufacturer: initialData.manufacturer || "",
+        serial_number: initialData.serial_number || "",
+        model: initialData.model || "",
+        tag_name: initialData.tag_name || "",
+        build_year: initialData.build_year || "",
+        g_size: String(initialData.g_size || ""),
+        volume_min: String(initialData.volume_min || ""),
+        volume_max: String(initialData.volume_max || ""),
+      });
+    }
+  }, [initialData]);
 
   const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
-    const finalConfig = {
-      general: {
-        // Modbus fields
-        slaveId:
-          interfaceName === "MOD" ? parseInt(formState.slaveId, 10) : null,
-        registerCount:
-          interfaceName === "MOD"
-            ? parseInt(formState.registerCount, 10)
-            : null,
-        registerAddress:
-          interfaceName === "MOD"
-            ? parseInt(formState.registerAddress, 10)
-            : null,
-        dataType: interfaceName === "MOD" ? formState.dataType : "INT16",
-
-        // HART fields
-        pollingAddress: interfaceName.includes("HART")
-          ? parseInt(formState.pollingAddress, 10)
-          : null,
-        commandSet: interfaceName.includes("HART")
-          ? formState.commandSet
-          : null,
-        variableType: interfaceName.includes("HART")
-          ? formState.variableType
-          : null,
-
-        // General device info
-        manufacturer: formState.manufacturer,
-        model: formState.model,
-        serialNumber: formState.serialNumber,
-        build_year: formState.build_year,
-        deviceId: "",
-        buildYear: null,
-        version: "",
-        gSize: formState.gSize ? parseFloat(formState.gSize) : null,
-      },
-      parameters: {
-        minVolume: formState.minVolume ? parseFloat(formState.minVolume) : null,
-        maxVolume: formState.maxVolume ? parseFloat(formState.maxVolume) : null,
-      },
+    const finalConfig: DeviceConfig = {
+      manufacturer: formState.manufacturer,
+      model: formState.model,
+      serial_number: formState.serial_number,
+      tag_name: formState.tag_name,
+      build_year: formState.build_year,
+      g_size: formState.g_size,
+      volume_min: parseFloat(formState.volume_min),
+      volume_max: parseFloat(formState.volume_max),
     };
-
-    console.log("Submitting Formatted Volume Config:", finalConfig);
-
-    // Pass the correctly formatted object to the parent
     onSave(finalConfig);
   };
 
@@ -102,7 +79,6 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
         errors={{}}
         handleStateChange={handleStateChange}
       />
-
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab("general")}
@@ -125,7 +101,6 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
           Parameters
         </button>
       </div>
-
       <div>
         {activeTab === "general" && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
@@ -133,36 +108,26 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
               <label className="block text-xs font-medium text-gray-600">
                 Device Manufacturer
               </label>
-              <select
+              <Input
                 value={formState.manufacturer}
                 onChange={(e) =>
                   handleStateChange("manufacturer", e.target.value)
                 }
-                className={`w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 ${
-                  formState.manufacturer === "" ? "text-gray-400" : "text-black"
-                }`}
-              >
-                <option value="" disabled>
-                  Please set manufacturer
-                </option>
-                <option value="RMA">RMA</option>
-                <option value="Siemens">Siemens</option>
-              </select>
+                placeholder="Set manufacturer"
+              />
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Serial Number
               </label>
               <Input
-                value={formState.serialNumber}
+                value={formState.serial_number}
                 onChange={(e) =>
-                  handleStateChange("serialNumber", e.target.value)
+                  handleStateChange("serial_number", e.target.value)
                 }
-                placeholder="Please set serial number"
+                placeholder="Set serial number"
               />
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Model
@@ -170,34 +135,31 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
               <Input
                 value={formState.model}
                 onChange={(e) => handleStateChange("model", e.target.value)}
-                placeholder="Please set Device model"
+                placeholder="Set Device model"
               />
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Tag Name
               </label>
               <Input
-                value={formState.build_year}
-                onChange={(e) => handleStateChange("build_year", e.target.value)}
-                placeholder="Please set tag name"
+                value={formState.tag_name}
+                onChange={(e) => handleStateChange("tag_name", e.target.value)}
+                placeholder="Set tag name"
               />
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 G-Size
               </label>
               <Input
-                value={formState.gSize}
-                onChange={(e) => handleStateChange("gSize", e.target.value)}
-                placeholder="Please set G-size"
+                value={formState.g_size}
+                onChange={(e) => handleStateChange("g_size", e.target.value)}
+                placeholder="Set G-size"
               />
             </div>
           </div>
         )}
-
         {activeTab === "parameters" && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
             <div className="space-y-1">
@@ -205,26 +167,28 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
                 Min Volume
               </label>
               <Input
-                value={formState.minVolume}
-                onChange={(e) => handleStateChange("minVolume", e.target.value)}
-                placeholder="Please set Min Volume"
+                value={formState.volume_min}
+                onChange={(e) =>
+                  handleStateChange("volume_min", e.target.value)
+                }
+                placeholder="Set Min Volume"
               />
             </div>
-
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Max Volume
               </label>
               <Input
-                value={formState.maxVolume}
-                onChange={(e) => handleStateChange("maxVolume", e.target.value)}
-                placeholder="Please set Max Volume"
+                value={formState.volume_max}
+                onChange={(e) =>
+                  handleStateChange("volume_max", e.target.value)
+                }
+                placeholder="Set Max Volume"
               />
             </div>
           </div>
         )}
       </div>
-
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <button
           onClick={onBack}
@@ -242,5 +206,4 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
     </div>
   );
 };
-
 export default VolumeDeviceForm;

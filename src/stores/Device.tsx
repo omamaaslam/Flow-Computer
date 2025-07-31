@@ -1,6 +1,6 @@
+// src/stores/Device.tsx
 import { makeAutoObservable } from "mobx";
-import type { DeviceConfig, GeneralDeviceConfig } from "../types/device";
-
+import type { DeviceConfig } from "../types/device";
 
 export class Device {
   public id: string;
@@ -9,21 +9,19 @@ export class Device {
 
   constructor(deviceData: any) {
     makeAutoObservable(this);
-    // device_id ya name na hone par crash se bachne ke liye fallback add karein
-    this.id = deviceData.device_id || `temp-id-${Date.now()}`;
-    this.name = deviceData.device_name || "Unnamed Device";
 
-    // Agar deviceData.config nahi hai, to khaali object ki jagah
-    // poora default config object use karein.
-    this.config = deviceData.config;
+    // Step 1: ID aur Name set karein.
+    this.id = deviceData.device_id;
+    this.name = deviceData.device_type;
+
+    // Step 2: Baaki saara flat object seedha 'config' mein daal dein.
+    // Koi parsing, koi general/parameters nahi. Bilkul simple.
+    this.config = deviceData;
   }
 
-  // Is method ko bhi thoda behtar kar sakte hain
-  updateGeneralConfig(updatedConfig: Partial<GeneralDeviceConfig>) {
-    // Ab `this.config.general` hamesha maujood hoga,
-    // to `if` check ki zaroorat nahi hai.
-    Object.assign(this.config.general, updatedConfig);
+  // Update method ab flat objects ko merge karega.
+  updateConfig(newConfig: Partial<DeviceConfig>) {
+    // MobX will track changes to the properties of this.config
+    Object.assign(this.config, newConfig);
   }
 }
-
-
