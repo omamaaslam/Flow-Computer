@@ -115,7 +115,8 @@ const ConfigureInterface = observer(
 
     const getModalTitle = () => {
       if (isEditing) {
-        return `Edit ${deviceTypeToConfigure} Device: ${
+        // Title ab "Edit PulseVolumeDevice: TAG_PULSE" jaisa dikhega
+        return `Edit ${editingDevice?.name || ""}: ${
           editingDevice?.config.tag_name || editingDevice?.id
         }`;
       }
@@ -255,7 +256,7 @@ const ConfigureInterface = observer(
               />
             )}
             {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "Temperature" && (
+              deviceTypeToConfigure === "TemperatureDevice" && (
                 <TemperatureDeviceForm
                   initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
@@ -264,7 +265,7 @@ const ConfigureInterface = observer(
                 />
               )}
             {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "Pressure" && (
+              deviceTypeToConfigure === "PressureDevice" && (
                 <PressureDeviceForm
                   initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
@@ -273,7 +274,7 @@ const ConfigureInterface = observer(
                 />
               )}
             {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "Volume" && (
+              deviceTypeToConfigure === "VolumeDevice" && (
                 <VolumeDeviceForm
                   initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
@@ -282,7 +283,7 @@ const ConfigureInterface = observer(
                 />
               )}
             {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "PulseVolume" && (
+              deviceTypeToConfigure === "PulseVolumeDevice" && (
                 <PulseVolumeDeviceForm
                   initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
@@ -291,7 +292,7 @@ const ConfigureInterface = observer(
                 />
               )}
             {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "PulseFlowRate" && (
+              deviceTypeToConfigure === "PulseFlowRateDevice" && (
                 <PulseFlowRateDeviceForm
                   initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
@@ -300,7 +301,7 @@ const ConfigureInterface = observer(
                 />
               )}
             {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "FlowRate" && (
+              deviceTypeToConfigure === "FlowRateDevice" && (
                 <FlowRateDeviceForm
                   initialData={isEditing ? editingDevice?.config : null}
                   onSave={handleSaveDeviceConfiguration}
