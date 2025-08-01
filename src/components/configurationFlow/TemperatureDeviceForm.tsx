@@ -1,8 +1,8 @@
-// src/components/configurationFlow/TemperatureDeviceForm.tsx
 import React, { useState, useEffect } from "react";
 import BridgeComponent from "./BridgeComponent";
 import type { DeviceConfig } from "../../types/device";
 
+// Helper component for a standard text input
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
   <input
@@ -11,6 +11,113 @@ const Input = (props: InputProps) => (
   />
 );
 
+// CustomCombobox definition is now inside this file
+interface CustomComboboxProps {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  hasError?: boolean;
+}
+
+const CustomCombobox: React.FC<CustomComboboxProps> = ({
+  options,
+  value,
+  onChange,
+  placeholder,
+  hasError,
+}) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const comboboxRef = React.useRef<HTMLDivElement>(null);
+
+  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+    if (
+      comboboxRef.current &&
+      !comboboxRef.current.contains(event.target as Node)
+    ) {
+      setIsOpen(false);
+    }
+  };
+
+  React.useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="relative w-full" ref={comboboxRef}>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setIsOpen(true)}
+        placeholder={placeholder}
+        className={`w-full border rounded-md py-1.5 pl-3 pr-8 text-sm placeholder:text-gray-400 bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 ${
+          hasError ? "border-red-500" : "border-gray-300"
+        }`}
+      />
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="absolute inset-y-0 right-0 flex items-center px-2"
+        aria-label="Toggle options"
+      >
+        <svg
+          className="h-4 w-4 text-gray-500"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 9l-7 7-7-7"
+          ></path>
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute z-[2000] top-full mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 animate-fadeIn p-2">
+          <div className="max-h-60 overflow-y-auto">
+            {options.map((option) => (
+              <div
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`flex items-center gap-4 p-2.5 rounded-md cursor-pointer text-sm transition-colors ${
+                  value === option.value
+                    ? "bg-yellow-100/50"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                    value === option.value
+                      ? "border-yellow-500"
+                      : "border-gray-400"
+                  }`}
+                >
+                  {value === option.value && (
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  )}
+                </div>
+                <span>{option.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Main form component starts here
 interface TemperatureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
@@ -43,7 +150,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     correction_c1: "",
     correction_c2: "",
     correction_c3: "",
-    slaveId: "",
+    slave_id: "",
     register_count: "",
     register_address: "",
     data_type: "",
@@ -69,7 +176,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
       correction_c1: String(generalData.correction_c1 ?? ""),
       correction_c2: String(generalData.correction_c2 ?? ""),
       correction_c3: String(generalData.correction_c3 ?? ""),
-      slaveId: String(modbusData.slave_address ?? ""),
+      slave_id: String(modbusData.slave_address ?? ""),
       register_count: String(modbusData.register_count ?? ""),
       register_address: String(modbusData.register_address ?? ""),
       data_type: modbusData.data_type ?? "",
@@ -97,13 +204,19 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
       correction_c1: parseFloat(formState.correction_c1),
       correction_c2: parseFloat(formState.correction_c2),
       correction_c3: parseFloat(formState.correction_c3),
-      slave_address: parseInt(formState.slaveId, 10),
+      slave_address: parseInt(formState.slave_id, 10),
       register_address: parseInt(formState.register_address, 10),
       register_count: parseInt(formState.register_count, 10),
       data_type: formState.data_type,
     };
     onSave(finalConfig);
   };
+
+  const temperatureUnitOptions = [
+    { value: "Celsius", label: "Celsius (°C)" },
+    { value: "Fahrenheit", label: "Fahrenheit (°F)" },
+    { value: "Kelvin", label: "Kelvin (K)" },
+  ];
 
   return (
     <div className="flex flex-col space-y-6">
@@ -227,9 +340,10 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
               <label className="block text-xs font-medium text-gray-600">
                 Temperature Unit
               </label>
-              <Input
+              <CustomCombobox
                 value={formState.unit}
-                onChange={(e) => handleStateChange("unit", e.target.value)}
+                onChange={(value) => handleStateChange("unit", value)}
+                options={temperatureUnitOptions}
                 placeholder="Select Unit"
               />
             </div>

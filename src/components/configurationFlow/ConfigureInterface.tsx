@@ -287,6 +287,7 @@ const ConfigureInterface = observer(
                 {deviceTypeToConfigure === "PressureDevice" && (
                   <PressureDeviceForm
                     initialData={isEditing ? editingDevice?.config : null}
+                    bridgeData={isEditing ? bridgeData : null}
                     onSave={handleSaveDeviceConfiguration}
                     onBack={closeModal}
                     interfaceName={anInterface.name}

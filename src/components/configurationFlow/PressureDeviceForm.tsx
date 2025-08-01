@@ -1,8 +1,8 @@
-// src/components/configurationFlow/PressureDeviceForm.tsx
 import React, { useState, useEffect } from "react";
 import BridgeComponent from "./BridgeComponent";
 import type { DeviceConfig } from "../../types/device";
 
+// Helper component for a standard text input
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
   <input
@@ -10,21 +10,120 @@ const Input = (props: InputProps) => (
     className="w-full border rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
   />
 );
+
+// CustomCombobox definition is now inside this file
 interface CustomComboboxProps {
   options: { value: string; label: string }[];
   value: string;
   onChange: (value: string) => void;
-  placeholder: string;
+  placeholder?: string;
+  hasError?: boolean;
 }
-const CustomCombobox: React.FC<CustomComboboxProps> = (props) => {
-  return null;
+
+const CustomCombobox: React.FC<CustomComboboxProps> = ({
+  options,
+  value,
+  onChange,
+  placeholder,
+  hasError,
+}) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const comboboxRef = React.useRef<HTMLDivElement>(null);
+
+  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+    if (
+      comboboxRef.current &&
+      !comboboxRef.current.contains(event.target as Node)
+    ) {
+      setIsOpen(false);
+    }
+  };
+
+  React.useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="relative w-full" ref={comboboxRef}>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onFocus={() => setIsOpen(true)}
+        placeholder={placeholder}
+        className={`w-full border rounded-md py-1.5 pl-3 pr-8 text-sm placeholder:text-gray-400 bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 ${
+          hasError ? "border-red-500" : "border-gray-300"
+        }`}
+      />
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="absolute inset-y-0 right-0 flex items-center px-2"
+        aria-label="Toggle options"
+      >
+        <svg
+          className="h-4 w-4 text-gray-500"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M19 9l-7 7-7-7"
+          ></path>
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="absolute z-[2000] top-full mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 animate-fadeIn p-2">
+          <div className="max-h-60 overflow-y-auto">
+            {options.map((option) => (
+              <div
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`flex items-center gap-4 p-2.5 rounded-md cursor-pointer text-sm transition-colors ${
+                  value === option.value
+                    ? "bg-yellow-100/50"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                <div
+                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                    value === option.value
+                      ? "border-yellow-500"
+                      : "border-gray-400"
+                  }`}
+                >
+                  {value === option.value && (
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  )}
+                </div>
+                <span>{option.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
+// Main form component starts here
 interface PressureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interfaceName: string;
   initialData?: DeviceConfig | null;
+  bridgeData?: any | null; // Receives Modbus/HART specific data
 }
 
 const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
@@ -32,10 +131,12 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   onSave,
   interfaceName,
   initialData,
+  bridgeData,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
+
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",
@@ -49,7 +150,8 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     correction_c1: "",
     correction_c2: "",
     correction_c3: "",
-    slaveId: "",
+    // Bridge-related state fields (using snake_case)
+    slave_id: "",
     register_count: "",
     register_address: "",
     data_type: "",
@@ -59,30 +161,34 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   });
 
   useEffect(() => {
-    if (initialData) {
-      setFormState({
-        manufacturer: initialData.manufacturer ?? "",
-        serial_number: initialData.serial_number ?? "",
-        model: initialData.model ?? "",
-        tag_name: initialData.tag_name ?? "",
-        g_size: String(initialData.g_size ?? ""),
-        pressure_min: String(initialData.pressure_min ?? ""),
-        pressure_max: String(initialData.pressure_max ?? ""),
-        unit: initialData.unit ?? "bar",
-        correction_c0: String(initialData.correction_c0 ?? ""),
-        correction_c1: String(initialData.correction_c1 ?? ""),
-        correction_c2: String(initialData.correction_c2 ?? ""),
-        correction_c3: String(initialData.correction_c3 ?? ""),
-        slaveId: String(initialData.slaveId ?? ""),
-        register_count: String(initialData.register_count ?? ""),
-        register_address: String(initialData.register_address ?? ""),
-        data_type: initialData.data_type ?? "",
-        pollingAddress: String(initialData.pollingAddress ?? ""),
-        commandSet: initialData.commandSet ?? "",
-        variableType: initialData.variableType ?? "",
-      });
-    }
-  }, [initialData]);
+    const generalData = initialData || {};
+    const interfaceSpecificData = bridgeData || {};
+
+    setFormState({
+      // Populate general data from 'devices' object
+      manufacturer: generalData.manufacturer ?? "",
+      serial_number: generalData.serial_number ?? "",
+      model: generalData.model ?? "",
+      tag_name: generalData.tag_name ?? "",
+      g_size: String(generalData.g_size ?? ""),
+      pressure_min: String(generalData.pressure_min ?? ""),
+      pressure_max: String(generalData.pressure_max ?? ""),
+      unit: generalData.unit ?? "bar",
+      correction_c0: String(generalData.correction_c0 ?? ""),
+      correction_c1: String(generalData.correction_c1 ?? ""),
+      correction_c2: String(generalData.correction_c2 ?? ""),
+      correction_c3: String(generalData.correction_c3 ?? ""),
+
+      // Populate bridge data from 'list' object
+      slave_id: String(interfaceSpecificData.slave_address ?? ""),
+      register_count: String(interfaceSpecificData.register_count ?? ""),
+      register_address: String(interfaceSpecificData.register_address ?? ""),
+      data_type: interfaceSpecificData.data_type ?? "",
+      pollingAddress: String(interfaceSpecificData.pollingAddress ?? ""),
+      commandSet: interfaceSpecificData.commandSet ?? "",
+      variableType: interfaceSpecificData.variableType ?? "",
+    });
+  }, [initialData, bridgeData]);
 
   const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
@@ -90,6 +196,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
 
   const validateAndSave = () => {
     const finalConfig: DeviceConfig = {
+      // General & Parameters data
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,
@@ -102,9 +209,22 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       correction_c1: parseFloat(formState.correction_c1),
       correction_c2: parseFloat(formState.correction_c2),
       correction_c3: parseFloat(formState.correction_c3),
+
+      // Bridge data
+      slave_address: parseInt(formState.slave_id, 10),
+      register_address: parseInt(formState.register_address, 10),
+      register_count: parseInt(formState.register_count, 10),
+      data_type: formState.data_type,
     };
     onSave(finalConfig);
   };
+
+  const pressureUnitOptions = [
+    { value: "bar", label: "bar" },
+    { value: "psi", label: "psi" },
+    { value: "kPa", label: "kPa" },
+    { value: "mbar", label: "mbar" },
+  ];
 
   return (
     <div className="flex flex-col space-y-6">
@@ -114,6 +234,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
         errors={{}}
         handleStateChange={handleStateChange}
       />
+
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab("general")}
@@ -136,6 +257,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
           Parameters
         </button>
       </div>
+
       <div>
         {activeTab === "general" && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
@@ -195,6 +317,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
             </div>
           </div>
         )}
+
         {activeTab === "parameters" && (
           <div className="flex flex-col space-y-4 animate-fadeIn">
             <div className="grid grid-cols-2 gap-x-6">
@@ -227,9 +350,11 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
               <label className="block text-xs font-medium text-gray-600">
                 Pressure Unit
               </label>
-              <Input
+              <CustomCombobox
                 value={formState.unit}
-                onChange={(e) => handleStateChange("unit", e.target.value)}
+                onChange={(value) => handleStateChange("unit", value)}
+                options={pressureUnitOptions}
+                placeholder="Select a unit"
               />
             </div>
             <div className="space-y-1">
@@ -270,6 +395,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
           </div>
         )}
       </div>
+
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <button
           onClick={onBack}
@@ -287,4 +413,5 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     </div>
   );
 };
+
 export default PressureDeviceForm;
