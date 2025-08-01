@@ -2,7 +2,6 @@ import React from "react";
 import HartBridge from "./HartBridge";
 import MODBridge from "./MODBridge";
 
-
 interface InterfaceBridgeProps {
   interfaceName: string;
   formState: any;
@@ -16,7 +15,7 @@ const BridgeComponent: React.FC<InterfaceBridgeProps> = ({
   errors,
   handleStateChange,
 }) => {
-  if (interfaceName === "MOD") {
+  if (interfaceName === "ModbusInterface") {
     return (
       <MODBridge
         formState={formState}
@@ -26,7 +25,7 @@ const BridgeComponent: React.FC<InterfaceBridgeProps> = ({
     );
   }
 
-  if (interfaceName === "HART1" || interfaceName === "HART2") {
+  if (interfaceName === "HI1") {
     return (
       <HartBridge
         formState={formState}
@@ -35,7 +34,6 @@ const BridgeComponent: React.FC<InterfaceBridgeProps> = ({
       />
     );
   }
-
   return null;
 };
 

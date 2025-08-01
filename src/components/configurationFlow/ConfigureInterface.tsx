@@ -52,6 +52,7 @@ const ConfigureInterface = observer(
       useState<string>("");
     const [isEditing, setIsEditing] = useState(false);
     const [editingDevice, setEditingDevice] = useState<Device | null>(null);
+    const [bridgeData, setBridgeData] = useState<any>(null);
 
     const handleSaveInterfaceConfig = (config: InterfaceConfig) => {
       anInterface.updateConfig(config);
@@ -73,6 +74,7 @@ const ConfigureInterface = observer(
     const handleAddNewDeviceClick = () => {
       setIsEditing(false);
       setEditingDevice(null);
+      setBridgeData(null);
       setModalView("addDevice_selectType");
     };
 
@@ -88,6 +90,17 @@ const ConfigureInterface = observer(
       setEditingDevice(device);
       setDeviceTypeToConfigure(device.name);
       setIsEditing(true);
+
+      if (
+        anInterface.config.interface_type === "ModbusInterface" &&
+        anInterface.config.list
+      ) {
+        const specificBridgeData = anInterface.config.list[device.id];
+        setBridgeData(specificBridgeData || null);
+      } else {
+        setBridgeData(null);
+      }
+
       setModalView("addDevice_configure");
     };
 
@@ -111,15 +124,19 @@ const ConfigureInterface = observer(
       setIsEditing(false);
       setEditingDevice(null);
       setSelectedDeviceId(null);
+      setBridgeData(null);
     };
 
     const getModalTitle = () => {
-      if (isEditing) {
-        // Title ab "Edit PulseVolumeDevice: TAG_PULSE" jaisa dikhega
-        return `Edit ${editingDevice?.name || ""}: ${
-          editingDevice?.config.tag_name || editingDevice?.id
+      if (isEditing && editingDevice) {
+        return `Edit ${editingDevice.name}: ${
+          editingDevice.config.tag_name || editingDevice.id
         }`;
       }
+      if (modalView === "addDevice_configure") {
+        return `Add Device for ${anInterface.name}`;
+      }
+      // Baaki titles
       switch (modalView) {
         case "modbusSettings":
           return `Modbus Settings: ${anInterface.name}`;
@@ -127,8 +144,6 @@ const ConfigureInterface = observer(
           return `RTD Settings: ${anInterface.name}`;
         case "addDevice_selectType":
           return `Add Device for ${anInterface.name}`;
-        case "addDevice_configure":
-          return `Configure New ${deviceTypeToConfigure} Device for ${anInterface.name}`;
         case "HART1":
           return `HART Settings: ${anInterface.name}`;
         case "Di_InterfaceSettings":
@@ -255,60 +270,62 @@ const ConfigureInterface = observer(
                 onNext={handleDeviceTypeSelection}
               />
             )}
-            {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "TemperatureDevice" && (
-                <TemperatureDeviceForm
-                  initialData={isEditing ? editingDevice?.config : null}
-                  onSave={handleSaveDeviceConfiguration}
-                  onBack={closeModal}
-                  interfaceName={anInterface.name}
-                />
-              )}
-            {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "PressureDevice" && (
-                <PressureDeviceForm
-                  initialData={isEditing ? editingDevice?.config : null}
-                  onSave={handleSaveDeviceConfiguration}
-                  onBack={closeModal}
-                  interfaceName={anInterface.name}
-                />
-              )}
-            {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "VolumeDevice" && (
-                <VolumeDeviceForm
-                  initialData={isEditing ? editingDevice?.config : null}
-                  onSave={handleSaveDeviceConfiguration}
-                  onBack={closeModal}
-                  interfaceName={anInterface.name}
-                />
-              )}
-            {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "PulseVolumeDevice" && (
-                <PulseVolumeDeviceForm
-                  initialData={isEditing ? editingDevice?.config : null}
-                  onSave={handleSaveDeviceConfiguration}
-                  onBack={closeModal}
-                  interfaceName={anInterface.name}
-                />
-              )}
-            {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "PulseFlowRateDevice" && (
-                <PulseFlowRateDeviceForm
-                  initialData={isEditing ? editingDevice?.config : null}
-                  onSave={handleSaveDeviceConfiguration}
-                  onBack={closeModal}
-                  interfaceName={anInterface.name}
-                />
-              )}
-            {modalView === "addDevice_configure" &&
-              deviceTypeToConfigure === "FlowRateDevice" && (
-                <FlowRateDeviceForm
-                  initialData={isEditing ? editingDevice?.config : null}
-                  onSave={handleSaveDeviceConfiguration}
-                  onBack={closeModal}
-                  interfaceName={anInterface.name}
-                />
-              )}
+
+            {/* YEH SECTION AB ADD AUR EDIT DONO KE LIYE SAHI KAAM KAREGA */}
+
+            {modalView === "addDevice_configure" && (
+              <>
+                {deviceTypeToConfigure === "TemperatureDevice" && (
+                  <TemperatureDeviceForm
+                    initialData={isEditing ? editingDevice?.config : null}
+                    bridgeData={isEditing ? bridgeData : null}
+                    onSave={handleSaveDeviceConfiguration}
+                    onBack={closeModal}
+                    interfaceName={anInterface.name}
+                  />
+                )}
+                {deviceTypeToConfigure === "PressureDevice" && (
+                  <PressureDeviceForm
+                    initialData={isEditing ? editingDevice?.config : null}
+                    onSave={handleSaveDeviceConfiguration}
+                    onBack={closeModal}
+                    interfaceName={anInterface.name}
+                  />
+                )}
+                {deviceTypeToConfigure === "VolumeDevice" && (
+                  <VolumeDeviceForm
+                    initialData={isEditing ? editingDevice?.config : null}
+                    onSave={handleSaveDeviceConfiguration}
+                    onBack={closeModal}
+                    interfaceName={anInterface.name}
+                  />
+                )}
+                {deviceTypeToConfigure === "PulseVolumeDevice" && (
+                  <PulseVolumeDeviceForm
+                    initialData={isEditing ? editingDevice?.config : null}
+                    onSave={handleSaveDeviceConfiguration}
+                    onBack={closeModal}
+                    interfaceName={anInterface.name}
+                  />
+                )}
+                {deviceTypeToConfigure === "PulseFlowRateDevice" && (
+                  <PulseFlowRateDeviceForm
+                    initialData={isEditing ? editingDevice?.config : null}
+                    onSave={handleSaveDeviceConfiguration}
+                    onBack={closeModal}
+                    interfaceName={anInterface.name}
+                  />
+                )}
+                {deviceTypeToConfigure === "FlowRateDevice" && (
+                  <FlowRateDeviceForm
+                    initialData={isEditing ? editingDevice?.config : null}
+                    onSave={handleSaveDeviceConfiguration}
+                    onBack={closeModal}
+                    interfaceName={anInterface.name}
+                  />
+                )}
+              </>
+            )}
           </>
         </MuiModalWrapper>
       </>

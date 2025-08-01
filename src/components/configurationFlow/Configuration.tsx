@@ -1,5 +1,3 @@
-// src/pages/Configuration.tsx
-
 import { useState } from "react";
 import StreamConfiguration from "./StreamConfiguration";
 import InterfacesConfiguration from "./InterfacesConfiguration";

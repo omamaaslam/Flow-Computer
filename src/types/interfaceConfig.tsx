@@ -1,3 +1,5 @@
+// src/types/interfaceConfig.tsx
+
 // A base interface for properties that are common to all interface types.
 interface BaseInterfaceConfig {
   enabled: boolean;
@@ -35,6 +37,7 @@ export interface ModbusConfig extends BaseInterfaceConfig {
   retry_count: number;
   stop_bits: number;
   timeout_ms: number;
+  list?: { [key: string]: any }; // <-- YEH LINE ADD KI GAI HAI
 }
 
 // Specific configuration for RTD (TI1)
@@ -48,8 +51,6 @@ export interface RtdConfig extends BaseInterfaceConfig {
 }
 
 // The main export: InterfaceConfig can be any one of the specific config types.
-// The `interface_type` property acts as the "discriminator" that tells TypeScript
-// which specific type it is dealing with.
 export type InterfaceConfig =
   | DigitalInputConfig
   | HartConfig

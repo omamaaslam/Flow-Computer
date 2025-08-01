@@ -16,6 +16,7 @@ interface TemperatureDeviceFormProps {
   onSave: (config: DeviceConfig) => void;
   interfaceName: string;
   initialData?: DeviceConfig | null;
+  bridgeData?: any | null;
 }
 
 const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
@@ -23,6 +24,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   onSave,
   interfaceName,
   initialData,
+  bridgeData,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
@@ -51,30 +53,31 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   });
 
   useEffect(() => {
-    if (initialData) {
-      setFormState({
-        manufacturer: initialData.manufacturer ?? "",
-        serial_number: initialData.serial_number ?? "",
-        model: initialData.model ?? "",
-        tag_name: initialData.tag_name ?? "",
-        g_size: String(initialData.g_size ?? ""),
-        temp_min: String(initialData.temp_min ?? ""),
-        temp_max: String(initialData.temp_max ?? ""),
-        unit: initialData.unit ?? "Celsius",
-        correction_c0: String(initialData.correction_c0 ?? ""),
-        correction_c1: String(initialData.correction_c1 ?? ""),
-        correction_c2: String(initialData.correction_c2 ?? ""),
-        correction_c3: String(initialData.correction_c3 ?? ""),
-        slaveId: String(initialData.slaveId ?? ""),
-        register_count: String(initialData.register_count ?? ""),
-        register_address: String(initialData.register_address ?? ""),
-        data_type: initialData.data_type ?? "",
-        pollingAddress: String(initialData.pollingAddress ?? ""),
-        commandSet: initialData.commandSet ?? "",
-        variableType: initialData.variableType ?? "",
-      });
-    }
-  }, [initialData]);
+    const generalData = initialData || {};
+    const modbusData = bridgeData || {};
+
+    setFormState({
+      manufacturer: generalData.manufacturer ?? "",
+      serial_number: generalData.serial_number ?? "",
+      model: generalData.model ?? "",
+      tag_name: generalData.tag_name ?? "",
+      g_size: String(generalData.g_size ?? ""),
+      temp_min: String(generalData.temp_min ?? ""),
+      temp_max: String(generalData.temp_max ?? ""),
+      unit: generalData.unit ?? "Celsius",
+      correction_c0: String(generalData.correction_c0 ?? ""),
+      correction_c1: String(generalData.correction_c1 ?? ""),
+      correction_c2: String(generalData.correction_c2 ?? ""),
+      correction_c3: String(generalData.correction_c3 ?? ""),
+      slaveId: String(modbusData.slave_address ?? ""),
+      register_count: String(modbusData.register_count ?? ""),
+      register_address: String(modbusData.register_address ?? ""),
+      data_type: modbusData.data_type ?? "",
+      pollingAddress: String(bridgeData?.pollingAddress ?? ""),
+      commandSet: bridgeData?.commandSet ?? "",
+      variableType: bridgeData?.variableType ?? "",
+    });
+  }, [initialData, bridgeData]);
 
   const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
@@ -94,8 +97,11 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
       correction_c1: parseFloat(formState.correction_c1),
       correction_c2: parseFloat(formState.correction_c2),
       correction_c3: parseFloat(formState.correction_c3),
+      slave_address: parseInt(formState.slaveId, 10),
+      register_address: parseInt(formState.register_address, 10),
+      register_count: parseInt(formState.register_count, 10),
+      data_type: formState.data_type,
     };
-
     onSave(finalConfig);
   };
 
