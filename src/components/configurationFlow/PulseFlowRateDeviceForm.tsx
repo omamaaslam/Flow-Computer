@@ -48,22 +48,22 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
   useEffect(() => {
     if (initialData) {
       setFormState({
-        manufacturer: initialData.manufacturer || "",
-        serial_number: initialData.serial_number || "",
-        model: initialData.model || "",
-        tag_name: initialData.tag_name || "",
-        g_size: String(initialData.g_size || ""),
-        frequency_type: initialData.frequency_type || "LF",
+        manufacturer: initialData.manufacturer ?? "",
+        serial_number: initialData.serial_number ?? "",
+        model: initialData.model ?? "",
+        tag_name: initialData.tag_name ?? "",
+        g_size: String(initialData.g_size ?? ""),
+        frequency_type: initialData.frequency_type ?? "LF",
         frequency_hz: String(
-          initialData.frequency_hz ||
+          initialData.frequency_hz ??
             (initialData.frequency_type === "HF" ? hfOptions[0] : lfOptions[0])
         ),
-        pulse_duration_ms: String(initialData.pulse_duration_ms || ""),
-        pulse_pause_ms: String(initialData.pulse_pause_ms || ""),
-        scaling_factor: String(initialData.scaling_factor || ""),
-        offset: String(initialData.offset || ""),
-        flowrate_min: String(initialData.flowrate_min || ""),
-        flowrate_max: String(initialData.flowrate_max || ""),
+        pulse_duration_ms: String(initialData.pulse_duration_ms ?? ""),
+        pulse_pause_ms: String(initialData.pulse_pause_ms ?? ""),
+        scaling_factor: String(initialData.scaling_factor ?? ""),
+        offset: String(initialData.offset ?? ""),
+        flowrate_min: String(initialData.flowrate_min ?? ""),
+        flowrate_max: String(initialData.flowrate_max ?? ""),
       });
     }
   }, [initialData]);

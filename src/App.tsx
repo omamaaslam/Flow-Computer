@@ -1,3 +1,4 @@
+// App.tsx
 import { observer } from "mobx-react-lite";
 import { navigationStore } from "./stores/NavigationStore";
 import globalStore from "./stores/GlobalStore";
@@ -28,11 +29,14 @@ const App = observer(() => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        // Step 1: WebSocket se connect karein
         await connectWebSocket();
-        console.log("WebSocket is connected, now fetching initial data...");
-        await globalStore.fetchAndSetGlobalSnapshot();
+        console.log("WebSocket se connection hogaya, ab updates sunenge...");
+
+        // Step 2: Hamesha ke liye updates sunna shuru karein
+        globalStore.listenForUpdates();
       } catch (error) {
-        console.error("🚨 Failed during initial setup:", error);
+        console.error("🚨 App shuru karne mein masla hua:", error);
       }
     };
 

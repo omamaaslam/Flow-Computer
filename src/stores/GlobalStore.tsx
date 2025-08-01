@@ -3,12 +3,12 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { Stream } from "./Stream";
 import type { Device } from "./Device";
-import { getGlobalStateSnapshot } from "../utils/services";
+import { addListener } from "../utils/api"; // Sirf addListener import karein
 
 class GlobalStore {
   public globalSnapshot: any = null;
   public streams: Stream[] = [];
-  public isLoading: boolean = false;
+  public isLoading: boolean = true; // App shuru mein loading state mein hogi
 
   constructor() {
     makeAutoObservable(this);
@@ -17,6 +17,11 @@ class GlobalStore {
   public setGlobalSnapshot(data: any) {
     this.globalSnapshot = data;
     this._parseAndSetStreams(data);
+
+    // Pehli baar data milne par loading state ko false karein
+    if (this.isLoading) {
+      this.isLoading = false;
+    }
   }
 
   private _parseAndSetStreams(snapshotData: any) {
@@ -25,30 +30,35 @@ class GlobalStore {
       this.streams = [];
       return;
     }
-
-    // Naye tareeqe se streams ko parse karein
     this.streams = Object.values<any>(rawStreams).map(
-      (streamData) => new Stream(streamData) // Stream constructor ko poora data dein
+      (streamData) => new Stream(streamData)
     );
   }
 
-  public async fetchAndSetGlobalSnapshot() {
-    runInAction(() => {
-      this.isLoading = true;
-    });
-    try {
-      const data = await getGlobalStateSnapshot();
-      console.log("SUCCESS! Data from WebSocket:", data);
-      runInAction(() => {
-        this.setGlobalSnapshot(data);
-        this.isLoading = false;
-      });
-    } catch (error) {
-      console.error("FAILED to get global state snapshot:", error);
-      runInAction(() => {
-        this.isLoading = false;
-      });
-    }
+  // YEH NAYA AUR AHEM FUNCTION HAI
+  // Yeh WebSocket se aane walay har message ko sunega
+  public listenForUpdates() {
+    console.log("GlobalStore ab WebSocket updates ko sun raha hai...");
+
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        console.log("⬇️ WebSocket se naya data mila:", data);
+
+        // MobX store ko update karein
+        runInAction(() => {
+          this.setGlobalSnapshot(data);
+        });
+      } catch (error) {
+        console.error(
+          "WebSocket se aaye data ko parse karne mein error:",
+          error
+        );
+      }
+    };
+
+    // api.ts ke listener ko subscribe karein
+    addListener(handleMessage);
   }
 
   get allDevices(): Device[] {
