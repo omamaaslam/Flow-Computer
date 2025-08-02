@@ -1,11 +1,11 @@
 import { observer } from "mobx-react-lite";
 import React from "react";
 import { Settings } from "lucide-react";
-import { navigationStore } from "../stores/NavigationStore";
+import { navigationStore } from "../../../stores/NavigationStore";
 
 interface StreamCardProps {
   stream: {
-    id: number;
+    id: string;
     name: string;
   };
   colorScheme: "yellow" | "red" | "green" | "gray";

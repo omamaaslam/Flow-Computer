@@ -1,5 +1,5 @@
 import { observer } from "mobx-react-lite";
-import StreamCard from "./StreamCard";
+import StreamCard from "./configurationFlow/Stream/StreamCard";
 import globalStore from "../stores/GlobalStore";
 
 const Home = observer(() => {

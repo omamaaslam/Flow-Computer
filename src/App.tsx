@@ -9,7 +9,7 @@ import Header from "./components/Header";
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import Home from "./components/Home";
-import Configuration from "./components/configurationFlow/Configuration";
+import Configuration from "./components/configurationFlow/Stream/io_card/Interface/Configuration";
 import { connectWebSocket } from "./utils/api";
 
 const App = observer(() => {
@@ -36,7 +36,7 @@ const App = observer(() => {
         // Step 2: Hamesha ke liye updates sunna shuru karein
         globalStore.listenForUpdates();
       } catch (error) {
-        console.error("🚨 App shuru karne mein masla hua:", error);
+        console.error("App shuru karne mein masla hua:", error);
       }
     };
 

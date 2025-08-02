@@ -1,9 +1,9 @@
 import { useState } from "react";
-import StreamConfiguration from "./StreamConfiguration";
+import StreamConfiguration from "../../StreamConfiguration";
 import InterfacesConfiguration from "./InterfacesConfiguration";
 import ConfigureInterface from "./ConfigureInterface";
 import { observer } from "mobx-react-lite";
-import globalStore from "../../stores/GlobalStore";
+import globalStore from "../../../../../stores/GlobalStore";
 
 // No more mapping import needed
 // import { idNameMapping } from "../../models/IOCard";

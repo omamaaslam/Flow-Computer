@@ -1,7 +1,7 @@
 // src/components/InterfacesConfiguration.tsx
 
-import globalStore from "../../stores/GlobalStore";
-import IoCardSvg from "../configurationFlow/IoCardSvg";
+import globalStore from "../../../../../stores/GlobalStore";
+import IoCardSvg from "../IoCardSvg";
 import { observer } from "mobx-react-lite";
 
 // Define the core types

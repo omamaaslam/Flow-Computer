@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import Home from "./components/Home.tsx";
-import Configuration from "./components/configurationFlow/Configuration.tsx";
+import Configuration from "./components/configurationFlow/Stream/io_card/Interface/Configuration.tsx";
 
 
 export const ROUTES = {

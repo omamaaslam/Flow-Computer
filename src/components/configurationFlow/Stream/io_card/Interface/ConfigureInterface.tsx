@@ -1,23 +1,23 @@
 // src/components/configurationFlow/ConfigureInterface.tsx
 import { useState } from "react";
 import { Thermometer, Settings, ArrowLeft } from "lucide-react";
-import MuiModalWrapper from "./MuiModalWrapper";
-import TemperatureDeviceForm from "./TemperatureDeviceForm.tsx";
-import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
-import AddDeviceForm from "./AddDeviceForm.tsx";
+import MuiModalWrapper from "../../../MuiModalWrapper.tsx";
+import AddDeviceForm from "./Device/AddDeviceForm.tsx";
 import { observer } from "mobx-react-lite";
-import { Interface } from "../../stores/Interface.tsx";
-import { Device } from "../../stores/Device.tsx";
-import type { InterfaceConfig } from "../../types/interfaceConfig.tsx";
-import type { DeviceConfig } from "../../types/device.tsx";
-import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
+import { Interface } from "../../../../../stores/Interface.tsx";
+import { Device } from "../../../../../stores/Device.tsx";
+import type { InterfaceConfig } from "../../../../../types/interfaceConfig.tsx";
+import type { DeviceConfig } from "../../../../../types/device.tsx";
 import HartInterfaceSettingsForm from "./HartInterfaceSettingsForm.tsx";
-import PressureDeviceForm from "./PressureDeviceForm.tsx";
 import DI_InterfaceSettingsForm from "./DI_InterfaceSettingsForm.tsx";
-import VolumeDeviceForm from "./VolumeDeviceForm.tsx";
-import PulseVolumeDeviceForm from "./PulseVolumeDeviceForm.tsx";
-import PulseFlowRateDeviceForm from "./PulseFlowRateDeviceForm.tsx";
-import FlowRateDeviceForm from "./FlowRateDeviceForm.tsx";
+import FlowRateDeviceForm from "./Device/FlowRateDeviceForm.tsx";
+import PressureDeviceForm from "./Device/PressureDeviceForm.tsx";
+import PulseFlowRateDeviceForm from "./Device/PulseFlowRateDeviceForm.tsx";
+import PulseVolumeDeviceForm from "./Device/PulseVolumeDeviceForm.tsx";
+import TemperatureDeviceForm from "./Device/TemperatureDeviceForm.tsx";
+import VolumeDeviceForm from "./Device/VolumeDeviceForm.tsx";
+import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
+import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;

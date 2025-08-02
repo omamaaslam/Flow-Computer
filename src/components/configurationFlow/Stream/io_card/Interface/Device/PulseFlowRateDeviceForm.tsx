@@ -1,7 +1,7 @@
 // src/components/configurationFlow/PulseFlowRateDeviceForm.tsx
 import React, { useState, useEffect } from "react";
-import BridgeComponent from "./BridgeComponent";
-import type { DeviceConfig } from "../../types/device";
+import type { DeviceConfig } from "../../../../../../types/device";
+import BridgeComponent from "../BridgeComponent";
 
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (

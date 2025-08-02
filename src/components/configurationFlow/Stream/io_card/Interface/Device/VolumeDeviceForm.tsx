@@ -1,7 +1,8 @@
-// src/components/configurationFlow/PulseVolumeDeviceForm.tsx
+// src/components/configurationFlow/VolumeDeviceForm.tsx
 import React, { useState, useEffect } from "react";
-import BridgeComponent from "./BridgeComponent";
-import type { DeviceConfig } from "../../types/device";
+import type { DeviceConfig } from "../../../../../../types/device";
+import BridgeComponent from "../BridgeComponent";
+
 
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
@@ -11,14 +12,14 @@ const Input = (props: InputProps) => (
   />
 );
 
-interface PulseVolumeDeviceFormProps {
+interface VolumeDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interfaceName: string;
   initialData?: DeviceConfig | null;
 }
 
-const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
+const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
   onBack,
   onSave,
   interfaceName,
@@ -27,50 +28,34 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
-  const lfOptions = [2, 5];
-  const hfOptions = [5, 20, 50, 100, 250, 500, 1000, 1500, 2000, 3000, 4000];
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",
     model: "",
     tag_name: "",
+    build_year: "",
     g_size: "",
-    frequency_type: "LF",
-    frequency_hz: lfOptions[0].toString(),
-    pulse_duration_ms: "",
-    pulse_pause_ms: "",
-    pulse_volume: "",
+    volume_min: "",
+    volume_max: "",
   });
 
   useEffect(() => {
     if (initialData) {
       setFormState({
-        manufacturer: initialData.manufacturer ?? "",
-        serial_number: initialData.serial_number ?? "",
-        model: initialData.model ?? "",
-        tag_name: initialData.tag_name ?? "",
-        g_size: String(initialData.g_size ?? ""),
-        frequency_type: initialData.frequency_type ?? "LF",
-        frequency_hz: String(
-          initialData.frequency_hz ??
-            (initialData.frequency_type === "HF" ? hfOptions[0] : lfOptions[0])
-        ),
-        pulse_duration_ms: String(initialData.pulse_duration_ms ?? ""),
-        pulse_pause_ms: String(initialData.pulse_pause_ms ?? ""),
-        pulse_volume: String(initialData.pulse_volume ?? ""),
+        manufacturer: initialData.manufacturer || "",
+        serial_number: initialData.serial_number || "",
+        model: initialData.model || "",
+        tag_name: initialData.tag_name || "",
+        build_year: initialData.build_year || "",
+        g_size: String(initialData.g_size || ""),
+        volume_min: String(initialData.volume_min || ""),
+        volume_max: String(initialData.volume_max || ""),
       });
     }
   }, [initialData]);
 
   const handleStateChange = (field: string, value: string) => {
-    setFormState((prev) => {
-      const newState = { ...prev, [field]: value };
-      if (field === "frequency_type") {
-        newState.frequency_hz =
-          value === "LF" ? lfOptions[0].toString() : hfOptions[0].toString();
-      }
-      return newState;
-    });
+    setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
@@ -79,18 +64,13 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
       model: formState.model,
       serial_number: formState.serial_number,
       tag_name: formState.tag_name,
+      build_year: formState.build_year,
       g_size: formState.g_size,
-      frequency_type: formState.frequency_type,
-      frequency_hz: parseInt(formState.frequency_hz, 10),
-      pulse_duration_ms: parseInt(formState.pulse_duration_ms, 10),
-      pulse_pause_ms: parseInt(formState.pulse_pause_ms, 10),
-      pulse_volume: parseFloat(formState.pulse_volume),
+      volume_min: parseFloat(formState.volume_min),
+      volume_max: parseFloat(formState.volume_max),
     };
     onSave(finalConfig);
   };
-
-  const frequencyOptions =
-    formState.frequency_type === "LF" ? lfOptions : hfOptions;
 
   return (
     <div className="flex flex-col space-y-6">
@@ -185,71 +165,26 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Frequency Type
-              </label>
-              <select
-                value={formState.frequency_type}
-                onChange={(e) =>
-                  handleStateChange("frequency_type", e.target.value)
-                }
-                className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
-              >
-                <option value="LF">Low Frequency (LF)</option>
-                <option value="HF">High Frequency (HF)</option>
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">
-                Frequency
-              </label>
-              <select
-                value={formState.frequency_hz}
-                onChange={(e) =>
-                  handleStateChange("frequency_hz", e.target.value)
-                }
-                className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
-              >
-                {frequencyOptions.map((freq) => (
-                  <option key={freq} value={freq}>{`${freq}${
-                    formState.frequency_type === "HF" ? " Hz" : ""
-                  }`}</option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">
-                Pulse Duration (ms)
+                Min Volume
               </label>
               <Input
-                value={formState.pulse_duration_ms}
+                value={formState.volume_min}
                 onChange={(e) =>
-                  handleStateChange("pulse_duration_ms", e.target.value)
+                  handleStateChange("volume_min", e.target.value)
                 }
-                placeholder="Set Pulse Duration"
+                placeholder="Set Min Volume"
               />
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Pulse Pause (ms)
+                Max Volume
               </label>
               <Input
-                value={formState.pulse_pause_ms}
+                value={formState.volume_max}
                 onChange={(e) =>
-                  handleStateChange("pulse_pause_ms", e.target.value)
+                  handleStateChange("volume_max", e.target.value)
                 }
-                placeholder="Set Pulse Pause"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">
-                Pulse Volume (m3)
-              </label>
-              <Input
-                value={formState.pulse_volume}
-                onChange={(e) =>
-                  handleStateChange("pulse_volume", e.target.value)
-                }
-                placeholder="Set Pulse Volume"
+                placeholder="Set Max Volume"
               />
             </div>
           </div>
@@ -272,4 +207,4 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
     </div>
   );
 };
-export default PulseVolumeDeviceForm;
+export default VolumeDeviceForm;

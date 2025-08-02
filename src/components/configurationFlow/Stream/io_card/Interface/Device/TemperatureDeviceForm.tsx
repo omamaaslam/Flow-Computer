@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
-import BridgeComponent from "./BridgeComponent";
-import type { DeviceConfig } from "../../types/device";
+import type { DeviceConfig } from "../../../../../../types/device";
+import BridgeComponent from "../BridgeComponent";
+
 
 // Helper component for a standard text input
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
   <input
     {...props}
-    className="w-full border rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+    className="w-full border rounded-md py-1.5 px-3 text-sm placeholder:text-gray-400 shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 border-gray-300"
   />
 );
 
@@ -118,15 +119,15 @@ const CustomCombobox: React.FC<CustomComboboxProps> = ({
 };
 
 // Main form component starts here
-interface PressureDeviceFormProps {
+interface TemperatureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interfaceName: string;
   initialData?: DeviceConfig | null;
-  bridgeData?: any | null; // Receives Modbus/HART specific data
+  bridgeData?: any | null;
 }
 
-const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
+const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   onBack,
   onSave,
   interfaceName,
@@ -143,14 +144,13 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     model: "",
     tag_name: "",
     g_size: "",
-    pressure_min: "",
-    pressure_max: "",
-    unit: "bar",
+    temp_min: "",
+    temp_max: "",
+    unit: "Celsius",
     correction_c0: "",
     correction_c1: "",
     correction_c2: "",
     correction_c3: "",
-    // Bridge-related state fields (using snake_case)
     slave_id: "",
     register_count: "",
     register_address: "",
@@ -162,31 +162,28 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
 
   useEffect(() => {
     const generalData = initialData || {};
-    const interfaceSpecificData = bridgeData || {};
+    const modbusData = bridgeData || {};
 
     setFormState({
-      // Populate general data from 'devices' object
       manufacturer: generalData.manufacturer ?? "",
       serial_number: generalData.serial_number ?? "",
       model: generalData.model ?? "",
       tag_name: generalData.tag_name ?? "",
       g_size: String(generalData.g_size ?? ""),
-      pressure_min: String(generalData.pressure_min ?? ""),
-      pressure_max: String(generalData.pressure_max ?? ""),
-      unit: generalData.unit ?? "bar",
+      temp_min: String(generalData.temp_min ?? ""),
+      temp_max: String(generalData.temp_max ?? ""),
+      unit: generalData.unit ?? "Celsius",
       correction_c0: String(generalData.correction_c0 ?? ""),
       correction_c1: String(generalData.correction_c1 ?? ""),
       correction_c2: String(generalData.correction_c2 ?? ""),
       correction_c3: String(generalData.correction_c3 ?? ""),
-
-      // Populate bridge data from 'list' object
-      slave_id: String(interfaceSpecificData.slave_address ?? ""),
-      register_count: String(interfaceSpecificData.register_count ?? ""),
-      register_address: String(interfaceSpecificData.register_address ?? ""),
-      data_type: interfaceSpecificData.data_type ?? "",
-      pollingAddress: String(interfaceSpecificData.pollingAddress ?? ""),
-      commandSet: interfaceSpecificData.commandSet ?? "",
-      variableType: interfaceSpecificData.variableType ?? "",
+      slave_id: String(modbusData.slave_address ?? ""),
+      register_count: String(modbusData.register_count ?? ""),
+      register_address: String(modbusData.register_address ?? ""),
+      data_type: modbusData.data_type ?? "",
+      pollingAddress: String(bridgeData?.pollingAddress ?? ""),
+      commandSet: bridgeData?.commandSet ?? "",
+      variableType: bridgeData?.variableType ?? "",
     });
   }, [initialData, bridgeData]);
 
@@ -196,21 +193,18 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
 
   const validateAndSave = () => {
     const finalConfig: DeviceConfig = {
-      // General & Parameters data
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,
       tag_name: formState.tag_name,
       g_size: formState.g_size,
-      pressure_min: parseFloat(formState.pressure_min),
-      pressure_max: parseFloat(formState.pressure_max),
+      temp_min: parseFloat(formState.temp_min),
+      temp_max: parseFloat(formState.temp_max),
       unit: formState.unit,
       correction_c0: parseFloat(formState.correction_c0),
       correction_c1: parseFloat(formState.correction_c1),
       correction_c2: parseFloat(formState.correction_c2),
       correction_c3: parseFloat(formState.correction_c3),
-
-      // Bridge data
       slave_address: parseInt(formState.slave_id, 10),
       register_address: parseInt(formState.register_address, 10),
       register_count: parseInt(formState.register_count, 10),
@@ -219,11 +213,10 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     onSave(finalConfig);
   };
 
-  const pressureUnitOptions = [
-    { value: "bar", label: "bar" },
-    { value: "psi", label: "psi" },
-    { value: "kPa", label: "kPa" },
-    { value: "mbar", label: "mbar" },
+  const temperatureUnitOptions = [
+    { value: "Celsius", label: "Celsius (°C)" },
+    { value: "Fahrenheit", label: "Fahrenheit (°F)" },
+    { value: "Kelvin", label: "Kelvin (K)" },
   ];
 
   return (
@@ -234,7 +227,6 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
         errors={{}}
         handleStateChange={handleStateChange}
       />
-
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab("general")}
@@ -257,7 +249,6 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
           Parameters
         </button>
       </div>
-
       <div>
         {activeTab === "general" && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
@@ -270,7 +261,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                 onChange={(e) =>
                   handleStateChange("manufacturer", e.target.value)
                 }
-                placeholder="Set manufacturer"
+                placeholder="Please set manufacturer"
               />
             </div>
             <div className="space-y-1">
@@ -282,7 +273,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                 onChange={(e) =>
                   handleStateChange("serial_number", e.target.value)
                 }
-                placeholder="Set serial number"
+                placeholder="Please set serial number"
               />
             </div>
             <div className="space-y-1">
@@ -292,7 +283,8 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
               <Input
                 value={formState.model}
                 onChange={(e) => handleStateChange("model", e.target.value)}
-                placeholder="Set Device model"
+                placeholder="Please set Device model"
+                type="text"
               />
             </div>
             <div className="space-y-1">
@@ -302,7 +294,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
               <Input
                 value={formState.tag_name}
                 onChange={(e) => handleStateChange("tag_name", e.target.value)}
-                placeholder="Set tag name"
+                placeholder="Please set tag name"
               />
             </div>
             <div className="space-y-1">
@@ -312,49 +304,48 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
               <Input
                 value={formState.g_size}
                 onChange={(e) => handleStateChange("g_size", e.target.value)}
-                placeholder="Set G-size"
+                placeholder="Please set G-size"
               />
             </div>
           </div>
         )}
-
         {activeTab === "parameters" && (
           <div className="flex flex-col space-y-4 animate-fadeIn">
             <div className="grid grid-cols-2 gap-x-6">
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Pmin
+                  Tmin
                 </label>
                 <Input
-                  value={formState.pressure_min}
+                  value={formState.temp_min}
                   onChange={(e) =>
-                    handleStateChange("pressure_min", e.target.value)
+                    handleStateChange("temp_min", e.target.value)
                   }
-                  placeholder="Set Pmin"
+                  placeholder="Please set Tmin"
                 />
               </div>
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Pmax
+                  Tmax
                 </label>
                 <Input
-                  value={formState.pressure_max}
+                  value={formState.temp_max}
                   onChange={(e) =>
-                    handleStateChange("pressure_max", e.target.value)
+                    handleStateChange("temp_max", e.target.value)
                   }
-                  placeholder="Set Pmax"
+                  placeholder="Please set Tmax"
                 />
               </div>
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Pressure Unit
+                Temperature Unit
               </label>
               <CustomCombobox
                 value={formState.unit}
                 onChange={(value) => handleStateChange("unit", value)}
-                options={pressureUnitOptions}
-                placeholder="Select a unit"
+                options={temperatureUnitOptions}
+                placeholder="Select Unit"
               />
             </div>
             <div className="space-y-1">
@@ -395,7 +386,6 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
           </div>
         )}
       </div>
-
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <button
           onClick={onBack}
@@ -413,5 +403,4 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     </div>
   );
 };
-
-export default PressureDeviceForm;
+export default TemperatureDeviceForm;
