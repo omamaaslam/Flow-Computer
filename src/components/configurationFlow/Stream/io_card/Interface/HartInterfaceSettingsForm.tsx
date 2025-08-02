@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import type { InterfaceConfig } from '../../types/interfaceConfig'; // Adjust the import path as needed
+import type { HartConfig } from '../../../../../types/interfaceConfig';
 
 interface HartInterfaceSettingsFormProps {
-    currentConfig: InterfaceConfig;
-    onSave: (config: InterfaceConfig) => void;
+    currentConfig: HartConfig;
+    onSave: (config: HartConfig) => void;
     onClose: () => void;
 }
 
@@ -12,7 +12,7 @@ const HartInterfaceSettingsForm: React.FC<HartInterfaceSettingsFormProps> = ({
     onSave,
     onClose,
 }) => {
-    const [formData, setFormData] = useState<InterfaceConfig>(currentConfig);
+    const [formData, setFormData] = useState<HartConfig>(currentConfig);
 
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

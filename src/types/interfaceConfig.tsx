@@ -23,6 +23,7 @@ export interface HartConfig extends BaseInterfaceConfig {
   max_devices: number;
   retry_count: number;
   scan_interval_ms: number;
+  hartPhysicalLayer?: "RS-485" | "RS-232";
 }
 
 // Specific configuration for Modbus (MOD1)
@@ -37,7 +38,7 @@ export interface ModbusConfig extends BaseInterfaceConfig {
   retry_count: number;
   stop_bits: number;
   timeout_ms: number;
-  list?: { [key: string]: any }; // <-- YEH LINE ADD KI GAI HAI
+  list?: { [key: string]: any };
 }
 
 // Specific configuration for RTD (TI1)

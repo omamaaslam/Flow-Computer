@@ -1,4 +1,3 @@
-// src/components/configurationFlow/ConfigureInterface.tsx
 import { useState } from "react";
 import { Thermometer, Settings, ArrowLeft } from "lucide-react";
 import MuiModalWrapper from "../../../MuiModalWrapper.tsx";
@@ -133,17 +132,14 @@ const ConfigureInterface = observer(
           editingDevice.config.tag_name || editingDevice.id
         }`;
       }
-      if (modalView === "addDevice_configure") {
-        return `Add Device for ${anInterface.name}`;
-      }
-      // Baaki titles
       switch (modalView) {
+        case "addDevice_selectType":
+        case "addDevice_configure":
+          return `Add Device for ${anInterface.name}`;
         case "modbusSettings":
           return `Modbus Settings: ${anInterface.name}`;
         case "RTDSettings":
           return `RTD Settings: ${anInterface.name}`;
-        case "addDevice_selectType":
-          return `Add Device for ${anInterface.name}`;
         case "HART1":
           return `HART Settings: ${anInterface.name}`;
         case "Di_InterfaceSettings":
@@ -154,6 +150,82 @@ const ConfigureInterface = observer(
     };
 
     const currentConfig = anInterface.getConfig();
+
+    const renderModalContent = () => {
+      switch (modalView) {
+        case "modbusSettings":
+          return currentConfig.interface_type === "ModbusInterface" ? (
+            <ModbusInterfaceSettingsForm
+              currentConfig={currentConfig}
+              onSave={handleSaveInterfaceConfig}
+              onClose={closeModal}
+            />
+          ) : null;
+
+        case "RTDSettings":
+          return currentConfig.interface_type === "RtdInterface" ? (
+            <RTDInterfaceSettingsForm
+              currentConfig={currentConfig}
+              onSave={handleSaveInterfaceConfig}
+              onClose={closeModal}
+            />
+          ) : null;
+
+        case "HART1":
+          return currentConfig.interface_type === "HartInterface" ? (
+            <HartInterfaceSettingsForm
+              currentConfig={currentConfig}
+              onSave={handleSaveInterfaceConfig}
+              onClose={closeModal}
+            />
+          ) : null;
+
+        case "Di_InterfaceSettings":
+          return currentConfig.interface_type === "DigitalInputInterface" ? (
+            <DI_InterfaceSettingsForm
+              currentConfig={currentConfig}
+              onSave={handleSaveInterfaceConfig}
+              onClose={closeModal}
+            />
+          ) : null;
+
+        case "addDevice_selectType":
+          return (
+            <AddDeviceForm
+              onClose={closeModal}
+              onNext={handleDeviceTypeSelection}
+            />
+          );
+
+        case "addDevice_configure":
+          const deviceProps = {
+            initialData: isEditing ? editingDevice?.config : null,
+            bridgeData: isEditing ? bridgeData : null,
+            onSave: handleSaveDeviceConfiguration,
+            onBack: closeModal,
+            interfaceName: anInterface.name,
+          };
+          switch (deviceTypeToConfigure) {
+            case "TemperatureDevice":
+              return <TemperatureDeviceForm {...deviceProps} />;
+            case "PressureDevice":
+              return <PressureDeviceForm {...deviceProps} />;
+            case "VolumeDevice":
+              return <VolumeDeviceForm {...deviceProps} />;
+            case "PulseVolumeDevice":
+              return <PulseVolumeDeviceForm {...deviceProps} />;
+            case "PulseFlowRateDevice":
+              return <PulseFlowRateDeviceForm {...deviceProps} />;
+            case "FlowRateDevice":
+              return <FlowRateDeviceForm {...deviceProps} />;
+            default:
+              return null;
+          }
+
+        default:
+          return null;
+      }
+    };
 
     return (
       <>
@@ -231,103 +303,7 @@ const ConfigureInterface = observer(
           onClose={closeModal}
           title={getModalTitle()}
         >
-          <>
-            {modalView === "modbusSettings" &&
-              currentConfig.interface_type === "ModbusInterface" && (
-                <ModbusInterfaceSettingsForm
-                  currentConfig={currentConfig}
-                  onSave={handleSaveInterfaceConfig}
-                  onClose={closeModal}
-                />
-              )}
-            {modalView === "RTDSettings" &&
-              currentConfig.interface_type === "RtdInterface" && (
-                <RTDInterfaceSettingsForm
-                  currentConfig={currentConfig}
-                  onSave={handleSaveInterfaceConfig}
-                  onClose={closeModal}
-                />
-              )}
-            {modalView === "HART1" &&
-              currentConfig.interface_type === "HartInterface" && (
-                <HartInterfaceSettingsForm
-                  currentConfig={currentConfig}
-                  onSave={handleSaveInterfaceConfig}
-                  onClose={closeModal}
-                />
-              )}
-            {modalView === "Di_InterfaceSettings" &&
-              currentConfig.interface_type === "DigitalInputInterface" && (
-                <DI_InterfaceSettingsForm
-                  currentConfig={currentConfig}
-                  onSave={handleSaveInterfaceConfig}
-                  onClose={closeModal}
-                />
-              )}
-            {modalView === "addDevice_selectType" && (
-              <AddDeviceForm
-                onClose={closeModal}
-                onNext={handleDeviceTypeSelection}
-              />
-            )}
-
-            {/* YEH SECTION AB ADD AUR EDIT DONO KE LIYE SAHI KAAM KAREGA */}
-
-            {modalView === "addDevice_configure" && (
-              <>
-                {deviceTypeToConfigure === "TemperatureDevice" && (
-                  <TemperatureDeviceForm
-                    initialData={isEditing ? editingDevice?.config : null}
-                    bridgeData={isEditing ? bridgeData : null}
-                    onSave={handleSaveDeviceConfiguration}
-                    onBack={closeModal}
-                    interfaceName={anInterface.name}
-                  />
-                )}
-                {deviceTypeToConfigure === "PressureDevice" && (
-                  <PressureDeviceForm
-                    initialData={isEditing ? editingDevice?.config : null}
-                    bridgeData={isEditing ? bridgeData : null}
-                    onSave={handleSaveDeviceConfiguration}
-                    onBack={closeModal}
-                    interfaceName={anInterface.name}
-                  />
-                )}
-                {deviceTypeToConfigure === "VolumeDevice" && (
-                  <VolumeDeviceForm
-                    initialData={isEditing ? editingDevice?.config : null}
-                    onSave={handleSaveDeviceConfiguration}
-                    onBack={closeModal}
-                    interfaceName={anInterface.name}
-                  />
-                )}
-                {deviceTypeToConfigure === "PulseVolumeDevice" && (
-                  <PulseVolumeDeviceForm
-                    initialData={isEditing ? editingDevice?.config : null}
-                    onSave={handleSaveDeviceConfiguration}
-                    onBack={closeModal}
-                    interfaceName={anInterface.name}
-                  />
-                )}
-                {deviceTypeToConfigure === "PulseFlowRateDevice" && (
-                  <PulseFlowRateDeviceForm
-                    initialData={isEditing ? editingDevice?.config : null}
-                    onSave={handleSaveDeviceConfiguration}
-                    onBack={closeModal}
-                    interfaceName={anInterface.name}
-                  />
-                )}
-                {deviceTypeToConfigure === "FlowRateDevice" && (
-                  <FlowRateDeviceForm
-                    initialData={isEditing ? editingDevice?.config : null}
-                    onSave={handleSaveDeviceConfiguration}
-                    onBack={closeModal}
-                    interfaceName={anInterface.name}
-                  />
-                )}
-              </>
-            )}
-          </>
+          {renderModalContent()}
         </MuiModalWrapper>
       </>
     );

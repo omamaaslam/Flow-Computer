@@ -25,7 +25,7 @@ const BridgeComponent: React.FC<InterfaceBridgeProps> = ({
     );
   }
 
-  if (interfaceName === "HI1") {
+  if (interfaceName === "HartInterface") {
     return (
       <HartBridge
         formState={formState}

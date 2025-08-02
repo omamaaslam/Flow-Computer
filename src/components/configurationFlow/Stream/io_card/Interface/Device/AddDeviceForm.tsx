@@ -118,12 +118,12 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({ onClose, onNext }) => {
   };
 
   const deviceOptions = [
-    { value: "Temperature", label: "Temperature" },
-    { value: "Pressure", label: "Pressure" },
-    { value: "Volume", label: "Volume" },
-    { value: "PulseVolume", label: "Pulse Volume" },
-    { value: "FlowRate", label: "Flow Rate" },
-    { value: "PulseFlowRate", label: "Pulse Flow Rate" },
+    { value: "TemperatureDevice", label: "Temperature" },
+    { value: "PressureDevice", label: "Pressure" },
+    { value: "VolumeDevice", label: "Volume" },
+    { value: "PulseVolumeDevice", label: "Pulse Volume" },
+    { value: "FlowRateDevice", label: "Flow Rate" },
+    { value: "PulseFlowRateDevice", label: "Pulse Flow Rate" },
     { value: "CH4", label: "Methanes" },
     { value: "N2", label: "Nitrogen" },
     { value: "CO2", label: "Carbon Dioxide" },
@@ -152,7 +152,7 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({ onClose, onNext }) => {
 
   return (
     <>
-      <div className="space-y-2">
+      <div className="space-y-4">
         <label className="block text-sm font-medium text-gray-700">
           Device Type
         </label>
@@ -160,10 +160,10 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({ onClose, onNext }) => {
           value={selectedType}
           onChange={setSelectedType}
           options={deviceOptions}
-          placeholder="Please select"
+          placeholder="Please select a device type"
         />
       </div>
-      <div className="flex justify-end gap-3 pt-8">
+      <div className="flex justify-end gap-3 pt-8 mt-4 border-t border-gray-200">
         <button
           onClick={onClose}
           className="px-6 py-2 rounded-full font-semibold text-sm bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors shadow-sm"
