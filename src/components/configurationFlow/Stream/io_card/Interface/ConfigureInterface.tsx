@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Thermometer, Settings, ArrowLeft } from "lucide-react";
+// Corrected import: Thermometer removed
+import { Settings, ArrowLeft } from "lucide-react";
 import MuiModalWrapper from "../../../MuiModalWrapper.tsx";
 import AddDeviceForm from "./Device/AddDeviceForm.tsx";
 import { observer } from "mobx-react-lite";
@@ -17,6 +18,7 @@ import TemperatureDeviceForm from "./Device/TemperatureDeviceForm.tsx";
 import VolumeDeviceForm from "./Device/VolumeDeviceForm.tsx";
 import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
+import DeviceIcon from "../../../../DeviceIcon.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
@@ -43,6 +45,7 @@ const statusStyles: Record<
 
 const ConfigureInterface = observer(
   ({ anInterface, onBack }: ConfigureInterfaceProps) => {
+    // ... (no changes needed in state or handlers)
     const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
       null
     );
@@ -225,6 +228,7 @@ const ConfigureInterface = observer(
       }
     };
 
+
     return (
       <>
         <div className="w-full bg-white p-4 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8 border border-gray-200">
@@ -245,28 +249,32 @@ const ConfigureInterface = observer(
               Devices on {anInterface.name}
             </h2>
             <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4">
-              {anInterface.devices.map((device) => (
-                <button
-                  key={device.id}
-                  onClick={() => handleDeviceClick(device)}
-                  className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${
-                    statusStyles["ok"].gradient
-                  } ${
-                    selectedDeviceId === device.id
-                      ? "ring-2 md:ring-4 ring-offset-2 ring-yellow-400"
-                      : "ring-2 ring-transparent"
-                  }`}
-                >
-                  <Thermometer
-                    className={statusStyles["ok"].icon}
-                    size={24}
-                    strokeWidth={2.5}
-                  />
-                  <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
-                    {device.config.device_type}
-                  </span>
-                </button>
-              ))}
+              {/* --- THIS IS THE FULLY CORRECTED BLOCK --- */}
+              {anInterface.devices.map((device) => {
+                const deviceType = device.config?.device_type;
+                if (!deviceType) {
+                  return null;
+                }
+                return (
+                  <button
+                    key={device.id}
+                    onClick={() => handleDeviceClick(device)}
+                    className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${statusStyles["ok"].gradient
+                      } ${selectedDeviceId === device.id
+                        ? "ring-2 md:ring-4 ring-offset-2 ring-yellow-400"
+                        : "ring-2 ring-transparent"
+                      }`}
+                  >
+                    <DeviceIcon
+                      deviceType={deviceType}
+                      className={`${statusStyles["ok"].icon} h-6 w-6 md:h-8 md:w-8`}
+                    />
+                    <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
+                      {deviceType}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             <div className="flex items-center gap-2 md:gap-4">
               <button
