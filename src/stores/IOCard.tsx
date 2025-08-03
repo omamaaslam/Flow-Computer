@@ -3,7 +3,7 @@ import { Interface } from "./Interface";
 
 // Base list waisi hi rahegi, lekin keys ab backend IDs se match karengi.
 const ALL_DIAGRAM_INTERFACES = {
-  MOD1: "unconfigured", // Changed from MOD
+  MOD_M: "unconfigured", // Changed from MOD
   DI2: "unconfigured",
   DI4_left: "unconfigured",
   AI1: "unconfigured",
@@ -37,6 +37,15 @@ export class IOCard {
       );
     }
   }
+
+  // *** NEW METHOD START ***
+  // Add this method to allow adding a new interface instance.
+  addInterface(newInterface: Interface) {
+    if (!this.interfaces.find(iface => iface.id === newInterface.id)) {
+      this.interfaces.push(newInterface);
+    }
+  }
+
 
   get interfaceStatuses() {
     const currentStatuses: any = { ...ALL_DIAGRAM_INTERFACES };

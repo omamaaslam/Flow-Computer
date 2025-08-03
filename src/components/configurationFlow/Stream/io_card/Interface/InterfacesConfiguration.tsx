@@ -16,7 +16,7 @@ interface InterfacesConfigurationProps {
 
 // A fallback object to use while data is loading
 const UNCONFIGURED_STATUSES: InterfaceStatuses = {
-  MOD1: "unconfigured",
+  MOD_M: "unconfigured",
   DI2: "unconfigured",
   DI4_left: "unconfigured",
   AI1: "unconfigured",
@@ -73,8 +73,8 @@ const InterfacesConfiguration = observer(
         */}
           <IoCardSvg
             // We now use our safe helper function to get the color
-            mod1StatusColor={getColorForStatus(statuses.MOD1)}
-            onMod1Click={() => onConfigure("MOD1")}
+            mod1StatusColor={getColorForStatus(statuses.MOD_M)}
+            onMod1Click={() => onConfigure("MOD_M")}
             di1StatusColor={getColorForStatus(statuses.DI1)}
             onDi1Click={() => onConfigure("DI1")}
             hi1StatusColor={getColorForStatus(statuses.HI1)}

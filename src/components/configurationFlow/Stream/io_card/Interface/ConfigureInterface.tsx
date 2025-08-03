@@ -128,9 +128,7 @@ const ConfigureInterface = observer(
 
     const getModalTitle = () => {
       if (isEditing && editingDevice) {
-        return `Edit ${editingDevice.name}: ${
-          editingDevice.config.tag_name || editingDevice.id
-        }`;
+        return `Edit ${editingDevice.name}`;
       }
       switch (modalView) {
         case "addDevice_selectType":
@@ -265,7 +263,7 @@ const ConfigureInterface = observer(
                     strokeWidth={2.5}
                   />
                   <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
-                    {device.config.tag_name || device.name}
+                    {device.config.device_type}
                   </span>
                 </button>
               ))}
