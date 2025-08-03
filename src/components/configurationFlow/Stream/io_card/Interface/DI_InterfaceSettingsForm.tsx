@@ -1,11 +1,13 @@
-// src/components/configurationFlow/DI_InterfaceSettingsForm.tsx
+// src/components/configurationFlow/Stream/io_card/Interface/DI_InterfaceSettingsForm.tsx
 import React from "react";
 import { observer } from "mobx-react-lite";
-import type { InterfaceConfig } from "../../types/interfaceConfig";
+// Import the specific config type, not the union
+import type { DigitalInputConfig } from "../../../../../types/interfaceConfig";
 
 interface DIInterfaceSettingsFormProps {
-  currentConfig: InterfaceConfig;
-  onSave: (config: InterfaceConfig) => void;
+  // Use the specific type for props
+  currentConfig: DigitalInputConfig;
+  onSave: (config: DigitalInputConfig) => void;
   onClose: () => void;
 }
 
@@ -14,18 +16,23 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
   onSave,
   onClose
 }) => {
-  const [formData, setFormData] = React.useState<InterfaceConfig>(currentConfig);
+  // Use the specific type for state, which resolves all access errors
+  const [formData, setFormData] = React.useState<DigitalInputConfig>(currentConfig);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    const key = name as keyof InterfaceConfig;
+    // The key is now correctly typed as keyof DigitalInputConfig
+    const key = name as keyof DigitalInputConfig;
 
-    // Convert debounceTime to number
-    const processedValue = key === "diDebounceTime" ? (value === "" ? undefined : Number(value)) : value;
+    // The comparison is now valid. Convert debounce_time_ms to a number.
+    const processedValue =
+      key === "debounce_time_ms"
+        ? (value === "" ? 0 : Number(value)) // Default to 0 if empty
+        : value;
 
     setFormData(prev => ({
       ...prev,
-      [key]: processedValue
+      [key]: processedValue,
     }));
   };
 
@@ -33,7 +40,7 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
     onSave(formData);
   };
 
-  // Common styling for form inputs, matching the look and feel from the image
+  // Common styling for form inputs
   const inputBaseClass = "w-full border border-gray-300 rounded-sm px-3 py-2 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 bg-white placeholder-gray-400";
   const selectClass = `${inputBaseClass} appearance-none`;
   const labelClass = "block font-medium text-sm text-gray-700";
@@ -50,19 +57,18 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
     <>
       <h2 className="text-xl font-bold text-gray-800 mb-6">DI Configuration</h2>
       <div className="space-y-5">
-        
-        {/* Input Type */}
+
+        {/* Input Type - Corrected name and value binding */}
         <div className="space-y-1">
-          <label htmlFor="interface_type" className={labelClass}>Input Type</label>
+          <label htmlFor="input_type" className={labelClass}>Input Type</label>
           <div className="relative">
             <select
-              id="interface_type"
-              name="interface_type"
-              value={formData.interface_type || ""}
+              id="input_type"
+              name="input_type" // Corrected: This field corresponds to 'input_type'
+              value={formData.input_type} // No error: input_type exists on DigitalInputConfig
               onChange={handleChange}
               className={selectClass}
             >
-              <option value="" disabled hidden>Please select</option>
               <option value="Dry Contact">Dry Contact</option>
               <option value="Wet Contact">Wet Contact</option>
             </select>
@@ -70,35 +76,35 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
           </div>
         </div>
 
-        {/* Debounce Time */}
+        {/* Debounce Time - Corrected name, value binding, and unit */}
         <div className="space-y-1">
-          <label htmlFor="diDebounceTime" className={labelClass}>Debounce Time</label>
+          <label htmlFor="debounce_time_ms" className={labelClass}>Debounce Time</label>
           <div className="relative">
-             <input
-                id="diDebounceTime"
-                name="diDebounceTime"
-                type="number"
-                value={formData.diDebounceTime || ""}
-                onChange={handleChange}
-                placeholder="Please enter value between 0-10,000"
-                className={inputBaseClass}
-                min="0"
-                max="10000"
-             />
-             <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 pointer-events-none">
-                mA
-             </span>
+            <input
+              id="debounce_time_ms"
+              name="debounce_time_ms" // Corrected: was diDebounceTime
+              type="number"
+              value={formData.debounce_time_ms || ""} // No error: debounce_time_ms exists
+              onChange={handleChange}
+              placeholder="Please enter value between 0-10,000"
+              className={inputBaseClass}
+              min="0"
+              max="10000"
+            />
+            <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm text-gray-500 pointer-events-none">
+              ms {/* Corrected unit: was mA */}
+            </span>
           </div>
         </div>
 
-        {/* Signal Logic */}
+        {/* Signal Logic - Corrected value binding */}
         <div className="space-y-1">
           <label htmlFor="signal_logic" className={labelClass}>Signal Logic</label>
-           <div className="relative">
+          <div className="relative">
             <select
               id="signal_logic"
               name="signal_logic"
-              value={formData.signal_logic || "Active High"}
+              value={formData.signal_logic} // No error: signal_logic exists
               onChange={handleChange}
               className={selectClass}
             >
@@ -109,14 +115,14 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
           </div>
         </div>
 
-        {/* Edge Detection */}
+        {/* Edge Detection - Corrected value binding */}
         <div className="space-y-1">
           <label htmlFor="edge_detection" className={labelClass}>Edge Detection</label>
           <div className="relative">
             <select
               id="edge_detection"
               name="edge_detection"
-              value={formData.edge_detection || "Rising"}
+              value={formData.edge_detection} // No error: edge_detection exists
               onChange={handleChange}
               className={selectClass}
             >
@@ -128,14 +134,14 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> = observer
           </div>
         </div>
 
-        {/* Pull-up/Pull-down */}
+        {/* Pull-up/Pull-down - Corrected value binding */}
         <div className="space-y-1">
           <label htmlFor="pull_config" className={labelClass}>Pull-up/Pull-down</label>
           <div className="relative">
             <select
               id="pull_config"
               name="pull_config"
-              value={formData.pull_config}
+              value={formData.pull_config} // No error: pull_config exists
               onChange={handleChange}
               className={selectClass}
             >

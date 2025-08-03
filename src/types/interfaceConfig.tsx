@@ -1,4 +1,4 @@
-// src/types/interfaceConfig.tsx
+// src/types/interfaceConfig.ts
 
 // A base interface for properties that are common to all interface types.
 interface BaseInterfaceConfig {
@@ -7,13 +7,14 @@ interface BaseInterfaceConfig {
 }
 
 // Specific configuration for Digital Input (DI1)
+// REVISED: Using string literals for better type safety and simpler form handling.
 export interface DigitalInputConfig extends BaseInterfaceConfig {
   interface_type: "DigitalInputInterface";
   debounce_time_ms: number;
-  edge_detection: number;
-  input_type: number;
-  pull_config: number;
-  signal_logic: number;
+  edge_detection: "Rising" | "Falling" | "Both";
+  input_type: "Dry Contact" | "Wet Contact";
+  pull_config: "Pull-down" | "Pull-up" | "None";
+  signal_logic: "Active High" | "Active Low";
 }
 
 // Specific configuration for HART (HI1)
