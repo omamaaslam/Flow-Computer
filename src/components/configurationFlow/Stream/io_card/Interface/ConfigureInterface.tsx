@@ -299,7 +299,7 @@ const ConfigureInterface = observer(
                 className="w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
               >
                 <Settings size={20} />
-                <span>{anInterface.name} Interface Settings</span>
+                <span>{anInterface.name} Setting</span>
               </button>
             </div>
           </div>

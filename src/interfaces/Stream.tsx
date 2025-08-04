@@ -1,4 +1,4 @@
-// src/interfaces/Stream.tsx
+// PATH: src/types/streamConfig.ts (ya src/interfaces/Stream.tsx)
 
 export type VolumeOperatingMode =
   | "encoderOnly"
@@ -13,26 +13,19 @@ export type VolumeOperatingMode =
 export type TemperatureUnit = "C" | "F" | "K";
 export type PressureUnit = "bar" | "psi" | "kPa" | "atm";
 
-export interface Stream {
-  id: number;
-  name: string;
-  stream: Stream;
-}
-
-export interface VolumeConfig {
+// Note: Interfaces ka naam aapke store ke import ke mutabiq rakha gaya hai
+export interface volumeConfiguration {
   operating_mode: VolumeOperatingMode | null;
   gas_meter_1: string;
   gas_meter_2: string;
   flow_rate: string;
-  creep_time_seconds?: number | null;
-  // FIX: Changed type to allow 'null' to match the form's logic for empty inputs.
-  max_total_volume?: number | null;
-  // FIX: Changed type to allow 'null' to match the form's logic for empty inputs.
-  min_operating_volume?: number | null;
-  bidirectional?: boolean;
+  creep_time_seconds: number | null;
+  max_total_volume: number | null;
+  min_operating_volume: number | null;
+  bidirectional: boolean;
 }
 
-export interface TemperatureConfig {
+export interface temperatureConfig {
   substitute_temperature: number | null;
   device_id: string | null;
   min_operating_temperature: number | null;
@@ -41,7 +34,7 @@ export interface TemperatureConfig {
   unit: TemperatureUnit;
 }
 
-export interface PressureConfig {
+export interface pressureConfig {
   substitute_pressure: number | null;
   device_id: string | null;
   min_operating_pressure: number | null;
@@ -50,13 +43,7 @@ export interface PressureConfig {
   unit: PressureUnit;
 }
 
-export interface StreamConfig {
-  volume: VolumeConfig;
-  temperature: TemperatureConfig;
-  pressure: PressureConfig;
-}
-
-export interface FlowRateConfig {
+export interface flowRateConfig {
   calculationMethod: string;
   device: string;
   min_alarm_flow_rate: string;
@@ -67,3 +54,61 @@ export interface FlowRateConfig {
   creep_flow_rate: string;
   creep_time_seconds: string;
 }
+
+export interface compressibilityKFactorConfig {
+  // Yahan iski properties daalein, agar hain to
+  // Example:
+  calculation_method: string;
+}
+
+export interface calculator {
+  volumeConfiguration: volumeConfiguration;
+  temperatureConfig: temperatureConfig;
+  pressureConfig: pressureConfig;
+  flowRateConfig: flowRateConfig;
+  compressibilityKFactorConfig: compressibilityKFactorConfig;
+}
+
+// Yeh function sabse zaroori hai. Yeh har config ke liye default values deta hai.
+export const createDefaultStreamConfig = (): calculator => ({
+  temperatureConfig: {
+    substitute_temperature: null,
+    device_id: "",
+    min_operating_temperature: null,
+    max_operating_temperature: null,
+    base_temperature: null,
+    unit: "C",
+  },
+  pressureConfig: {
+    substitute_pressure: null,
+    device_id: "",
+    min_operating_pressure: null,
+    max_operating_pressure: null,
+    base_pressure: null,
+    unit: "bar",
+  },
+  volumeConfiguration: {
+    operating_mode: null,
+    gas_meter_1: "Meter A",
+    gas_meter_2: "Meter A",
+    flow_rate: "",
+    creep_time_seconds: null,
+    max_total_volume: null,
+    min_operating_volume: null,
+    bidirectional: false,
+  },
+  flowRateConfig: {
+    calculationMethod: "",
+    device: "",
+    min_alarm_flow_rate: "",
+    max_alarm_flow_rate: "",
+    min_warning_flow_rate: "",
+    max_warning_flow_rate: "",
+    creep_mode_enabled: "false",
+    creep_flow_rate: "",
+    creep_time_seconds: "",
+  },
+  compressibilityKFactorConfig: {
+    calculation_method: "AGA8",
+  },
+});

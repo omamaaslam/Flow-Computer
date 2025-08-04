@@ -1,9 +1,8 @@
-// D:/flow-computer/src/stores/Stream.tsx
+// D:/flow-computer/src/stores/Stream.ts
 
 import { makeAutoObservable, toJS } from "mobx";
 import { IOCard } from "./IOCard";
 // Apne types file se zaroori types aur function ko import karein.
-// Hum `calculator` type ko 'StreamConfig' ke naam se use karenge.
 import {
   createDefaultStreamConfig,
   type calculator,
@@ -12,7 +11,7 @@ import {
   type pressureConfig,
   type temperatureConfig,
   type volumeConfiguration,
-} from "../types/streamConfig";
+} from "../types/streamConfig"; // Make sure path is correct
 
 export class Stream {
   public id: string;
@@ -40,7 +39,7 @@ export class Stream {
     const incomingConfig = streamData.config || {};
 
     // Default config aur aane wale config ko merge karke final config banayein.
-    // Isse 'this.config' hamesha ek valid aur poora object rahega.
+    // Isse 'this.calculator' hamesha ek valid aur poora object rahega.
     this.calculator = {
       temperatureConfig: {
         ...defaultConfig.temperatureConfig,
@@ -72,8 +71,25 @@ export class Stream {
 
   // --- Editing Logic Methods ---
 
+  // ===== YAHAN BADLAV KIYA GAYA HAI =====
   private startEditing(configType: keyof calculator, stateKey: keyof this) {
-    (this[stateKey] as any) = makeAutoObservable(toJS(this.calculator[configType]));
+    // 1. Pehle se save ki hui values nikalein.
+    const savedConfig = toJS(this.calculator[configType]);
+
+    // 2. Usi section ke liye default values nikalein.
+    const defaultConfig = createDefaultStreamConfig()[configType];
+
+    // 3. Naya editing state banayein:
+    //    - Pehle saari default values rakhein.
+    //    - Phir saved values se unko overwrite kar dein.
+    // Isse object hamesha poora (complete) rehta hai aur type error nahi aata.
+    const completeEditingState = {
+      ...defaultConfig,
+      ...savedConfig,
+    };
+
+    // 4. Is poore object ko editing state mein daal dein.
+    (this[stateKey] as any) = makeAutoObservable(completeEditingState);
   }
 
   private commitChanges(configType: keyof calculator, stateKey: keyof this) {
@@ -86,6 +102,8 @@ export class Stream {
   private cancelEditing(stateKey: keyof this) {
     (this[stateKey] as any) = null;
   }
+
+  // Baaki sab methods waise hi rahenge, unko badalne ki zaroorat nahi hai.
 
   // Temperature Editing
   startEditingTemperature = () =>
