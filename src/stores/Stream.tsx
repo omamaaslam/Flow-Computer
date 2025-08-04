@@ -2,29 +2,28 @@
 
 import { makeAutoObservable, toJS } from "mobx";
 import { IOCard } from "./IOCard";
-// Apne types file se zaroori types aur function ko import karein.
 import {
   createDefaultStreamConfig,
-  type calculator,
-  type compressibilityKFactorConfig,
-  type flowRateConfig,
-  type pressureConfig,
-  type temperatureConfig,
-  type volumeConfiguration,
-} from "../types/streamConfig"; // Make sure path is correct
+  type CalculatorConfig,
+  type FlowRateCalculatorConfig,
+  type PressureCalculatorConfig,
+  type TemperatureCalculatorConfig,
+  type VolumeConfiguration,
+  type CompressibilityKFactorConfig,
+} from "../types/streamConfig"; // Yahan naye types import ho rahe hain
 
 export class Stream {
   public id: string;
   public name: string;
-  public calculator: calculator;
+  public calculator: CalculatorConfig; // Sahi aur master config type
   public ioCards: IOCard[] = [];
 
-  // Editing state ke liye temporary storage
-  public editingTemperature: temperatureConfig | null = null;
-  public editingPressure: pressureConfig | null = null;
-  public editingVolume: volumeConfiguration | null = null;
-  public editingFlowRate: flowRateConfig | null = null;
-  public editingConversion: compressibilityKFactorConfig | null = null;
+  // Editing states ab naye types ke mutabiq hain
+  public editingTemperature: TemperatureCalculatorConfig | null = null;
+  public editingPressure: PressureCalculatorConfig | null = null;
+  public editingVolume: VolumeConfiguration | null = null;
+  public editingFlowRate: FlowRateCalculatorConfig | null = null;
+  public editingConversion: CompressibilityKFactorConfig | null = null;
 
   constructor(streamData: any) {
     makeAutoObservable(this, { id: false });
@@ -32,69 +31,67 @@ export class Stream {
     this.id = streamData.stream_id;
     this.name = streamData.stream_name;
 
-    // Default configuration ko ek variable me store karein.
     const defaultConfig = createDefaultStreamConfig();
+    // 'calculator' object ko seedha access karein
+    const incomingConfig = streamData.calculator || {};
 
-    // Aane wale data se config object nikalein. Agar nahi hai to khaali object use karein.
-    const incomingConfig = streamData.config || {};
-
-    // Default config aur aane wale config ko merge karke final config banayein.
-    // Isse 'this.calculator' hamesha ek valid aur poora object rahega.
+    // Default aur aane wali config ko merge karein taake object hamesha poora rahe
     this.calculator = {
-      temperatureConfig: {
-        ...defaultConfig.temperatureConfig,
-        ...incomingConfig.temperatureConfig,
+      temperature_config: {
+        ...defaultConfig.temperature_config,
+        ...incomingConfig.temperature_config,
       },
-      pressureConfig: {
-        ...defaultConfig.pressureConfig,
-        ...incomingConfig.pressureConfig,
+      pressure_config: {
+        ...defaultConfig.pressure_config,
+        ...incomingConfig.pressure_config,
       },
-      volumeConfiguration: {
-        ...defaultConfig.volumeConfiguration,
-        ...incomingConfig.volumeConfiguration,
+      flow_rate_config: {
+        ...defaultConfig.flow_rate_config,
+        ...incomingConfig.flow_rate_config,
       },
-      flowRateConfig: {
-        ...defaultConfig.flowRateConfig,
-        ...incomingConfig.flowRateConfig,
-      },
-      compressibilityKFactorConfig: {
-        ...defaultConfig.compressibilityKFactorConfig,
-        ...incomingConfig.compressibilityKFactorConfig,
-      },
+      volume_configuration:
+        incomingConfig.volume_configuration ??
+        defaultConfig.volume_configuration,
+      compressibility_kfactor_config:
+        incomingConfig.compressibility_kfactor_config ??
+        defaultConfig.compressibility_kfactor_config,
+      calculation_profile:
+        incomingConfig.calculation_profile ?? defaultConfig.calculation_profile,
     };
 
-    // Agar streamData me io_card hai, to IOCard ka instance banakar add karein
     if (streamData.io_card) {
+      // Is logic ko abhi ke liye waise hi rakha hai
       this.ioCards.push(new IOCard(streamData.io_card));
     }
   }
 
   // --- Editing Logic Methods ---
 
-  // ===== YAHAN BADLAV KIYA GAYA HAI =====
-  private startEditing(configType: keyof calculator, stateKey: keyof this) {
-    // 1. Pehle se save ki hui values nikalein.
+  // Keys ko `CalculatorConfig` se match karna zaroori hai
+  private startEditing(
+    configType: keyof CalculatorConfig,
+    stateKey: keyof this
+  ) {
     const savedConfig = toJS(this.calculator[configType]);
 
-    // 2. Usi section ke liye default values nikalein.
-    const defaultConfig = createDefaultStreamConfig()[configType];
-
-    // 3. Naya editing state banayein:
-    //    - Pehle saari default values rakhein.
-    //    - Phir saved values se unko overwrite kar dein.
-    // Isse object hamesha poora (complete) rehta hai aur type error nahi aata.
-    const completeEditingState = {
-      ...defaultConfig,
-      ...savedConfig,
-    };
-
-    // 4. Is poore object ko editing state mein daal dein.
-    (this[stateKey] as any) = makeAutoObservable(completeEditingState);
+    // Sirf tab state banayein jab config null na ho
+    if (savedConfig) {
+      const defaultConfigSection = createDefaultStreamConfig()[configType];
+      const completeEditingState = {
+        ...defaultConfigSection,
+        ...savedConfig,
+      };
+      (this[stateKey] as any) = makeAutoObservable(completeEditingState);
+    }
   }
 
-  private commitChanges(configType: keyof calculator, stateKey: keyof this) {
+  private commitChanges(
+    configType: keyof CalculatorConfig,
+    stateKey: keyof this
+  ) {
     if (this[stateKey]) {
-      this.calculator[configType] = toJS(this[stateKey] as any);
+      // Type assertion 'as any' use ki ja rahi hai general function ke liye
+      (this.calculator as any)[configType] = toJS(this[stateKey] as any);
       (this[stateKey] as any) = null;
     }
   }
@@ -103,40 +100,35 @@ export class Stream {
     (this[stateKey] as any) = null;
   }
 
-  // Baaki sab methods waise hi rahenge, unko badalne ki zaroorat nahi hai.
+  // --- Har section ke liye specific functions ---
 
-  // Temperature Editing
   startEditingTemperature = () =>
-    this.startEditing("temperatureConfig", "editingTemperature");
+    this.startEditing("temperature_config", "editingTemperature");
   commitTemperatureChanges = () =>
-    this.commitChanges("temperatureConfig", "editingTemperature");
+    this.commitChanges("temperature_config", "editingTemperature");
   cancelEditingTemperature = () => this.cancelEditing("editingTemperature");
 
-  // Pressure Editing
   startEditingPressure = () =>
-    this.startEditing("pressureConfig", "editingPressure");
+    this.startEditing("pressure_config", "editingPressure");
   commitPressureChanges = () =>
-    this.commitChanges("pressureConfig", "editingPressure");
+    this.commitChanges("pressure_config", "editingPressure");
   cancelEditingPressure = () => this.cancelEditing("editingPressure");
 
-  // Volume Editing
   startEditingVolume = () =>
-    this.startEditing("volumeConfiguration", "editingVolume");
+    this.startEditing("volume_configuration", "editingVolume");
   commitVolumeChanges = () =>
-    this.commitChanges("volumeConfiguration", "editingVolume");
+    this.commitChanges("volume_configuration", "editingVolume");
   cancelEditingVolume = () => this.cancelEditing("editingVolume");
 
-  // FlowRate Editing
   startEditingFlowRate = () =>
-    this.startEditing("flowRateConfig", "editingFlowRate");
+    this.startEditing("flow_rate_config", "editingFlowRate");
   commitFlowRateChanges = () =>
-    this.commitChanges("flowRateConfig", "editingFlowRate");
+    this.commitChanges("flow_rate_config", "editingFlowRate");
   cancelEditingFlowRate = () => this.cancelEditing("editingFlowRate");
 
-  // Conversion/Compressibility Editing
   startEditingConversion = () =>
-    this.startEditing("compressibilityKFactorConfig", "editingConversion");
+    this.startEditing("compressibility_kfactor_config", "editingConversion");
   commitConversionChanges = () =>
-    this.commitChanges("compressibilityKFactorConfig", "editingConversion");
+    this.commitChanges("compressibility_kfactor_config", "editingConversion");
   cancelEditingConversion = () => this.cancelEditing("editingConversion");
 }

@@ -1,9 +1,11 @@
+// src/components/configurationFlow/Stream/FlowRateForm.tsx
+
 import React from "react";
 import { observer } from "mobx-react-lite";
-import type { FlowRateConfig } from "../../../interfaces/Stream";
+import type { FlowRateCalculatorConfig } from "../../../types/streamConfig"; // Nayi type import karein
 
 interface FlowRateFormProps {
-  config: FlowRateConfig;
+  config: FlowRateCalculatorConfig;
   onCommit: () => void;
   onClose: () => void;
 }
@@ -14,7 +16,17 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
       const { name, value } = e.target;
-      (config as any)[name] = value;
+      let finalValue: any = value;
+
+      // Dropdowns se aane wali 'true'/'false' string ko boolean me convert karein
+      if (
+        name === "software_flow_rate_enabled" ||
+        name === "creep_mode_enabled"
+      ) {
+        finalValue = value === "true";
+      }
+
+      (config as any)[name] = finalValue;
     };
 
     return (
@@ -25,27 +37,27 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
               Calculation method
             </label>
             <select
-              name="calculationMethod"
-              value={config.calculationMethod}
+              name="software_flow_rate_enabled"
+              value={String(config.software_flow_rate_enabled)} // Boolean ko string me convert karein
               onChange={handleInputChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
             >
-              <option value="Software Based">Software Based</option>
-              <option value="Device Based">Device Based</option>
+              <option value="true">Software Based</option>
+              <option value="false">Device Based</option>
             </select>
           </div>
           <div className="space-y-1">
-            {config.calculationMethod === "Device Based" && (
+            {!config.software_flow_rate_enabled && (
               <>
                 <label className="block font-medium text-xs">Device List</label>
                 <select
-                  name="device"
-                  value={config.device}
+                  name="flow_rate_device_id"
+                  value={config.flow_rate_device_id}
                   onChange={handleInputChange}
-                  className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+                  className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
                 >
-                  <option>Device 1</option>
-                  <option>Device 2</option>
+                  <option value="">Select Device</option>
+                  <option value="DI1">DI1 (Pulse)</option>
                 </select>
               </>
             )}
@@ -58,7 +70,7 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
               value={config.min_alarm_flow_rate}
               onChange={handleInputChange}
               placeholder="Please add Value"
-              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
             />
           </div>
           <div className="space-y-1">
@@ -69,7 +81,7 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
               value={config.max_alarm_flow_rate}
               onChange={handleInputChange}
               placeholder="Please add Value"
-              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
             />
           </div>
           <div className="space-y-1">
@@ -80,7 +92,7 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
               value={config.min_warning_flow_rate}
               onChange={handleInputChange}
               placeholder="Please add Value"
-              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
             />
           </div>
           <div className="space-y-1">
@@ -91,22 +103,22 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
               value={config.max_warning_flow_rate}
               onChange={handleInputChange}
               placeholder="Please add Value"
-              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
             />
           </div>
           <div className="space-y-1 col-span-2">
             <label className="block font-medium text-xs">Creep Mode</label>
             <select
               name="creep_mode_enabled"
-              value={config.creep_mode_enabled}
+              value={String(config.creep_mode_enabled)} // Boolean ko string me convert karein
               onChange={handleInputChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
             >
-              <option value="Disable">Disable</option>
-              <option value="Enable">Enable</option>
+              <option value="false">Disable</option>
+              <option value="true">Enable</option>
             </select>
           </div>
-          {config.creep_mode_enabled === "Enable" && (
+          {config.creep_mode_enabled && (
             <>
               <div className="space-y-1">
                 <label className="block font-medium text-xs">
@@ -118,7 +130,7 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
                   value={config.creep_flow_rate}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
-                  className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+                  className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
                 />
               </div>
               <div className="space-y-1">
@@ -129,7 +141,7 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
                   value={config.creep_time_seconds}
                   onChange={handleInputChange}
                   placeholder="Please add Value"
-                  className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+                  className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
                 />
               </div>
             </>
@@ -138,13 +150,13 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
         <div className="flex justify-end gap-2 pt-3">
           <button
             onClick={onClose}
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
+            className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300"
           >
             Cancel
           </button>
           <button
             onClick={onCommit}
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 transition-colors"
+            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600"
           >
             Save
           </button>

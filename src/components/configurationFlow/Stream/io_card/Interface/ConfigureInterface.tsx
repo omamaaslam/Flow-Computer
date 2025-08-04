@@ -1,5 +1,6 @@
+// src/components/configurationFlow/Interfaces/ConfigureInterface.tsx
+
 import { useState } from "react";
-// Corrected import: Thermometer removed
 import { Settings, ArrowLeft } from "lucide-react";
 import MuiModalWrapper from "../../../MuiModalWrapper.tsx";
 import AddDeviceForm from "./Device/AddDeviceForm.tsx";
@@ -18,12 +19,14 @@ import TemperatureDeviceForm from "./Device/TemperatureDeviceForm.tsx";
 import VolumeDeviceForm from "./Device/VolumeDeviceForm.tsx";
 import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
+import GasDeviceForm from "./Device/GasDeviceForm.tsx"; // <-- NEW IMPORT
 import DeviceIcon from "../../../../DeviceIcon.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
   onBack: () => void;
 }
+
 type DeviceStatus = "ok" | "warning" | "error";
 type ModalView =
   | "closed"
@@ -33,6 +36,7 @@ type ModalView =
   | "Di_InterfaceSettings"
   | "addDevice_selectType"
   | "addDevice_configure";
+
 const statusStyles: Record<
   DeviceStatus | "inactive",
   { gradient: string; icon: string }
@@ -43,9 +47,51 @@ const statusStyles: Record<
   inactive: { gradient: "from-gray-700 to-gray-500", icon: "text-yellow-400" },
 };
 
+// --- NEWLY ADDED ---
+// A centralized list of all device types to easily identify gas devices and get their labels.
+const deviceOptions = [
+  { value: "TemperatureDevice", label: "Temperature" },
+  { value: "PressureDevice", label: "Pressure" },
+  { value: "VolumeDevice", label: "Volume" },
+  { value: "PulseVolumeDevice", label: "Pulse Volume" },
+  { value: "FlowRateDevice", label: "Flow Rate" },
+  { value: "PulseFlowRateDevice", label: "Pulse Flow Rate" },
+  { value: "CH4", label: "Methanes" },
+  { value: "N2", label: "Nitrogen" },
+  { value: "CO2", label: "Carbon Dioxide" },
+  { value: "C2H6", label: "Ethane" },
+  { value: "C3H8", label: "Propane" },
+  { value: "H2O", label: "Water" },
+  { value: "H2S", label: "Hydrogen sulfides" },
+  { value: "H2", label: "Hydrogen" },
+  { value: "CO", label: "Carbon monoxide" },
+  { value: "O2", label: "Oxygen" },
+  { value: "IC4H10", label: "i-Butane" },
+  { value: "C4H10", label: "n-butane" },
+  { value: "IC5H12", label: "i-Pentane" },
+  { value: "C5H12", label: "n-Pentanes" },
+  { value: "C6H14", label: "n-hexanes" },
+  { value: "C7H16", label: "n-heptanes" },
+  { value: "C8H18", label: "n-octanes" },
+  { value: "C9H20", label: "n-Nonane" },
+  { value: "C10H22", label: "n-Decane" },
+  { value: "HE", label: "Helium" },
+  { value: "AR", label: "Argon" },
+  { value: "HI", label: "heating value" },
+  { value: "RD", label: "density ratio" },
+  { value: "WI", label: "Wobbe index" },
+];
+
+const gasDeviceTypes = deviceOptions
+  .filter(
+    (opt) =>
+      !opt.value.endsWith("Device") && !["HI", "RD", "WI"].includes(opt.value)
+  )
+  .map((opt) => opt.value);
+// --- END OF NEWLY ADDED ---
+
 const ConfigureInterface = observer(
   ({ anInterface, onBack }: ConfigureInterfaceProps) => {
-    // ... (no changes needed in state or handlers)
     const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(
       null
     );
@@ -131,7 +177,10 @@ const ConfigureInterface = observer(
 
     const getModalTitle = () => {
       if (isEditing && editingDevice) {
-        return `Edit ${editingDevice.name}`;
+        const label =
+          deviceOptions.find((opt) => opt.value === editingDevice.name)
+            ?.label || editingDevice.name;
+        return `Edit ${label}`;
       }
       switch (modalView) {
         case "addDevice_selectType":
@@ -198,6 +247,7 @@ const ConfigureInterface = observer(
             />
           );
 
+        // --- UPDATED LOGIC ---
         case "addDevice_configure":
           const deviceProps = {
             initialData: isEditing ? editingDevice?.config : null,
@@ -206,28 +256,39 @@ const ConfigureInterface = observer(
             onBack: closeModal,
             interfaceName: anInterface.name,
           };
-          switch (deviceTypeToConfigure) {
-            case "TemperatureDevice":
-              return <TemperatureDeviceForm {...deviceProps} />;
-            case "PressureDevice":
-              return <PressureDeviceForm {...deviceProps} />;
-            case "VolumeDevice":
-              return <VolumeDeviceForm {...deviceProps} />;
-            case "PulseVolumeDevice":
-              return <PulseVolumeDeviceForm {...deviceProps} />;
-            case "PulseFlowRateDevice":
-              return <PulseFlowRateDeviceForm {...deviceProps} />;
-            case "FlowRateDevice":
-              return <FlowRateDeviceForm {...deviceProps} />;
-            default:
-              return null;
+
+          const isGasDevice = gasDeviceTypes.includes(deviceTypeToConfigure);
+          const deviceLabel =
+            deviceOptions.find((d) => d.value === deviceTypeToConfigure)
+              ?.label || deviceTypeToConfigure;
+
+          if (isGasDevice) {
+            return (
+              <GasDeviceForm {...deviceProps} deviceTypeLabel={deviceLabel} />
+            );
+          } else {
+            switch (deviceTypeToConfigure) {
+              case "TemperatureDevice":
+                return <TemperatureDeviceForm {...deviceProps} />;
+              case "PressureDevice":
+                return <PressureDeviceForm {...deviceProps} />;
+              case "VolumeDevice":
+                return <VolumeDeviceForm {...deviceProps} />;
+              case "PulseVolumeDevice":
+                return <PulseVolumeDeviceForm {...deviceProps} />;
+              case "PulseFlowRateDevice":
+                return <PulseFlowRateDeviceForm {...deviceProps} />;
+              case "FlowRateDevice":
+                return <FlowRateDeviceForm {...deviceProps} />;
+              default:
+                return null;
+            }
           }
 
         default:
           return null;
       }
     };
-
 
     return (
       <>
@@ -249,28 +310,33 @@ const ConfigureInterface = observer(
               Devices on {anInterface.name}
             </h2>
             <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4">
-              {/* --- THIS IS THE FULLY CORRECTED BLOCK --- */}
               {anInterface.devices.map((device) => {
                 const deviceType = device.config?.device_type;
                 if (!deviceType) {
                   return null;
                 }
+                const deviceLabel =
+                  deviceOptions.find((opt) => opt.value === deviceType)
+                    ?.label || deviceType;
+
                 return (
                   <button
                     key={device.id}
                     onClick={() => handleDeviceClick(device)}
-                    className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${statusStyles["ok"].gradient
-                      } ${selectedDeviceId === device.id
+                    className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${
+                      statusStyles["ok"].gradient
+                    } ${
+                      selectedDeviceId === device.id
                         ? "ring-2 md:ring-4 ring-offset-2 ring-yellow-400"
                         : "ring-2 ring-transparent"
-                      }`}
+                    }`}
                   >
                     <DeviceIcon
                       deviceType={deviceType}
                       className={`${statusStyles["ok"].icon} h-6 w-6 md:h-8 md:w-8`}
                     />
                     <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
-                      {deviceType}
+                      {deviceLabel}
                     </span>
                   </button>
                 );
