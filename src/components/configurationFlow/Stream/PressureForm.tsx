@@ -1,7 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { Gauge } from "lucide-react";
-import type { PressureConfig } from  "../../../types/streamConfig";
+import type { PressureConfig } from "../../../interfaces/Stream";
 
 interface PressureFormProps {
   config: PressureConfig;
@@ -28,7 +28,7 @@ const PressureForm: React.FC<PressureFormProps> = observer(
               </label>
               <Gauge className="text-yellow-500" size={16} />
               <span className="font-semibold text-xs text-yellow-500">
-                {config.live_pressure}
+                {"N/A"}
               </span>
             </div>
           </div>
@@ -39,7 +39,8 @@ const PressureForm: React.FC<PressureFormProps> = observer(
             <input
               name="substitute_pressure"
               type="text"
-              value={config.substitute_pressure}
+              // FIX: Handle null value
+              value={config.substitute_pressure ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -48,8 +49,10 @@ const PressureForm: React.FC<PressureFormProps> = observer(
           <div className="space-y-1">
             <label className="block font-medium text-xs">Device</label>
             <select
-              name="device"
-              value={config.device}
+              // FIX: The name attribute must match the property in the config object
+              name="device_id"
+              // FIX: Handle null value
+              value={config.device_id ?? ""}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
@@ -65,7 +68,8 @@ const PressureForm: React.FC<PressureFormProps> = observer(
             <input
               name="min_operating_pressure"
               type="text"
-              value={config.min_operating_pressure}
+              // FIX: Handle null value
+              value={config.min_operating_pressure ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -78,7 +82,8 @@ const PressureForm: React.FC<PressureFormProps> = observer(
             <input
               name="base_pressure"
               type="text"
-              value={config.base_pressure}
+              // FIX: Handle null value
+              value={config.base_pressure ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -91,7 +96,8 @@ const PressureForm: React.FC<PressureFormProps> = observer(
             <input
               name="max_operating_pressure"
               type="text"
-              value={config.max_operating_pressure}
+              // FIX: Handle null value
+              value={config.max_operating_pressure ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -100,14 +106,18 @@ const PressureForm: React.FC<PressureFormProps> = observer(
           <div className="space-y-1">
             <label className="block font-medium text-xs">Pressure Unit</label>
             <select
-              name="pressureUnit"
-              value={config.pressureUnit}
+              // FIX: The name attribute must match the property 'unit'
+              name="unit"
+              // FIX: The property is 'unit', not 'pressureUnit'
+              value={config.unit}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
-              <option value="Bar">Bar</option>
-              <option value="Pascal">Pascal</option>
-              <option value="PSI">PSI</option>
+              {/* FIX (Bug): Option values must match PressureUnit type ('bar', 'psi', 'kPa', 'atm') */}
+              <option value="bar">Bar</option>
+              <option value="psi">PSI</option>
+              <option value="kPa">kPa</option>
+              <option value="atm">atm</option>
             </select>
           </div>
         </div>

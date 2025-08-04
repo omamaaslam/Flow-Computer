@@ -1,69 +1,55 @@
 import type { ImgHTMLAttributes } from 'react';
 
-// --- CORRECTED IMPORTS ---
-// Corrected 'densityratio.svg' to 'density-ratio.svg'
-import densityRatioIcon from '../assets/devices/density-ratio.svg';
-// This import is correct. Make sure your file is named 'flow-rate.svg' and not 'fow-rate.svg'.
-import flowRateIcon from '../../public/devices/fow-rate.svg';
-import gasIcon from '../../public/devices/gas.svg';
-import heatingValueIcon from '../../public/devices/heating-value.svg';
-import pressureIcon from '../../public/devices/pressure.svg';
-import pulseFlowRateIcon from '../../public/devices/pulse-flow-rate.svg';
-import pulseVolumeIcon from '../../public/devices/pulse-volume.svg';
-import temperatureIcon from '../../public/devices/temperature.svg';
-import volumeIcon from '../../public/devices/volume.svg';
-import wobbeIndexIcon from '../../public/devices/wobbe-index.svg';
+// NOTE:
+// ✅ Do NOT import files from public folder like this.
+// ✅ Files in public are served from root path '/devices/xyz.svg'.
 
 const iconMap: Record<string, string> = {
-    TemperatureDevice: temperatureIcon,
-    PressureDevice: pressureIcon,
-    VolumeDevice: volumeIcon,
-    PulseVolumeDevice: pulseVolumeIcon,
-    PulseFlowRateDevice: pulseFlowRateIcon,
-    FlowRateDevice: flowRateIcon,
-    HeatingValueDevice: heatingValueIcon,
-    DensityRatioDevice: densityRatioIcon,
-    WobbeIndexDevice: wobbeIndexIcon,
+    TemperatureDevice: '/devices/temperature.svg',
+    PressureDevice: '/devices/pressure.svg',
+    VolumeDevice: '/devices/volume.svg',
+    PulseVolumeDevice: '/devices/pulse-volume.svg',
+    PulseFlowRateDevice: '/devices/pulse-flow-rate.svg',
+    FlowRateDevice: '/devices/flow-rate.svg',
+    HeatingValueDevice: '/devices/heating-value.svg',
+    DensityRatioDevice: '/devices/density-ratio.svg',
+    WobbeIndexDevice: '/devices/wobbe-index.svg',
 
-    // --- All gas/fluid types will use the generic 'gas.svg' icon ---
-    Ho_nDevice: gasIcon,
-    RholDevice: gasIcon,
-    RhonDevice: gasIcon,
-    NitrogenDevice: gasIcon,
-    HydrogenDevice: gasIcon,
-    CarbonDioxideDevice: gasIcon,
-    MethaneDevice: gasIcon,
-    EthaneDevice: gasIcon,
-    PropaneDevice: gasIcon,
-    WaterDevice: gasIcon,
-    HydrogenSulphideDevice: gasIcon,
-    CarbonMonoxideDevice: gasIcon,
-    OxygenDevice: gasIcon,
-    KRatioDevice: gasIcon,
-    IsoButaneDevice: gasIcon,
-    NButaneDevice: gasIcon,
-    IsoPentaneDevice: gasIcon,
-    NPentaneDevice: gasIcon,
-    NHexaneDevice: gasIcon,
-    NHeptaneDevice: gasIcon,
-    NOctaneDevice: gasIcon,
-    NNonaneDevice: gasIcon,
-    NDecaneDevice: gasIcon,
-    HeliumDevice: gasIcon,
-    ArgonDevice: gasIcon,
+    // All gas/fluid types will use the generic 'gas.svg' icon
+    Ho_nDevice: '/devices/gas.svg',
+    RholDevice: '/devices/gas.svg',
+    RhonDevice: '/devices/gas.svg',
+    NitrogenDevice: '/devices/gas.svg',
+    HydrogenDevice: '/devices/gas.svg',
+    CarbonDioxideDevice: '/devices/gas.svg',
+    MethaneDevice: '/devices/gas.svg',
+    EthaneDevice: '/devices/gas.svg',
+    PropaneDevice: '/devices/gas.svg',
+    WaterDevice: '/devices/gas.svg',
+    HydrogenSulphideDevice: '/devices/gas.svg',
+    CarbonMonoxideDevice: '/devices/gas.svg',
+    OxygenDevice: '/devices/gas.svg',
+    KRatioDevice: '/devices/gas.svg',
+    IsoButaneDevice: '/devices/gas.svg',
+    NButaneDevice: '/devices/gas.svg',
+    IsoPentaneDevice: '/devices/gas.svg',
+    NPentaneDevice: '/devices/gas.svg',
+    NHexaneDevice: '/devices/gas.svg',
+    NHeptaneDevice: '/devices/gas.svg',
+    NOctaneDevice: '/devices/gas.svg',
+    NNonaneDevice: '/devices/gas.svg',
+    NDecaneDevice: '/devices/gas.svg',
+    HeliumDevice: '/devices/gas.svg',
+    ArgonDevice: '/devices/gas.svg',
 };
 
-// Define the component's props. It will accept any standard <img> attribute.
 interface DeviceIconProps extends ImgHTMLAttributes<HTMLImageElement> {
     deviceType: string;
 }
 
 const DeviceIcon = ({ deviceType, className, ...rest }: DeviceIconProps) => {
-    // Look up the icon source in our map.
     const iconSrc = iconMap[deviceType];
-
-    // If a device type is not found in the map, use the generic gas icon as a fallback.
-    const fallbackIcon = gasIcon;
+    const fallbackIcon = '/devices/gas.svg';
 
     if (!iconSrc) {
         console.warn(`No icon found for deviceType: "${deviceType}". Using fallback.`);

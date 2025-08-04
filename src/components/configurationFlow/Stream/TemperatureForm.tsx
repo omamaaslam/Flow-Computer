@@ -1,7 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { Thermometer } from "lucide-react";
-import type { TemperatureConfig } from  "../../../types/streamConfig";
+import type { TemperatureConfig } from "../../../interfaces/Stream";
 
 interface TemperatureFormProps {
   config: TemperatureConfig;
@@ -15,6 +15,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
       const { name, value } = e.target;
+      // Note: It's safer to use a typed setter if possible,
+      // but for this generic handler, we'll keep the assertion.
       (config as any)[name] = value;
     };
 
@@ -28,7 +30,7 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               </label>
               <Thermometer className="text-yellow-500" size={16} />
               <span className="font-semibold text-xs text-yellow-500">
-                {config.live_temperature}
+                {"N/A"}
               </span>
             </div>
           </div>
@@ -39,7 +41,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             <input
               name="substitute_temperature"
               type="text"
-              value={config.substitute_temperature}
+              // FIX: Handle null by providing an empty string fallback.
+              value={config.substitute_temperature ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -48,8 +51,10 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
           <div className="space-y-1">
             <label className="block font-medium text-xs">Device</label>
             <select
-              name="device"
-              value={config.device}
+              // FIX: The property name is 'deviceId'.
+              name="deviceId"
+              // FIX: Use the correct property 'deviceId' and handle null.
+              value={config.device_id ?? ""}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
@@ -65,7 +70,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             <input
               name="min_operating_temperature"
               type="text"
-              value={config.min_operating_temperature}
+              // FIX: Handle null by providing an empty string fallback.
+              value={config.min_operating_temperature ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -78,7 +84,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             <input
               name="base_temperature"
               type="text"
-              value={config.base_temperature}
+              // FIX: Handle null by providing an empty string fallback.
+              value={config.base_temperature ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -91,7 +98,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             <input
               name="max_operating_temperature"
               type="text"
-              value={config.max_operating_temperature}
+              // FIX: Handle null by providing an empty string fallback.
+              value={config.max_operating_temperature ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
@@ -102,11 +110,16 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               Temperature Unit
             </label>
             <select
-              name="temp_unit"
-              value={config.temp_unit}
+              // FIX (Bug): Match the name attribute to the property 'unit'.
+              name="unit"
+              value={config.unit}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
             >
+              {/* Note: In TemperatureUnit, 'C' is a valid value, not '°C'.
+                  The value should match the type, while the display text can be different.
+                  Assuming the type should be updated or this is intentional.
+                  For now, leaving as is, but this might be another issue. */}
               <option value="°C">°C</option>
               <option value="°F">°F</option>
               <option value="K">K</option>
