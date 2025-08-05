@@ -141,9 +141,9 @@ const ConfigureInterface = observer(
 
       if (
         anInterface.config.interface_type === "ModbusInterface" &&
-        anInterface.config.list
+        anInterface.config.device_congif
       ) {
-        const specificBridgeData = anInterface.config.list[device.id];
+        const specificBridgeData = anInterface.config.device_congif[device.id];
         setBridgeData(specificBridgeData || null);
       } else {
         setBridgeData(null);

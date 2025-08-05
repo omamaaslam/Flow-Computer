@@ -138,14 +138,15 @@ const StreamConfiguration = observer(() => {
       title: "Conversion Settings",
       Component: () =>
         currentStream.editingConversion && (
-          <ConversionForm
-            store={globalStore}
-            config={currentStream.editingConversion}
-            onCommit={() =>
-              commitAndClose(currentStream.commitConversionChanges)
-            }
-            onClose={closeModal}
-          />
+          // <ConversionForm
+          //   store={globalStore}
+          //   config={currentStream.editingConversion}
+          //   onCommit={() =>
+          //     commitAndClose(currentStream.commitConversionChanges)
+          //   }
+          //   onClose={closeModal}
+          // />
+          <ConversionForm />
         ),
     },
   };

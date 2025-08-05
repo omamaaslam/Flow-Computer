@@ -1,8 +1,12 @@
 import React, { useState } from "react";
-import type { InterfaceConfig } from "../../types/interfaceConfig";
+// Import RtdConfig specifically to be more precise
+import type { RtdConfig } from "../../../../../types/interfaceConfig";
+
 interface RTDInterfaceSettingsFormProps {
-  currentConfig: InterfaceConfig;
-  onSave: (config: InterfaceConfig) => void;
+  // CHANGE 1: Be specific. This form only works with RtdConfig.
+  currentConfig: RtdConfig;
+  // Let's also make the onSave prop specific for consistency.
+  onSave: (config: RtdConfig) => void;
   onClose: () => void;
 }
 
@@ -11,7 +15,14 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
   onSave,
   onClose,
 }) => {
-  const [formData, setFormData] = useState<InterfaceConfig>(currentConfig);
+  // This is a safety check. If for some reason a wrong config type is passed, it won't crash.
+  if (currentConfig.interface_type !== "RtdInterface") {
+    return <div>Error: Invalid configuration object passed to RTD Form.</div>;
+  }
+
+  // CHANGE 2: The local state should also be of the specific RtdConfig type.
+  const [formData, setFormData] = useState<RtdConfig>(currentConfig);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -23,6 +34,7 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
       "reference_resistor_ohms",
     ].includes(name);
 
+    // No need for `any` here, TypeScript knows `prev` is RtdConfig.
     setFormData((prev) => ({
       ...prev,
       [name]: isNumeric && value !== "" ? Number(value) : value,
@@ -42,13 +54,15 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
           </label>
           <select
             name="wire_type"
+            // Since formData is now correctly typed, this access is safe.
             value={formData.wire_type}
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
-            <option>2-wire</option>
-            <option>3-wire</option>
-            <option>4-wire</option>
+            {/* CHANGE 3: The `value` must match the type definition (e.g., "TwoWire") */}
+            <option value="TwoWire">2-wire</option>
+            <option value="ThreeWire">3-wire</option>
+            <option value="FourWire">4-wire</option>
           </select>
         </div>
 
@@ -82,8 +96,8 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md py-2 px-3 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
-            <option>Continuous</option>
-            <option>On-Demand</option>
+            <option value="Continuous">Continuous</option>
+            <option value="On-Demand">On-Demand</option>
           </select>
         </div>
 

@@ -18,6 +18,16 @@ export type PressureUnit = "Bar" | "Psi" | "Kpa" | "Atm"; // JSON ke 'Bar', 'Cel
 
 // --- Calculator ki har section ke liye alag Interface ---
 
+export type VolumeOperatingMode =
+  | "encoderOnly"
+  | "onePulse"
+  | "twoPulse1-1"
+  | "twoPulseX-Y"
+  | "encoderWithOnePulseInput"
+  | "onePulseInputWithEncoder"
+  | "encoderWithTwoPulseInputs"
+  | "twoPulseInputsWithEncoder";
+
 export interface TemperatureCalculatorConfig {
   unit: TemperatureUnit;
   base_temperature: number;
@@ -50,7 +60,17 @@ export interface FlowRateCalculatorConfig {
 
 // JSON me yeh null hain, isliye abhi 'any' type use kar rahe hain.
 // Jab inka structure milega, to 'any' ko sahi interface se replace kar sakte hain.
-export type VolumeConfiguration = any;
+export interface VolumeConfiguration {
+  operating_mode: VolumeOperatingMode | null;
+  gas_meter_1: string;
+  gas_meter_2: string;
+  flow_rate: string; // Kept as string for form input compatibility
+  creep_time_seconds: number | null;
+  max_total_volume: number | null;
+  min_operating_volume: number | null;
+  bidirectional: boolean;
+}
+
 export type CompressibilityKFactorConfig = any;
 
 // --- Poora Calculator Object ---
@@ -101,7 +121,16 @@ export const createDefaultStreamConfig = (): CalculatorConfig => ({
     creep_flow_rate: 0.05,
     creep_time_seconds: 60,
   },
-  volume_configuration: null,
+  volume_configuration: {
+    operating_mode: null,
+    gas_meter_1: "",
+    gas_meter_2: "",
+    flow_rate: "",
+    creep_time_seconds: null,
+    max_total_volume: null,
+    min_operating_volume: null,
+    bidirectional: false,
+  },
   compressibility_kfactor_config: null,
   calculation_profile: null,
 });

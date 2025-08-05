@@ -1,5 +1,5 @@
 // Breadcrumb.tsx
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { observer } from "mobx-react-lite";
 import globalStore from "../stores/GlobalStore";
 

@@ -39,7 +39,7 @@ export interface ModbusConfig extends BaseInterfaceConfig {
   retry_count: number;
   stop_bits: number;
   timeout_ms: number;
-  list?: { [key: string]: any };
+  device_congif?: { [key: string]: any };
 }
 
 // Specific configuration for RTD (TI1)
