@@ -1,63 +1,78 @@
-import { makeAutoObservable } from "mobx";
+// src/stores/IOCard.ts
+
+import { makeAutoObservable, computed } from "mobx";
 import { Interface } from "./Interface";
 
-// Base list waisi hi rahegi, lekin keys ab backend IDs se match karengi.
-const ALL_DIAGRAM_INTERFACES = {
-  MOD_M: "unconfigured", // Changed from MOD
-  DI2: "unconfigured",
-  DI4_left: "unconfigured",
-  AI1: "unconfigured",
-  DO2: "unconfigured",
-  DI4_2: "unconfigured",
-  AI2: "unconfigured",
-  HART2: "unconfigured", // Assuming backend sends HART2
-  AO1: "unconfigured",
-  DI1: "unconfigured",
-  DI3: "unconfigured",
-  DI5: "unconfigured",
-  DO1: "unconfigured",
-  DO3: "unconfigured",
-  DO5: "unconfigured",
-  HI1: "unconfigured",
-  TI1: "unconfigured",
-  AO2: "unconfigured",
+// This map now acts as the single source of truth for ALL possible interfaces
+const ALL_INTERFACES_META: { [id: string]: { type: string } } = {
+  MOD_M: { type: "ModbusInterface" },
+  DI1: { type: "DigitalInputInterface" },
+  DI2: { type: "DigitalInputInterface" },
+  DI3: { type: "DigitalInputInterface" },
+  DI4: { type: "DigitalInputInterface" }, // NOTE: Your SVG has two DI4s. You may need unique IDs like DI4_1, DI4_2
+  DI5: { type: "DigitalInputInterface" },
+  HI1: { type: "HartInterface" },
+  HART2: { type: "HartInterface" },
+  TI1: { type: "RtdInterface" },
+  AI1: { type: "AnalogInputInterface" }, // You'll need to define AnalogInputInterface in your types
+  AI2: { type: "AnalogInputInterface" },
+  DO1: { type: "DigitalOutputInterface" }, // You'll need to define DigitalOutputInterface in your types
+  DO2: { type: "DigitalOutputInterface" },
+  DO3: { type: "DigitalOutputInterface" },
+  DO5: { type: "DigitalOutputInterface" },
+  AO1: { type: "AnalogOutputInterface" }, // You'll need to define AnalogOutputInterface in your types
+  AO2: { type: "AnalogOutputInterface" },
+  // Your SVG has two DI4s. I'm assuming you might have IDs like this. Adjust if necessary.
+  DI4_left: { type: "DigitalInputInterface" },
+  DI4_2: { type: "DigitalInputInterface" },
 };
 
 export class IOCard {
   card_type: string;
+  // This array will ALWAYS contain an Interface object for every possible slot
   interfaces: Interface[] = [];
 
   constructor(ioCardData: any) {
-    this.card_type = ioCardData.card_type;
-    makeAutoObservable(this);
-
-    if (ioCardData.interfaces) {
-      this.interfaces = Object.values<any>(ioCardData.interfaces).map(
-        (interfaceData) => new Interface(interfaceData)
-      );
-    }
-  }
-
-  // *** NEW METHOD START ***
-  // Add this method to allow adding a new interface instance.
-  addInterface(newInterface: Interface) {
-    if (!this.interfaces.find(iface => iface.id === newInterface.id)) {
-      this.interfaces.push(newInterface);
-    }
-  }
-
-
-  get interfaceStatuses() {
-    const currentStatuses: any = { ...ALL_DIAGRAM_INTERFACES };
-
-    this.interfaces.forEach((iface) => {
-      const diagramId = iface.id;
-
-      if (diagramId in currentStatuses) {
-        currentStatuses[diagramId] = "configured";
-      }
+    makeAutoObservable(this, {
+      interfaceStatuses: computed,
     });
+    this.card_type = ioCardData.card_type;
 
-    return currentStatuses;
+    const configuredInterfacesData = ioCardData.interfaces || {};
+
+    // Create instances for ALL predefined interfaces, every time.
+    for (const id in ALL_INTERFACES_META) {
+      const configDataFromServer = configuredInterfacesData[id];
+
+      let interfaceInstance;
+      if (configDataFromServer) {
+        // --- CONFIGURED ---
+        // If data exists, create the interface instance with server data.
+        // We pass a flag to the constructor to mark it as configured.
+        interfaceInstance = new Interface(configDataFromServer, true);
+      } else {
+        // --- UNCONFIGURED ---
+        // If data does NOT exist, create a new, default instance.
+        const newInterfaceData = {
+          interface_id: id,
+          interface_type: ALL_INTERFACES_META[id].type,
+          enabled: false,
+          devices: {},
+          // Add any other default properties required by your types
+        };
+        // We pass false to mark it as unconfigured initially.
+        interfaceInstance = new Interface(newInterfaceData, false);
+      }
+      this.interfaces.push(interfaceInstance);
+    }
+  }
+
+  // This computed property now simply checks the flag on the interface itself
+  get interfaceStatuses() {
+    const statuses: { [id: string]: "configured" | "unconfigured" } = {};
+    this.interfaces.forEach((iface) => {
+      statuses[iface.id] = iface.isConfigured ? "configured" : "unconfigured";
+    });
+    return statuses;
   }
 }

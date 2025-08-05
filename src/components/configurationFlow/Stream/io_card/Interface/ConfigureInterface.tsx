@@ -104,6 +104,7 @@ const ConfigureInterface = observer(
 
     const handleSaveInterfaceConfig = (config: InterfaceConfig) => {
       anInterface.updateConfig(config);
+      anInterface.setConfigured(true);
       closeModal();
     };
 
