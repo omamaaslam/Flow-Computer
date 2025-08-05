@@ -1,4 +1,6 @@
-import React from "react";
+// src/components/configurationFlow/Stream/io_card/Interface/ModbusInterfaceSettingsForm.tsx
+
+import React, { useState, useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
 import type { ModbusConfig } from "../../../../../types/interfaceConfig";
 
@@ -8,42 +10,82 @@ interface ModbusInterfaceSettingsFormProps {
   onClose: () => void;
 }
 
+// Validation function specific to Modbus settings
+const validate = (data: Partial<ModbusConfig>) => {
+  const errors: { [key: string]: string } = {};
+  if (data.baud_rate == null || data.baud_rate <= 0)
+    errors.baud_rate = "Required";
+  if (data.max_slaves == null || data.max_slaves <= 0)
+    errors.max_slaves = "Required";
+  if (data.poll_interval_ms == null || data.poll_interval_ms <= 0)
+    errors.poll_interval_ms = "Required";
+  if (data.timeout_ms == null || data.timeout_ms <= 0)
+    errors.timeout_ms = "Required";
+  if (data.retry_count == null || data.retry_count < 0)
+    errors.retry_count = "Required";
+  return errors;
+};
+
 const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
   observer(({ currentConfig, onSave, onClose }) => {
-    const [formData, setFormData] = React.useState<ModbusConfig>(currentConfig);
+    // Store numeric fields as strings for better UX in input fields
+    const [formState, setFormState] = useState({
+      ...currentConfig,
+      baud_rate: String(currentConfig.baud_rate),
+      data_bits: String(currentConfig.data_bits),
+      max_slaves: String(currentConfig.max_slaves),
+      poll_interval_ms: String(currentConfig.poll_interval_ms),
+      retry_count: String(currentConfig.retry_count),
+      stop_bits: String(currentConfig.stop_bits),
+      timeout_ms: String(currentConfig.timeout_ms),
+    });
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
+    const [isDirty, setIsDirty] = useState(false);
+
+    const initialFormStateRef = useRef(JSON.stringify(formState));
+    const isInitiallyConfigured = currentConfig.enabled;
+
+    useEffect(() => {
+      const validationData = {
+        ...formState /* convert necessary fields back to number for validation */,
+      };
+      const validationErrors = validate(validationData as any);
+      setErrors(validationErrors);
+      setIsDirty(JSON.stringify(formState) !== initialFormStateRef.current);
+    }, [formState]);
 
     const handleChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
       const { name, value } = e.target;
-
-      let processedValue: string | number | boolean = value;
+      let finalValue = value;
 
       if (name === "pull_up_enabled") {
-        processedValue = value === "true";
-      } else if (
-        [
-          "baud_rate",
-          "data_bits",
-          "max_slaves",
-          "stop_bits",
-          "timeout_ms",
-          "poll_interval_ms",
-          "retry_count",
-        ].includes(name)
-      ) {
-        processedValue = Number(value);
+        setFormState((prev) => ({ ...prev, [name]: value === "true" }));
+      } else {
+        setFormState((prev) => ({ ...prev, [name]: finalValue }));
       }
-
-      setFormData((prev) => ({
-        ...prev,
-        [name]: processedValue,
-      }));
     };
 
     const handleSave = () => {
-      onSave(formData);
+      const finalConfig: ModbusConfig = {
+        ...formState,
+        baud_rate: Number(formState.baud_rate),
+        data_bits: Number(formState.data_bits),
+        max_slaves: Number(formState.max_slaves),
+        poll_interval_ms: Number(formState.poll_interval_ms),
+        retry_count: Number(formState.retry_count),
+        stop_bits: Number(formState.stop_bits),
+        timeout_ms: Number(formState.timeout_ms),
+      };
+
+      if (Object.keys(validate(finalConfig)).length === 0) {
+        onSave(finalConfig);
+      }
     };
+
+    const isSaveDisabled =
+      Object.keys(errors).length > 0 || (isInitiallyConfigured && !isDirty);
 
     return (
       <>
@@ -53,18 +95,23 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
             <input
               name="baud_rate"
               type="number"
-              value={formData.baud_rate}
+              value={formState.baud_rate}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className={`w-full border rounded-sm px-2 py-1 text-sm shadow-sm ${
+                errors.baud_rate ? "border-red-500" : "border-gray-300"
+              }`}
             />
+            {errors.baud_rate && (
+              <p className="text-red-500 text-xs mt-1">{errors.baud_rate}</p>
+            )}
           </div>
           <div className="space-y-1">
             <label className="block font-medium text-xs">Data Bits</label>
             <select
               name="data_bits"
-              value={formData.data_bits}
+              value={formState.data_bits}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             >
               <option value={8}>8</option>
               <option value={7}>7</option>
@@ -75,18 +122,23 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
             <input
               name="max_slaves"
               type="number"
-              value={formData.max_slaves}
+              value={formState.max_slaves}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className={`w-full border rounded-sm px-2 py-1 text-sm shadow-sm ${
+                errors.max_slaves ? "border-red-500" : "border-gray-300"
+              }`}
             />
+            {errors.max_slaves && (
+              <p className="text-red-500 text-xs mt-1">{errors.max_slaves}</p>
+            )}
           </div>
           <div className="space-y-1">
             <label className="block font-medium text-xs">Parity</label>
             <select
               name="parity"
-              value={formData.parity}
+              value={formState.parity}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             >
               <option value="Even">Even</option>
               <option value="Odd">Odd</option>
@@ -97,23 +149,21 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
             <label className="block font-medium text-xs">Stop Bits</label>
             <select
               name="stop_bits"
-              value={formData.stop_bits}
+              value={formState.stop_bits}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             >
               <option value={1}>1</option>
               <option value={2}>2</option>
             </select>
           </div>
           <div className="space-y-1">
-            <label className="block font-medium text-xs">
-              Pull-Up/Pull-Down
-            </label>
+            <label className="block font-medium text-xs">Pull-Up Enabled</label>
             <select
               name="pull_up_enabled"
-              value={String(formData.pull_up_enabled)}
+              value={String(formState.pull_up_enabled)}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             >
               <option value="true">Enabled</option>
               <option value="false">Disabled</option>
@@ -124,10 +174,15 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
             <input
               name="timeout_ms"
               type="number"
-              value={formData.timeout_ms}
+              value={formState.timeout_ms}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className={`w-full border rounded-sm px-2 py-1 text-sm shadow-sm ${
+                errors.timeout_ms ? "border-red-500" : "border-gray-300"
+              }`}
             />
+            {errors.timeout_ms && (
+              <p className="text-red-500 text-xs mt-1">{errors.timeout_ms}</p>
+            )}
           </div>
           <div className="space-y-1">
             <label className="block font-medium text-xs">
@@ -136,18 +191,25 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
             <input
               name="poll_interval_ms"
               type="number"
-              value={formData.poll_interval_ms}
+              value={formState.poll_interval_ms}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className={`w-full border rounded-sm px-2 py-1 text-sm shadow-sm ${
+                errors.poll_interval_ms ? "border-red-500" : "border-gray-300"
+              }`}
             />
+            {errors.poll_interval_ms && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.poll_interval_ms}
+              </p>
+            )}
           </div>
           <div className="space-y-1">
             <label className="block font-medium text-xs">Retry Count</label>
             <select
               name="retry_count"
-              value={formData.retry_count}
+              value={formState.retry_count}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+              className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             >
               <option value={3}>3</option>
               <option value={2}>2</option>
@@ -164,7 +226,12 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
           </button>
           <button
             onClick={handleSave}
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 transition-colors border-2 border-white"
+            disabled={isSaveDisabled}
+            className={`px-5 py-1.5 rounded-full font-semibold text-xs text-black transition-colors ${
+              isSaveDisabled
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-yellow-500 hover:bg-yellow-600"
+            }`}
           >
             Save
           </button>
