@@ -1,6 +1,6 @@
 // src/components/configurationFlow/Interfaces/ConfigureInterface.tsx
 
-import { useState, useEffect } from "react"; // 1. Import useEffect
+import { useState, useEffect } from "react";
 import { Settings, ArrowLeft } from "lucide-react";
 import MuiModalWrapper from "../../../MuiModalWrapper.tsx";
 import AddDeviceForm from "./Device/AddDeviceForm.tsx";
@@ -22,11 +22,11 @@ import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
 import GasDeviceForm from "./Device/GasDeviceForm.tsx";
 import DeviceIcon from "../../../../DeviceIcon.tsx";
 
-// --- NO CHANGES to interfaces, types, or consts ---
 interface ConfigureInterfaceProps {
   anInterface: Interface;
   onBack: () => void;
 }
+
 type DeviceStatus = "ok" | "warning" | "error";
 type ModalView =
   | "closed"
@@ -36,6 +36,7 @@ type ModalView =
   | "Di_InterfaceSettings"
   | "addDevice_selectType"
   | "addDevice_configure";
+
 const statusStyles: Record<
   DeviceStatus | "inactive",
   { gradient: string; icon: string }
@@ -45,6 +46,7 @@ const statusStyles: Record<
   error: { gradient: "from-black to-red-600", icon: "text-yellow-400" },
   inactive: { gradient: "from-gray-700 to-gray-500", icon: "text-yellow-400" },
 };
+
 const deviceOptions = [
   { value: "TemperatureDevice", label: "Temperature" },
   { value: "PressureDevice", label: "Pressure" },
@@ -84,7 +86,6 @@ const gasDeviceTypes = deviceOptions
       !opt.value.endsWith("Device") && !["HI", "RD", "WI"].includes(opt.value)
   )
   .map((opt) => opt.value);
-// --- END OF NEWLY ADDED ---
 
 const ConfigureInterface = observer(
   ({ anInterface, onBack }: ConfigureInterfaceProps) => {
@@ -98,37 +99,31 @@ const ConfigureInterface = observer(
     const [editingDevice, setEditingDevice] = useState<Device | null>(null);
     const [bridgeData, setBridgeData] = useState<any>(null);
 
-    // --- 2. THE NEW LOGIC TO AUTO-OPEN THE MODAL ---
     useEffect(() => {
-      // This effect runs whenever the 'anInterface' prop changes.
-      // We check if the interface passed to this component is unconfigured.
       if (!anInterface.isConfigured) {
-        // If it is, we immediately open its specific settings modal.
-        console.log(
-          `Interface ${anInterface.id} is unconfigured. Opening settings automatically.`
-        );
         handleOpenSettingsModal();
       }
-    }, [anInterface]); // Dependency array ensures it runs when the interface object is first received.
+    }, [anInterface]);
 
     const handleSaveInterfaceConfig = (config: InterfaceConfig) => {
-      // Your existing updateConfig method now also handles setting isConfigured to true
       anInterface.updateConfig(config);
       closeModal();
     };
 
-    const handleOpenSettingsModal = () => {
-      // This is your existing logic to determine which modal to open. It's perfect.
-      const interfaceNameUpper = anInterface.name.toUpperCase();
-      if (interfaceNameUpper.includes("RTD")) {
-        setModalView("RTDSettings");
-      } else if (interfaceNameUpper.includes("HART")) {
-        setModalView("HART1");
-      } else if (interfaceNameUpper.includes("DI")) {
-        setModalView("Di_InterfaceSettings");
-      } else {
-        setModalView("modbusSettings");
+    const handleSettingsCancel = () => {
+      closeModal();
+      if (!anInterface.isConfigured) {
+        onBack();
       }
+    };
+
+    const handleOpenSettingsModal = () => {
+      const interfaceNameUpper = anInterface.name.toUpperCase();
+      if (interfaceNameUpper.includes("RTD")) setModalView("RTDSettings");
+      else if (interfaceNameUpper.includes("HART")) setModalView("HART1");
+      else if (interfaceNameUpper.includes("DI"))
+        setModalView("Di_InterfaceSettings");
+      else setModalView("modbusSettings");
     };
 
     const handleAddNewDeviceClick = () => {
@@ -150,19 +145,16 @@ const ConfigureInterface = observer(
       setEditingDevice(device);
       setDeviceTypeToConfigure(device.name);
       setIsEditing(true);
-
       if (
         anInterface.config.interface_type === "ModbusInterface" &&
         (anInterface.config as any).device_congif
       ) {
-        const specificBridgeData = (anInterface.config as any).device_congif[
-          device.id
-        ];
-        setBridgeData(specificBridgeData || null);
+        setBridgeData(
+          (anInterface.config as any).device_congif[device.id] || null
+        );
       } else {
         setBridgeData(null);
       }
-
       setModalView("addDevice_configure");
     };
 
@@ -190,12 +182,12 @@ const ConfigureInterface = observer(
     };
 
     const getModalTitle = () => {
-      const label =
-        deviceOptions.find((opt) => opt.value === editingDevice?.name)?.label ||
-        editingDevice?.name;
-
-      if (isEditing && editingDevice) return `Edit ${label}`;
-
+      if (isEditing && editingDevice) {
+        const label =
+          deviceOptions.find((opt) => opt.value === editingDevice.name)
+            ?.label || editingDevice.name;
+        return `Edit ${label}`;
+      }
       switch (modalView) {
         case "addDevice_selectType":
         case "addDevice_configure":
@@ -215,40 +207,63 @@ const ConfigureInterface = observer(
 
     const currentConfig = anInterface.getConfig();
 
+    // --- UPDATED RENDERMODALCONTENT FUNCTION ---
     const renderModalContent = () => {
+      const settingsProps = {
+        onSave: handleSaveInterfaceConfig,
+        onClose: handleSettingsCancel,
+      };
+
       switch (modalView) {
         case "modbusSettings":
-          return currentConfig.interface_type === "ModbusInterface" ? (
-            <ModbusInterfaceSettingsForm
-              currentConfig={currentConfig}
-              onSave={handleSaveInterfaceConfig}
-              onClose={closeModal}
-            />
-          ) : null;
+          // Type Guard: Check if the config is of the correct type before rendering
+          if (currentConfig.interface_type === "ModbusInterface") {
+            return (
+              <ModbusInterfaceSettingsForm
+                currentConfig={currentConfig}
+                {...settingsProps}
+              />
+            );
+          }
+          return null;
+
         case "RTDSettings":
-          return currentConfig.interface_type === "RtdInterface" ? (
-            <RTDInterfaceSettingsForm
-              currentConfig={currentConfig}
-              onSave={handleSaveInterfaceConfig}
-              onClose={closeModal}
-            />
-          ) : null;
+          // Type Guard
+          if (currentConfig.interface_type === "RtdInterface") {
+            return (
+              <RTDInterfaceSettingsForm
+                currentConfig={currentConfig}
+                {...settingsProps}
+              />
+            );
+          }
+          return null;
+
         case "HART1":
-          return currentConfig.interface_type === "HartInterface" ? (
-            <HartInterfaceSettingsForm
-              currentConfig={currentConfig}
-              onSave={handleSaveInterfaceConfig}
-              onClose={closeModal}
-            />
-          ) : null;
+          // Type Guard
+          if (currentConfig.interface_type === "HartInterface") {
+            return (
+              <HartInterfaceSettingsForm
+                currentConfig={currentConfig}
+                {...settingsProps}
+              />
+            );
+          }
+          return null;
+
         case "Di_InterfaceSettings":
-          return currentConfig.interface_type === "DigitalInputInterface" ? (
-            <DI_InterfaceSettingsForm
-              currentConfig={currentConfig}
-              onSave={handleSaveInterfaceConfig}
-              onClose={closeModal}
-            />
-          ) : null;
+          // Type Guard
+          if (currentConfig.interface_type === "DigitalInputInterface") {
+            return (
+              <DI_InterfaceSettingsForm
+                currentConfig={currentConfig}
+                {...settingsProps}
+              />
+            );
+          }
+          return null;
+
+        // Device forms are fine as they don't depend on the interface config type
         case "addDevice_selectType":
           return (
             <AddDeviceForm
@@ -256,6 +271,7 @@ const ConfigureInterface = observer(
               onNext={handleDeviceTypeSelection}
             />
           );
+
         case "addDevice_configure":
           const deviceProps = {
             initialData: isEditing ? editingDevice?.config : null,
@@ -306,74 +322,98 @@ const ConfigureInterface = observer(
               <ArrowLeft className="h-6 w-6 text-gray-700" />
             </button>
             <h1 className="text-xl md:text-2xl font-bold text-gray-800">
-              Configure: {anInterface.name}
+              Configure: {anInterface.id}
+              <span
+                className={`text-sm ml-2 font-normal ${
+                  anInterface.isConfigured ? "text-green-600" : "text-gray-500"
+                }`}
+              >
+                ({anInterface.isConfigured ? "Configured" : "Unconfigured"})
+              </span>
             </h1>
           </div>
-          <div className="space-y-4 md:space-y-6">
-            <h2 className="text-base md:text-xl font-bold font-sans text-gray-800">
-              Devices on {anInterface.name}
-            </h2>
-            <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4">
-              {anInterface.devices.map((device) => {
-                const deviceType = device.config?.device_type;
-                if (!deviceType) return null;
-                const deviceLabel =
-                  deviceOptions.find((opt) => opt.value === deviceType)
-                    ?.label || deviceType;
-                return (
+
+          {anInterface.isConfigured ? (
+            <>
+              <div className="space-y-4 md:space-y-6">
+                <h2 className="text-base md:text-xl font-bold font-sans text-gray-800">
+                  Devices on {anInterface.name}
+                </h2>
+                <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4">
+                  {anInterface.devices.map((device) => {
+                    const deviceType = device.config?.device_type;
+                    if (!deviceType) return null;
+                    const deviceLabel =
+                      deviceOptions.find((opt) => opt.value === deviceType)
+                        ?.label || deviceType;
+                    return (
+                      <button
+                        key={device.id}
+                        onClick={() => handleDeviceClick(device)}
+                        className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${
+                          statusStyles["ok"].gradient
+                        } ${
+                          selectedDeviceId === device.id
+                            ? "ring-2 md:ring-4 ring-offset-2 ring-yellow-400"
+                            : "ring-2 ring-transparent"
+                        }`}
+                      >
+                        <DeviceIcon
+                          deviceType={deviceType}
+                          className={`${statusStyles["ok"].icon} h-6 w-6 md:h-8 md:w-8`}
+                        />
+                        <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
+                          {deviceLabel}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center gap-2 md:gap-4">
                   <button
-                    key={device.id}
-                    onClick={() => handleDeviceClick(device)}
-                    className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${
-                      statusStyles["ok"].gradient
-                    } ${
-                      selectedDeviceId === device.id
-                        ? "ring-2 md:ring-4 ring-offset-2 ring-yellow-400"
-                        : "ring-2 ring-transparent"
-                    }`}
+                    onClick={handleAddNewDeviceClick}
+                    className="px-4 py-1.5 md:px-5 md:py-2 text-xs md:text-sm font-semibold font-sans text-yellow-500 bg-white border border-yellow-400 rounded-full shadow-sm hover:bg-yellow-50"
                   >
-                    <DeviceIcon
-                      deviceType={deviceType}
-                      className={`${statusStyles["ok"].icon} h-6 w-6 md:h-8 md:w-8`}
-                    />
-                    <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
-                      {deviceLabel}
-                    </span>
+                    Add Device
                   </button>
-                );
-              })}
+                  <button
+                    onClick={handleDeleteDevice}
+                    disabled={selectedDeviceId === null}
+                    className="px-4 py-1.5 md:px-5 md:py-2 text-xs md:text-sm font-semibold font-sans bg-white border border-gray-300 rounded-full shadow-sm text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-gray-100"
+                  >
+                    Delete Device
+                  </button>
+                </div>
+              </div>
+              <div className="border-t pt-6 md:pt-8 space-y-4">
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleOpenSettingsModal}
+                    className="w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
+                  >
+                    <Settings size={20} />
+                    <span>{anInterface.name} Setting</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-gray-500 text-lg">
+                This interface is not configured yet.
+              </p>
+              <p className="text-gray-400 mt-2">
+                The configuration form has been opened automatically.
+              </p>
+              <p className="text-gray-400">
+                Please save the settings to enable device management.
+              </p>
             </div>
-            <div className="flex items-center gap-2 md:gap-4">
-              <button
-                onClick={handleAddNewDeviceClick}
-                className="px-4 py-1.5 md:px-5 md:py-2 text-xs md:text-sm font-semibold font-sans text-yellow-500 bg-white border border-yellow-400 rounded-full shadow-sm hover:bg-yellow-50"
-              >
-                Add Device
-              </button>
-              <button
-                onClick={handleDeleteDevice}
-                disabled={selectedDeviceId === null}
-                className="px-4 py-1.5 md:px-5 md:py-2 text-xs md:text-sm font-semibold font-sans bg-white border border-gray-300 rounded-full shadow-sm text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-gray-100"
-              >
-                Delete Device
-              </button>
-            </div>
-          </div>
-          <div className="border-t pt-6 md:pt-8 space-y-4">
-            <div className="flex justify-center">
-              <button
-                onClick={handleOpenSettingsModal}
-                className="w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
-              >
-                <Settings size={20} />
-                <span>{anInterface.name} Setting</span>
-              </button>
-            </div>
-          </div>
+          )}
         </div>
         <MuiModalWrapper
           open={modalView !== "closed"}
-          onClose={closeModal}
+          onClose={handleSettingsCancel}
           title={getModalTitle()}
         >
           {renderModalContent()}
