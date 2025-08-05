@@ -1,6 +1,6 @@
 // src/components/configurationFlow/Interfaces/ConfigureInterface.tsx
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // 1. Import useEffect
 import { Settings, ArrowLeft } from "lucide-react";
 import MuiModalWrapper from "../../../MuiModalWrapper.tsx";
 import AddDeviceForm from "./Device/AddDeviceForm.tsx";
@@ -19,14 +19,14 @@ import TemperatureDeviceForm from "./Device/TemperatureDeviceForm.tsx";
 import VolumeDeviceForm from "./Device/VolumeDeviceForm.tsx";
 import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
-import GasDeviceForm from "./Device/GasDeviceForm.tsx"; // <-- NEW IMPORT
+import GasDeviceForm from "./Device/GasDeviceForm.tsx";
 import DeviceIcon from "../../../../DeviceIcon.tsx";
 
+// --- NO CHANGES to interfaces, types, or consts ---
 interface ConfigureInterfaceProps {
   anInterface: Interface;
   onBack: () => void;
 }
-
 type DeviceStatus = "ok" | "warning" | "error";
 type ModalView =
   | "closed"
@@ -36,7 +36,6 @@ type ModalView =
   | "Di_InterfaceSettings"
   | "addDevice_selectType"
   | "addDevice_configure";
-
 const statusStyles: Record<
   DeviceStatus | "inactive",
   { gradient: string; icon: string }
@@ -46,9 +45,6 @@ const statusStyles: Record<
   error: { gradient: "from-black to-red-600", icon: "text-yellow-400" },
   inactive: { gradient: "from-gray-700 to-gray-500", icon: "text-yellow-400" },
 };
-
-// --- NEWLY ADDED ---
-// A centralized list of all device types to easily identify gas devices and get their labels.
 const deviceOptions = [
   { value: "TemperatureDevice", label: "Temperature" },
   { value: "PressureDevice", label: "Pressure" },
@@ -102,18 +98,33 @@ const ConfigureInterface = observer(
     const [editingDevice, setEditingDevice] = useState<Device | null>(null);
     const [bridgeData, setBridgeData] = useState<any>(null);
 
+    // --- 2. THE NEW LOGIC TO AUTO-OPEN THE MODAL ---
+    useEffect(() => {
+      // This effect runs whenever the 'anInterface' prop changes.
+      // We check if the interface passed to this component is unconfigured.
+      if (!anInterface.isConfigured) {
+        // If it is, we immediately open its specific settings modal.
+        console.log(
+          `Interface ${anInterface.id} is unconfigured. Opening settings automatically.`
+        );
+        handleOpenSettingsModal();
+      }
+    }, [anInterface]); // Dependency array ensures it runs when the interface object is first received.
+
     const handleSaveInterfaceConfig = (config: InterfaceConfig) => {
+      // Your existing updateConfig method now also handles setting isConfigured to true
       anInterface.updateConfig(config);
-      anInterface.setConfigured(true);
       closeModal();
     };
 
     const handleOpenSettingsModal = () => {
-      if (anInterface.name.toUpperCase().includes("RTD")) {
+      // This is your existing logic to determine which modal to open. It's perfect.
+      const interfaceNameUpper = anInterface.name.toUpperCase();
+      if (interfaceNameUpper.includes("RTD")) {
         setModalView("RTDSettings");
-      } else if (anInterface.name.toUpperCase().includes("HART")) {
+      } else if (interfaceNameUpper.includes("HART")) {
         setModalView("HART1");
-      } else if (anInterface.name.toUpperCase().includes("DI")) {
+      } else if (interfaceNameUpper.includes("DI")) {
         setModalView("Di_InterfaceSettings");
       } else {
         setModalView("modbusSettings");
@@ -142,9 +153,11 @@ const ConfigureInterface = observer(
 
       if (
         anInterface.config.interface_type === "ModbusInterface" &&
-        anInterface.config.device_congif
+        (anInterface.config as any).device_congif
       ) {
-        const specificBridgeData = anInterface.config.device_congif[device.id];
+        const specificBridgeData = (anInterface.config as any).device_congif[
+          device.id
+        ];
         setBridgeData(specificBridgeData || null);
       } else {
         setBridgeData(null);
@@ -177,12 +190,12 @@ const ConfigureInterface = observer(
     };
 
     const getModalTitle = () => {
-      if (isEditing && editingDevice) {
-        const label =
-          deviceOptions.find((opt) => opt.value === editingDevice.name)
-            ?.label || editingDevice.name;
-        return `Edit ${label}`;
-      }
+      const label =
+        deviceOptions.find((opt) => opt.value === editingDevice?.name)?.label ||
+        editingDevice?.name;
+
+      if (isEditing && editingDevice) return `Edit ${label}`;
+
       switch (modalView) {
         case "addDevice_selectType":
         case "addDevice_configure":
@@ -212,7 +225,6 @@ const ConfigureInterface = observer(
               onClose={closeModal}
             />
           ) : null;
-
         case "RTDSettings":
           return currentConfig.interface_type === "RtdInterface" ? (
             <RTDInterfaceSettingsForm
@@ -221,7 +233,6 @@ const ConfigureInterface = observer(
               onClose={closeModal}
             />
           ) : null;
-
         case "HART1":
           return currentConfig.interface_type === "HartInterface" ? (
             <HartInterfaceSettingsForm
@@ -230,7 +241,6 @@ const ConfigureInterface = observer(
               onClose={closeModal}
             />
           ) : null;
-
         case "Di_InterfaceSettings":
           return currentConfig.interface_type === "DigitalInputInterface" ? (
             <DI_InterfaceSettingsForm
@@ -239,7 +249,6 @@ const ConfigureInterface = observer(
               onClose={closeModal}
             />
           ) : null;
-
         case "addDevice_selectType":
           return (
             <AddDeviceForm
@@ -247,8 +256,6 @@ const ConfigureInterface = observer(
               onNext={handleDeviceTypeSelection}
             />
           );
-
-        // --- UPDATED LOGIC ---
         case "addDevice_configure":
           const deviceProps = {
             initialData: isEditing ? editingDevice?.config : null,
@@ -257,35 +264,31 @@ const ConfigureInterface = observer(
             onBack: closeModal,
             interfaceName: anInterface.name,
           };
-
           const isGasDevice = gasDeviceTypes.includes(deviceTypeToConfigure);
           const deviceLabel =
             deviceOptions.find((d) => d.value === deviceTypeToConfigure)
               ?.label || deviceTypeToConfigure;
-
           if (isGasDevice) {
             return (
               <GasDeviceForm {...deviceProps} deviceTypeLabel={deviceLabel} />
             );
-          } else {
-            switch (deviceTypeToConfigure) {
-              case "TemperatureDevice":
-                return <TemperatureDeviceForm {...deviceProps} />;
-              case "PressureDevice":
-                return <PressureDeviceForm {...deviceProps} />;
-              case "VolumeDevice":
-                return <VolumeDeviceForm {...deviceProps} />;
-              case "PulseVolumeDevice":
-                return <PulseVolumeDeviceForm {...deviceProps} />;
-              case "PulseFlowRateDevice":
-                return <PulseFlowRateDeviceForm {...deviceProps} />;
-              case "FlowRateDevice":
-                return <FlowRateDeviceForm {...deviceProps} />;
-              default:
-                return null;
-            }
           }
-
+          switch (deviceTypeToConfigure) {
+            case "TemperatureDevice":
+              return <TemperatureDeviceForm {...deviceProps} />;
+            case "PressureDevice":
+              return <PressureDeviceForm {...deviceProps} />;
+            case "VolumeDevice":
+              return <VolumeDeviceForm {...deviceProps} />;
+            case "PulseVolumeDevice":
+              return <PulseVolumeDeviceForm {...deviceProps} />;
+            case "PulseFlowRateDevice":
+              return <PulseFlowRateDeviceForm {...deviceProps} />;
+            case "FlowRateDevice":
+              return <FlowRateDeviceForm {...deviceProps} />;
+            default:
+              return null;
+          }
         default:
           return null;
       }
@@ -313,13 +316,10 @@ const ConfigureInterface = observer(
             <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-5 lg:grid-cols-6 gap-2 md:gap-4">
               {anInterface.devices.map((device) => {
                 const deviceType = device.config?.device_type;
-                if (!deviceType) {
-                  return null;
-                }
+                if (!deviceType) return null;
                 const deviceLabel =
                   deviceOptions.find((opt) => opt.value === deviceType)
                     ?.label || deviceType;
-
                 return (
                   <button
                     key={device.id}
