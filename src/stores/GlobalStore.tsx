@@ -3,12 +3,12 @@
 import { makeAutoObservable, runInAction } from "mobx";
 import { Stream } from "./Stream";
 import type { Device } from "./Device";
-import { addListener } from "../utils/api"; // Sirf addListener import karein
+import { addListener } from "../utils/api";
 
 class GlobalStore {
   public globalSnapshot: any = null;
   public streams: Stream[] = [];
-  public isLoading: boolean = true; // App shuru mein loading state mein hogi
+  public isLoading: boolean = true;
 
   constructor() {
     makeAutoObservable(this);
@@ -16,27 +16,44 @@ class GlobalStore {
 
   public setGlobalSnapshot(data: any) {
     this.globalSnapshot = data;
-    this._parseAndSetStreams(data);
+    this._updateStreams(data); // Purane function ki jagah naya function
 
-    // Pehli baar data milne par loading state ko false karein
     if (this.isLoading) {
       this.isLoading = false;
     }
   }
 
-  private _parseAndSetStreams(snapshotData: any) {
+  // --- YEH FUNCTION AB "UPDATE, DON'T REPLACE" USOOL PAR CHALEGA ---
+  private _updateStreams(snapshotData: any) {
     const rawStreams = snapshotData?.streams;
     if (!rawStreams || typeof rawStreams !== "object") {
       this.streams = [];
       return;
     }
-    this.streams = Object.values<any>(rawStreams).map(
-      (streamData) => new Stream(streamData)
-    );
+
+    const incomingStreamIds = Object.keys(rawStreams);
+
+    // Step 1: Maujooda streams ko update karo ya naye add karo
+    Object.values<any>(rawStreams).forEach((streamData) => {
+      const existingStream = this.streams.find(
+        (s) => s.id === streamData.stream_id
+      );
+
+      if (existingStream) {
+        // Agar stream pehle se hai, to use naye data se UPDATE karo
+        // Is se MobX sirf is object se juray components ko re-render karega
+        existingStream.update(streamData);
+      } else {
+        // Agar stream naya hai, to usay list mein ADD karo
+        this.streams.push(new Stream(streamData));
+      }
+    });
+
+    // Step 2 (Zaroori): Un streams ko hata do jo ab server se nahi aa rahe
+    // Taake UI mein purane (deleted) streams na dikhein.
+    this.streams = this.streams.filter((s) => incomingStreamIds.includes(s.id));
   }
 
-  // YEH NAYA AUR AHEM FUNCTION HAI
-  // Yeh WebSocket se aane walay har message ko sunega
   public listenForUpdates() {
     console.log("GlobalStore ab WebSocket updates ko sun raha hai...");
 
@@ -45,7 +62,7 @@ class GlobalStore {
         const data = JSON.parse(event.data);
         console.log("⬇️ WebSocket se naya data mila:", data);
 
-        // MobX store ko update karein
+        // runInAction se MobX saari tabdeeliyon ko ek batch mein process karta hai
         runInAction(() => {
           this.setGlobalSnapshot(data);
         });
@@ -57,7 +74,6 @@ class GlobalStore {
       }
     };
 
-    // api.ts ke listener ko subscribe karein
     addListener(handleMessage);
   }
 

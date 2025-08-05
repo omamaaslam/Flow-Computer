@@ -228,6 +228,11 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
 
   return (
     <div className="flex flex-col space-y-6">
+      <div className="flex justify-start items-center gap-6 text-blue-400">
+        <div>Status: {initialData?.data.status}</div>
+        <div>Timestamp: {initialData?.data.timestamp}</div>
+        <div>Value: {initialData?.data.value}</div>
+      </div>
       <BridgeComponent
         interfaceName={interfaceName}
         formState={formState}

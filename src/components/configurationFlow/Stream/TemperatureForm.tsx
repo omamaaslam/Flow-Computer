@@ -3,27 +3,47 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { Thermometer } from "lucide-react";
-import type { TemperatureCalculatorConfig } from "../../../types/streamConfig"; // Nayi type import karein
+import type { TemperatureCalculatorConfig } from "../../../types/streamConfig";
 
+// Interface for the component's props
 interface TemperatureFormProps {
+  // 'config' is a direct reference to the LIVE, observable object in the MobX store.
+  // This is the key to reactivity.
   config: TemperatureCalculatorConfig;
   onCommit: () => void;
   onClose: () => void;
 }
 
+// Wrap the component in 'observer' to make it reactive
 const TemperatureForm: React.FC<TemperatureFormProps> = observer(
   ({ config, onCommit, onClose }) => {
+    // --- THE SMART INPUT HANDLER ---
+    // This function correctly handles different input types (text, numbers, selects)
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
-      const { name, value } = e.target;
-      // Number fields ko parse kar sakte hain, agar zaroorat ho
-      (config as any)[name] = value;
+      const { name, value, type } = e.target;
+
+      let finalValue: string | number = value;
+
+      // Check if the input is a text field that should contain a number
+      if (type === "text" && name !== "temp_linked_device_id") {
+        // If the value is a valid number, convert it.
+        // If the user clears the input, value will be "" and isNaN(Number("")) is false, so we add a check.
+        if (value.trim() !== "" && !isNaN(Number(value))) {
+          finalValue = Number(value);
+        }
+      }
+
+      // Directly modify the property on the observable 'config' object.
+      // MobX will detect this change and automatically update the UI.
+      (config as any)[name] = finalValue;
     };
 
     return (
       <>
         <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm text-gray-800">
+          {/* Live Operating Temperature (Read-only) */}
           <div className="space-y-1">
             <div className="flex items-center gap-2 p-2 border border-dashed border-yellow-400 bg-white rounded-md shadow-sm">
               <label className="block font-medium text-xs">
@@ -33,6 +53,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               <span className="font-semibold text-xs text-yellow-500">N/A</span>
             </div>
           </div>
+
+          {/* Substitute Temperature (Input) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Substitute Temperature (T)
@@ -46,10 +68,12 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             />
           </div>
+
+          {/* Device Selection (Select) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">Device</label>
             <select
-              name="temp_linked_device_id" // Sahi property name JSON ke mutabiq
+              name="temp_linked_device_id"
               value={config.temp_linked_device_id ?? ""}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
@@ -59,6 +83,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               <option value="TI1">TI1 (RTD)</option>
             </select>
           </div>
+
+          {/* Min Operating Temperature (Input) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Min Op. Temp. (Tmin)
@@ -72,6 +98,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             />
           </div>
+
+          {/* Base Temperature (Input) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Base Temperature (BT)
@@ -85,6 +113,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             />
           </div>
+
+          {/* Max Operating Temperature (Input) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Max Op. Temp. (Tmax)
@@ -98,6 +128,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             />
           </div>
+
+          {/* Temperature Unit (Select) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Temperature Unit
@@ -114,6 +146,8 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             </select>
           </div>
         </div>
+
+        {/* Action Buttons */}
         <div className="flex justify-end gap-2 mt-4 pt-3">
           <button
             onClick={onClose}

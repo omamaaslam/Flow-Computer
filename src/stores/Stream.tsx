@@ -5,130 +5,90 @@ import { IOCard } from "./IOCard";
 import {
   createDefaultStreamConfig,
   type CalculatorConfig,
-  type FlowRateCalculatorConfig,
-  type PressureCalculatorConfig,
   type TemperatureCalculatorConfig,
-  type VolumeConfiguration,
-  type CompressibilityKFactorConfig,
-} from "../types/streamConfig"; // Yahan naye types import ho rahe hain
+  // ... other imports
+} from "../types/streamConfig";
 
 export class Stream {
   public id: string;
   public name: string;
-  public calculator: CalculatorConfig; // Sahi aur master config type
+  public calculator: CalculatorConfig;
   public ioCards: IOCard[] = [];
 
-  // Editing states ab naye types ke mutabiq hain
-  public editingTemperature: TemperatureCalculatorConfig | null = null;
-  public editingPressure: PressureCalculatorConfig | null = null;
-  public editingVolume: VolumeConfiguration | null = null;
-  public editingFlowRate: FlowRateCalculatorConfig | null = null;
-  public editingConversion: CompressibilityKFactorConfig | null = null;
+  // The 'editing...' properties are no longer needed here.
 
   constructor(streamData: any) {
     makeAutoObservable(this, { id: false });
-
     this.id = streamData.stream_id;
-    this.name = streamData.stream_name;
+    this.name = "";
+    this.calculator = createDefaultStreamConfig();
+    this.update(streamData);
+  }
 
-    const defaultConfig = createDefaultStreamConfig();
-    // 'calculator' object ko seedha access karein
-    const incomingConfig = streamData.calculator || {};
-
-    // Default aur aane wali config ko merge karein taake object hamesha poora rahe
-    this.calculator = {
-      temperature_config: {
-        ...defaultConfig.temperature_config,
-        ...incomingConfig.temperature_config,
-      },
-      pressure_config: {
-        ...defaultConfig.pressure_config,
-        ...incomingConfig.pressure_config,
-      },
-      flow_rate_config: {
-        ...defaultConfig.flow_rate_config,
-        ...incomingConfig.flow_rate_config,
-      },
-      volume_configuration:
-        incomingConfig.volume_configuration ??
-        defaultConfig.volume_configuration,
-      compressibility_kfactor_config:
-        incomingConfig.compressibility_kfactor_config ??
-        defaultConfig.compressibility_kfactor_config,
-      calculation_profile:
-        incomingConfig.calculation_profile ?? defaultConfig.calculation_profile,
-    };
+  public update(streamData: any) {
+    this.name = streamData.stream_name || this.name;
 
     if (streamData.io_card) {
-      // Is logic ko abhi ke liye waise hi rakha hai
-      this.ioCards.push(new IOCard(streamData.io_card));
+      this.ioCards = [new IOCard(streamData.io_card)];
+    } else {
+      this.ioCards = [];
+    }
+
+    const incomingCalculatorConfig = streamData.calculator || {};
+
+    if (incomingCalculatorConfig.temperature_config) {
+      Object.assign(
+        this.calculator.temperature_config,
+        incomingCalculatorConfig.temperature_config
+      );
+    }
+    if (incomingCalculatorConfig.pressure_config) {
+      Object.assign(
+        this.calculator.pressure_config,
+        incomingCalculatorConfig.pressure_config
+      );
+    }
+    if (incomingCalculatorConfig.flow_rate_config) {
+      Object.assign(
+        this.calculator.flow_rate_config,
+        incomingCalculatorConfig.flow_rate_config
+      );
+    }
+
+    // For nullable properties, we can still replace them
+    if ("volume_configuration" in incomingCalculatorConfig) {
+      this.calculator.volume_configuration =
+        incomingCalculatorConfig.volume_configuration;
+    }
+    if ("compressibility_kfactor_config" in incomingCalculatorConfig) {
+      this.calculator.compressibility_kfactor_config =
+        incomingCalculatorConfig.compressibility_kfactor_config;
+    }
+    if ("calculation_profile" in incomingCalculatorConfig) {
+      this.calculator.calculation_profile =
+        incomingCalculatorConfig.calculation_profile;
     }
   }
 
-  // --- Editing Logic Methods ---
-
-  // Keys ko `CalculatorConfig` se match karna zaroori hai
-  private startEditing(
-    configType: keyof CalculatorConfig,
-    stateKey: keyof this
-  ) {
-    const savedConfig = toJS(this.calculator[configType]);
-
-    // Sirf tab state banayein jab config null na ho
-    if (savedConfig) {
-      const defaultConfigSection = createDefaultStreamConfig()[configType];
-      const completeEditingState = {
-        ...defaultConfigSection,
-        ...savedConfig,
-      };
-      (this[stateKey] as any) = makeAutoObservable(completeEditingState);
-    }
+  // --- NEW, SIMPLER WAY TO HANDLE CANCEL ---
+  // This method will revert the changes using a snapshot taken before editing began.
+  public revertTemperatureChanges(snapshot: TemperatureCalculatorConfig) {
+    Object.assign(this.calculator.temperature_config, snapshot);
   }
 
-  private commitChanges(
-    configType: keyof CalculatorConfig,
-    stateKey: keyof this
-  ) {
-    if (this[stateKey]) {
-      // Type assertion 'as any' use ki ja rahi hai general function ke liye
-      (this.calculator as any)[configType] = toJS(this[stateKey] as any);
-      (this[stateKey] as any) = null;
-    }
+  public revertPressureChanges(snapshot: any) {
+    Object.assign(this.calculator.pressure_config, snapshot);
   }
 
-  private cancelEditing(stateKey: keyof this) {
-    (this[stateKey] as any) = null;
+  public revertFlowRateChanges(snapshot: any) {
+    Object.assign(this.calculator.flow_rate_config, snapshot);
   }
 
-  // --- Har section ke liye specific functions ---
+  public revertVolumeChanges(snapshot: any) {
+    this.calculator.volume_configuration = snapshot;
+  }
 
-  startEditingTemperature = () =>
-    this.startEditing("temperature_config", "editingTemperature");
-  commitTemperatureChanges = () =>
-    this.commitChanges("temperature_config", "editingTemperature");
-  cancelEditingTemperature = () => this.cancelEditing("editingTemperature");
-
-  startEditingPressure = () =>
-    this.startEditing("pressure_config", "editingPressure");
-  commitPressureChanges = () =>
-    this.commitChanges("pressure_config", "editingPressure");
-  cancelEditingPressure = () => this.cancelEditing("editingPressure");
-
-  startEditingVolume = () =>
-    this.startEditing("volume_configuration", "editingVolume");
-  commitVolumeChanges = () =>
-    this.commitChanges("volume_configuration", "editingVolume");
-  cancelEditingVolume = () => this.cancelEditing("editingVolume");
-
-  startEditingFlowRate = () =>
-    this.startEditing("flow_rate_config", "editingFlowRate");
-  commitFlowRateChanges = () =>
-    this.commitChanges("flow_rate_config", "editingFlowRate");
-  cancelEditingFlowRate = () => this.cancelEditing("editingFlowRate");
-
-  startEditingConversion = () =>
-    this.startEditing("compressibility_kfactor_config", "editingConversion");
-  commitConversionChanges = () =>
-    this.commitChanges("compressibility_kfactor_config", "editingConversion");
-  cancelEditingConversion = () => this.cancelEditing("editingConversion");
+  public revertConversionChanges(snapshot: any) {
+    this.calculator.compressibility_kfactor_config = snapshot;
+  }
 }

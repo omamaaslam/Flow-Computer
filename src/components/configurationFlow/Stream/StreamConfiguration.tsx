@@ -1,3 +1,5 @@
+// StreamConfiguration.tsx
+
 import { useState } from "react";
 import { observer } from "mobx-react-lite";
 import {
@@ -16,6 +18,7 @@ import FlowRateForm from "./FlowRateForm";
 import PressureForm from "./PressureForm";
 import VolumeForm from "./VolumeForm";
 import TemperatureForm from "./TemperatureForm";
+import { sendMessage } from "../../../utils/api"; // Import sendMessage
 
 type ModalType =
   | "volume"
@@ -24,8 +27,14 @@ type ModalType =
   | "flowRate"
   | "conversion";
 
+// The state will now also hold a snapshot for the cancel functionality
+interface ActiveModalState {
+  type: ModalType;
+  snapshot: any;
+}
+
 const StreamConfiguration = observer(() => {
-  const [activeModal, setActiveModal] = useState<ModalType | null>(null);
+  const [activeModal, setActiveModal] = useState<ActiveModalState | null>(null);
   const { streamId } = useParams<{ streamId: string }>();
 
   const currentStream = globalStore.streams.find(
@@ -34,52 +43,72 @@ const StreamConfiguration = observer(() => {
 
   const openModal = (modalType: ModalType) => {
     if (!currentStream) return;
+
+    let snapshot;
+    // Create a snapshot of the current state BEFORE opening the modal
     switch (modalType) {
-      case "volume":
-        currentStream.startEditingVolume();
-        break;
       case "temperature":
-        currentStream.startEditingTemperature();
+        snapshot = toJS(currentStream.calculator.temperature_config);
         break;
       case "pressure":
-        currentStream.startEditingPressure();
+        snapshot = toJS(currentStream.calculator.pressure_config);
         break;
       case "flowRate":
-        currentStream.startEditingFlowRate();
+        snapshot = toJS(currentStream.calculator.flow_rate_config);
+        break;
+      case "volume":
+        snapshot = toJS(currentStream.calculator.volume_configuration);
         break;
       case "conversion":
-        currentStream.startEditingConversion();
+        snapshot = toJS(
+          currentStream.calculator.compressibility_kfactor_config
+        );
         break;
+      default:
+        snapshot = null;
     }
-    setActiveModal(modalType);
+
+    setActiveModal({ type: modalType, snapshot });
   };
 
   const closeModal = () => {
-    if (!currentStream) return;
-    switch (activeModal) {
-      case "volume":
-        currentStream.cancelEditingVolume();
-        break;
+    if (!currentStream || !activeModal) return;
+    // On cancel, revert the changes using the saved snapshot
+    switch (activeModal.type) {
       case "temperature":
-        currentStream.cancelEditingTemperature();
+        currentStream.revertTemperatureChanges(activeModal.snapshot);
         break;
       case "pressure":
-        currentStream.cancelEditingPressure();
+        currentStream.revertPressureChanges(activeModal.snapshot);
         break;
       case "flowRate":
-        currentStream.cancelEditingFlowRate();
+        currentStream.revertFlowRateChanges(activeModal.snapshot);
+        break;
+      case "volume":
+        currentStream.revertVolumeChanges(activeModal.snapshot);
         break;
       case "conversion":
-        currentStream.cancelEditingConversion();
+        currentStream.revertConversionChanges(activeModal.snapshot);
         break;
     }
     setActiveModal(null);
   };
 
-  const commitAndClose = (commitFn: () => void) => {
-    commitFn();
-    // Log the entire globalStore state as a plain object after the commit
-    console.log("Global Store State After Save:", toJS(globalStore));
+  const handleSave = () => {
+    if (!currentStream) return;
+    // On "Save", you send the updated configuration to the server.
+    // The UI is already updated because we modified the live state.
+    console.log("Saving new config to server:", toJS(currentStream.calculator));
+
+    // Example of sending a message via WebSocket
+    // sendMessage({
+    //   command: 'UPDATE_STREAM_CONFIG',
+    //   payload: {
+    //     stream_id: currentStream.id,
+    //     calculator: toJS(currentStream.calculator)
+    //   }
+    // });
+
     setActiveModal(null);
   };
 
@@ -87,67 +116,53 @@ const StreamConfiguration = observer(() => {
     return <div>Stream with ID {streamId} not found.</div>;
   }
 
+  // --- MODAL CONFIG NOW DIRECTLY USES LIVE DATA ---
   const modalConfig = {
-    volume: {
-      title: "Configure Volume",
-      Component: () =>
-        currentStream.editingVolume && (
-          <VolumeForm
-            config={currentStream.editingVolume}
-            onCommit={() => commitAndClose(currentStream.commitVolumeChanges)}
-            onClose={closeModal}
-          />
-        ),
-    },
     temperature: {
       title: "Configure Temperature",
-      Component: () =>
-        currentStream.editingTemperature && (
-          <TemperatureForm
-            config={currentStream.editingTemperature}
-            onCommit={() =>
-              commitAndClose(currentStream.commitTemperatureChanges)
-            }
-            onClose={closeModal}
-          />
-        ),
+      Component: () => (
+        <TemperatureForm
+          config={currentStream.calculator.temperature_config} // <-- Passing LIVE data
+          onCommit={handleSave}
+          onClose={closeModal}
+        />
+      ),
     },
     pressure: {
       title: "Configure Pressure",
+      Component: () => (
+        <PressureForm
+          config={currentStream.calculator.pressure_config} // <-- Passing LIVE data
+          onCommit={handleSave}
+          onClose={closeModal}
+        />
+      ),
+    },
+    // ... configure other forms similarly
+    volume: {
+      title: "Configure Volume",
       Component: () =>
-        currentStream.editingPressure && (
-          <PressureForm
-            config={currentStream.editingPressure}
-            onCommit={() => commitAndClose(currentStream.commitPressureChanges)}
+        currentStream.calculator.volume_configuration && (
+          <VolumeForm
+            config={currentStream.calculator.volume_configuration} // <-- Passing LIVE data
+            onCommit={handleSave} // onCommit will now be a plain function
             onClose={closeModal}
           />
         ),
     },
     flowRate: {
       title: "Configure Flow Rate",
-      Component: () =>
-        currentStream.editingFlowRate && (
-          <FlowRateForm
-            config={currentStream.editingFlowRate}
-            onCommit={() => commitAndClose(currentStream.commitFlowRateChanges)}
-            onClose={closeModal}
-          />
-        ),
+      Component: () => (
+        <FlowRateForm
+          config={currentStream.calculator.flow_rate_config} // <-- Passing LIVE data
+          onCommit={handleSave}
+          onClose={closeModal}
+        />
+      ),
     },
     conversion: {
       title: "Conversion Settings",
-      Component: () =>
-        currentStream.editingConversion && (
-          // <ConversionForm
-          //   store={globalStore}
-          //   config={currentStream.editingConversion}
-          //   onCommit={() =>
-          //     commitAndClose(currentStream.commitConversionChanges)
-          //   }
-          //   onClose={closeModal}
-          // />
-          <ConversionForm />
-        ),
+      Component: () => <ConversionForm />, // Simplified for now
     },
   };
 
@@ -184,12 +199,15 @@ const StreamConfiguration = observer(() => {
     },
   ];
 
-  const ModalContent = activeModal ? modalConfig[activeModal].Component : null;
-  const modalTitle = activeModal ? modalConfig[activeModal].title : "";
+  const ActiveModalComponent = activeModal
+    ? modalConfig[activeModal.type].Component
+    : null;
+  const modalTitle = activeModal ? modalConfig[activeModal.type].title : "";
 
   return (
     <>
       <div className="bg-white rounded-2xl shadow-md border border-gray-200">
+        {/* ... rest of your JSX (no changes needed here) ... */}
         <div className="hidden md:block bg-white rounded-2xl p-6 border border-gray-200">
           <div className="grid grid-cols-3 gap-6">
             {cardData.map(({ id, label, Icon, Illustration }) => (
@@ -229,52 +247,13 @@ const StreamConfiguration = observer(() => {
             ))}
           </div>
         </div>
-
-        <div className="block lg:hidden p-6">
-          <div className="grid grid-cols-3 gap-4">
-            {cardData.map(({ id, label, Icon, Illustration }) => (
-              <button
-                key={id}
-                onClick={() => openModal(id)}
-                className="bg-[#FAFAFA] border border-[#DEDEDE] rounded-lg shadow p-2 flex flex-col text-left transition-all duration-200 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              >
-                <div className="flex items-center gap-1">
-                  <Icon className="text-yellow-500" size={14} strokeWidth={3} />
-                  <h3 className="font-bold text-gray-800 text-xs whitespace-nowrap">
-                    {label}
-                  </h3>
-                </div>
-                <div className="w-full flex flex-row items-center justify-between">
-                  <div className="flex-1">
-                    <img
-                      src={Illustration}
-                      alt={`${label} illustration`}
-                      className="w-[64px] h-auto"
-                    />
-                  </div>
-                  <div className="flex flex-col items-end ">
-                    <div>
-                      <span className="text-[10px] text-gray-500">min:</span>
-                      <p className="text-base font-bold text-red-600">75%</p>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-gray-500">max:</span>
-                      <p className="text-base font-bold text-green-600">75%</p>
-                    </div>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
-
       <MuiModalWrapper
         open={activeModal !== null}
         onClose={closeModal}
         title={modalTitle}
       >
-        {ModalContent && <ModalContent />}
+        {ActiveModalComponent && <ActiveModalComponent />}
       </MuiModalWrapper>
     </>
   );

@@ -3,7 +3,7 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { Gauge } from "lucide-react";
-import type { PressureCalculatorConfig } from "../../../types/streamConfig"; // Nayi type import karein
+import type { PressureCalculatorConfig } from "../../../types/streamConfig";
 
 interface PressureFormProps {
   config: PressureCalculatorConfig;
@@ -13,11 +13,25 @@ interface PressureFormProps {
 
 const PressureForm: React.FC<PressureFormProps> = observer(
   ({ config, onCommit, onClose }) => {
+
+    // The smart input handler
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
-      const { name, value } = e.target;
-      (config as any)[name] = value;
+      const { name, value, type } = e.target;
+      
+      let finalValue: string | number = value;
+
+      // Check if the input is a text field that should contain a number
+      if (type === 'text' && name !== 'pressure_linked_device_id') {
+        // If the value is a valid number, convert it.
+        if (value.trim() !== '' && !isNaN(Number(value))) {
+          finalValue = Number(value);
+        }
+      }
+      
+      // Directly modify the property on the observable 'config' object
+      (config as any)[name] = finalValue;
     };
 
     return (
@@ -48,7 +62,7 @@ const PressureForm: React.FC<PressureFormProps> = observer(
           <div className="space-y-1">
             <label className="block font-medium text-xs">Device</label>
             <select
-              name="pressure_linked_device_id" // Sahi property name JSON ke mutabiq
+              name="pressure_linked_device_id"
               value={config.pressure_linked_device_id ?? ""}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"

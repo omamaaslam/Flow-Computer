@@ -101,7 +101,11 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
 
   return (
     <div className="flex flex-col space-y-6">
-      {/* Upper portion for Modbus/HART/etc. */}
+      <div className="flex justify-start items-center gap-6 text-blue-400">
+        <div>Status: {initialData?.data.status}</div>
+        <div>Timestamp: {initialData?.data.timestamp}</div>
+        <div>Value: {initialData?.data.value}</div>
+      </div>
       <BridgeComponent
         interfaceName={interfaceName}
         formState={formState}

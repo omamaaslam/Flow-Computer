@@ -1,7 +1,3 @@
-// src/types/device.tsx
-
-// NEW: A single, flat interface for all device properties
-// All properties are optional to handle different device types.
 export interface DeviceConfig {
   // General Info
   device_id?: string;

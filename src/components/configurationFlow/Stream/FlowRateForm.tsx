@@ -2,7 +2,7 @@
 
 import React from "react";
 import { observer } from "mobx-react-lite";
-import type { FlowRateCalculatorConfig } from "../../../types/streamConfig"; // Nayi type import karein
+import type { FlowRateCalculatorConfig } from "../../../types/streamConfig";
 
 interface FlowRateFormProps {
   config: FlowRateCalculatorConfig;
@@ -12,20 +12,27 @@ interface FlowRateFormProps {
 
 const FlowRateForm: React.FC<FlowRateFormProps> = observer(
   ({ config, onCommit, onClose }) => {
+    
+    // The smart input handler for Flow Rate
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
-      const { name, value } = e.target;
-      let finalValue: any = value;
+      const { name, value, type } = e.target;
+      
+      let finalValue: string | number | boolean = value;
 
-      // Dropdowns se aane wali 'true'/'false' string ko boolean me convert karein
-      if (
-        name === "software_flow_rate_enabled" ||
-        name === "creep_mode_enabled"
-      ) {
+      // Handle boolean values from select dropdowns
+      if (name === "software_flow_rate_enabled" || name === "creep_mode_enabled") {
         finalValue = value === "true";
+      } 
+      // Handle numeric text inputs
+      else if (type === 'text' && name !== 'flow_rate_device_id') {
+        if (value.trim() !== '' && !isNaN(Number(value))) {
+          finalValue = Number(value);
+        }
       }
-
+      
+      // Directly modify the property on the observable 'config' object
       (config as any)[name] = finalValue;
     };
 
@@ -38,7 +45,7 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
             </label>
             <select
               name="software_flow_rate_enabled"
-              value={String(config.software_flow_rate_enabled)} // Boolean ko string me convert karein
+              value={String(config.software_flow_rate_enabled)} // Convert boolean to string for select value
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
             >
@@ -110,7 +117,7 @@ const FlowRateForm: React.FC<FlowRateFormProps> = observer(
             <label className="block font-medium text-xs">Creep Mode</label>
             <select
               name="creep_mode_enabled"
-              value={String(config.creep_mode_enabled)} // Boolean ko string me convert karein
+              value={String(config.creep_mode_enabled)} // Convert boolean to string for select value
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1.5 text-xs shadow-sm"
             >
