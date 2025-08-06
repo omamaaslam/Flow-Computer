@@ -1,4 +1,4 @@
-// StreamConfiguration.tsx
+// D:/flow-computer/src/components/configurationFlow/Stream/StreamConfiguration.tsx
 
 import { useState } from "react";
 import { observer } from "mobx-react-lite";
@@ -18,7 +18,7 @@ import FlowRateForm from "./FlowRateForm";
 import PressureForm from "./PressureForm";
 import VolumeForm from "./VolumeForm";
 import TemperatureForm from "./TemperatureForm";
-import { sendMessage } from "../../../utils/api"; // Import sendMessage
+import { defaultVolumeConfig } from "./VolumeForm"; // Import default config
 
 type ModalType =
   | "volume"
@@ -27,7 +27,6 @@ type ModalType =
   | "flowRate"
   | "conversion";
 
-// The state will now also hold a snapshot for the cancel functionality
 interface ActiveModalState {
   type: ModalType;
   snapshot: any;
@@ -57,6 +56,13 @@ const StreamConfiguration = observer(() => {
         snapshot = toJS(currentStream.calculator.flow_rate_config);
         break;
       case "volume":
+        // --- YEH SABSE ZAROORI CHANGE HAI ---
+        // Agar volume config null hai, to use form kholne se pehle default object de do.
+        if (!currentStream.calculator.volume_configuration) {
+          currentStream.calculator.volume_configuration = {
+            ...defaultVolumeConfig,
+          };
+        }
         snapshot = toJS(currentStream.calculator.volume_configuration);
         break;
       case "conversion":
@@ -96,19 +102,8 @@ const StreamConfiguration = observer(() => {
 
   const handleSave = () => {
     if (!currentStream) return;
-    // On "Save", you send the updated configuration to the server.
-    // The UI is already updated because we modified the live state.
+    // Yeh line aapki requirement ke hisaab se console par object print karegi.
     console.log("Saving new config to server:", toJS(currentStream.calculator));
-
-    // Example of sending a message via WebSocket
-    // sendMessage({
-    //   command: 'UPDATE_STREAM_CONFIG',
-    //   payload: {
-    //     stream_id: currentStream.id,
-    //     calculator: toJS(currentStream.calculator)
-    //   }
-    // });
-
     setActiveModal(null);
   };
 
@@ -116,13 +111,12 @@ const StreamConfiguration = observer(() => {
     return <div>Stream with ID {streamId} not found.</div>;
   }
 
-  // --- MODAL CONFIG NOW DIRECTLY USES LIVE DATA ---
   const modalConfig = {
     temperature: {
       title: "Configure Temperature",
       Component: () => (
         <TemperatureForm
-          config={currentStream.calculator.temperature_config} // <-- Passing LIVE data
+          config={currentStream.calculator.temperature_config}
           onCommit={handleSave}
           onClose={closeModal}
         />
@@ -132,29 +126,28 @@ const StreamConfiguration = observer(() => {
       title: "Configure Pressure",
       Component: () => (
         <PressureForm
-          config={currentStream.calculator.pressure_config} // <-- Passing LIVE data
+          config={currentStream.calculator.pressure_config}
           onCommit={handleSave}
           onClose={closeModal}
         />
       ),
     },
-    // ... configure other forms similarly
     volume: {
       title: "Configure Volume",
-      Component: () =>
-        currentStream.calculator.volume_configuration && (
-          <VolumeForm
-            config={currentStream.calculator.volume_configuration} // <-- Passing LIVE data
-            onCommit={handleSave} // onCommit will now be a plain function
-            onClose={closeModal}
-          />
-        ),
+      Component: () => (
+        <VolumeForm
+          // Ab yeh hamesha ek object hoga, kabhi null nahi.
+          config={currentStream.calculator.volume_configuration!}
+          onCommit={handleSave}
+          onClose={closeModal}
+        />
+      ),
     },
     flowRate: {
       title: "Configure Flow Rate",
       Component: () => (
         <FlowRateForm
-          config={currentStream.calculator.flow_rate_config} // <-- Passing LIVE data
+          config={currentStream.calculator.flow_rate_config}
           onCommit={handleSave}
           onClose={closeModal}
         />
@@ -162,7 +155,13 @@ const StreamConfiguration = observer(() => {
     },
     conversion: {
       title: "Conversion Settings",
-      Component: () => <ConversionForm />, // Simplified for now
+      Component: () => (
+        <ConversionForm
+        // config={currentStream.calculator.compressibility_kfactor_config}
+        // onCommit={handleSave}
+        // onClose={closeModal}
+        />
+      ),
     },
   };
 
@@ -207,7 +206,6 @@ const StreamConfiguration = observer(() => {
   return (
     <>
       <div className="bg-white rounded-2xl shadow-md border border-gray-200">
-        {/* ... rest of your JSX (no changes needed here) ... */}
         <div className="hidden md:block bg-white rounded-2xl p-6 border border-gray-200">
           <div className="grid grid-cols-3 gap-6">
             {cardData.map(({ id, label, Icon, Illustration }) => (

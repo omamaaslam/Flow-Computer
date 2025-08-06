@@ -64,7 +64,7 @@ export interface VolumeConfiguration {
   operating_mode: VolumeOperatingMode | null;
   gas_meter_1: string;
   gas_meter_2: string;
-  flow_rate: string; // Kept as string for form input compatibility
+  flow_rate: number | null;
   creep_time_seconds: number | null;
   max_total_volume: number | null;
   min_operating_volume: number | null;
@@ -78,7 +78,7 @@ export interface CalculatorConfig {
   temperature_config: TemperatureCalculatorConfig;
   pressure_config: PressureCalculatorConfig;
   flow_rate_config: FlowRateCalculatorConfig;
-  volume_configuration: VolumeConfiguration | null;
+  volume_configuration: VolumeConfiguration;
   compressibility_kfactor_config: CompressibilityKFactorConfig | null;
   calculation_profile: any | null;
 }
@@ -125,7 +125,7 @@ export const createDefaultStreamConfig = (): CalculatorConfig => ({
     operating_mode: null,
     gas_meter_1: "",
     gas_meter_2: "",
-    flow_rate: "",
+    flow_rate: null,
     creep_time_seconds: null,
     max_total_volume: null,
     min_operating_volume: null,

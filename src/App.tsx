@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import Home from "./components/Home";
 import Configuration from "./components/configurationFlow/Stream/io_card/Interface/Configuration";
 import { connectWebSocket } from "./utils/api";
+import MonitorScreen from "./components/MonitorScreen";
 
 const App = observer(() => {
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ const App = observer(() => {
               <Route path={ROUTES.Alarms} element={<h1>Alarms Page</h1>} />
               <Route path={ROUTES.Devices} element={<h1>Devices Page</h1>} />
               <Route path={ROUTES.Users} element={<h1>Users Page</h1>} />
-              <Route path={ROUTES.Monitor} element={<h1>Monitor Page</h1>} />
+              <Route path={ROUTES.Monitor} element={<MonitorScreen />} />
               <Route path={ROUTES.Configuration} element={<Configuration />} />
               <Route path="*" element={<h1>404: Page Not Found</h1>} />
             </Routes>

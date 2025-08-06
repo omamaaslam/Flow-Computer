@@ -1,9 +1,16 @@
-import { Home, Bell, Cpu, Users } from "lucide-react";
+import { Home, Bell, Cpu, Users, Monitor } from "lucide-react";
 import { observer } from "mobx-react-lite";
 import { navigationStore } from "../stores/NavigationStore";
 import { useMediaQuery } from "react-responsive";
 
 const navItems = [
+  {
+    label: "Monitor",
+    icon: <Monitor size={18} />,
+    action: () => navigationStore.gotoMonitor(),
+    routeKey: "Monitor",
+    children: [],
+  },
   {
     label: "Home",
     icon: <Home size={18} />,

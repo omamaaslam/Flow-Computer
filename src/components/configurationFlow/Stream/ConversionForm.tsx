@@ -1,11 +1,11 @@
 // import React from "react";
 // import { observer } from "mobx-react-lite";
 // import { ArrowUpDown } from "lucide-react";
-// import type { ConversionConfig, ConversionRow } from "../../../types/streamConfig";
 // import type globalStore from "../../../stores/GlobalStore";
+// import type { CompressibilityKFactorConfig } from "../../../types/streamConfig";
 // interface ConversionFormProps {
 //   store: typeof globalStore;
-//   config: ConversionConfig;
+//   config: CompressibilityKFactorConfig;
 //   onCommit: () => void;
 //   onClose: () => void;
 // }
@@ -19,7 +19,7 @@
 
 //     const handleRowInputChange = (
 //       index: number,
-//       field: keyof ConversionRow,
+//       field:any,
 //       value: string
 //     ) => {
 //       config.rows[index][field] = value;
@@ -138,9 +138,9 @@
 //   }
 // );
 
-const ConversionForm = () => {
-  return <div>ConversionForm</div>;
-}
 
+const ConversionForm = () => {
+  return <>Conversion Form</>
+};
 
 export default ConversionForm;
