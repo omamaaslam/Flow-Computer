@@ -22,6 +22,7 @@ import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
 import GasDeviceForm from "./Device/GasDeviceForm.tsx";
 import DeviceIcon from "../../../../DeviceIcon.tsx";
 import Legend from "../../../../Legend.tsx";
+import DO_InterfaceSettingsForm from "./DO_InterfaceSettingsForm.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
@@ -35,6 +36,7 @@ type ModalView =
   | "RTDSettings"
   | "HART1"
   | "Di_InterfaceSettings"
+  | "Do_InterfaceSettings"
   | "addDevice_selectType"
   | "addDevice_configure";
 
@@ -120,11 +122,18 @@ const ConfigureInterface = observer(
 
     const handleOpenSettingsModal = () => {
       const interfaceNameUpper = anInterface.name.toUpperCase();
-      if (interfaceNameUpper.includes("RTD")) setModalView("RTDSettings");
-      else if (interfaceNameUpper.includes("HART")) setModalView("HART1");
-      else if (interfaceNameUpper.includes("DI"))
+      // 👇 FIX 2: Add a check for "DO" BEFORE "DI"
+      if (interfaceNameUpper.includes("DIGITALOUTPUT")) {
+        setModalView("Do_InterfaceSettings");
+      } else if (interfaceNameUpper.includes("DIGITALINPUT")) {
         setModalView("Di_InterfaceSettings");
-      else setModalView("modbusSettings");
+      } else if (interfaceNameUpper.includes("RTD")) {
+        setModalView("RTDSettings");
+      } else if (interfaceNameUpper.includes("HART")) {
+        setModalView("HART1");
+      } else {
+        setModalView("modbusSettings");
+      }
     };
 
     const handleAddNewDeviceClick = () => {
@@ -201,6 +210,8 @@ const ConfigureInterface = observer(
           return `HART Settings: ${anInterface.name}`;
         case "Di_InterfaceSettings":
           return `DI Settings: ${anInterface.name}`;
+        case "Do_InterfaceSettings":
+          return `DO Settings: ${anInterface.name}`;
         default:
           return "";
       }
@@ -264,6 +275,18 @@ const ConfigureInterface = observer(
           }
           return null;
 
+        case "Do_InterfaceSettings":
+          // Type Guard for Digital Output
+          if (currentConfig.interface_type === "DigitalOutputInterface") {
+            return (
+              <DO_InterfaceSettingsForm
+                currentConfig={currentConfig}
+                {...settingsProps}
+              />
+            );
+          }
+          return null;
+
         // Device forms are fine as they don't depend on the interface config type
         case "addDevice_selectType":
           return (
@@ -313,7 +336,7 @@ const ConfigureInterface = observer(
 
     return (
       <>
-       <Legend />
+        <Legend />
         <div className="w-full bg-white p-4 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8 border border-gray-200">
           <div className="flex items-center gap-4 border-b pb-4 mb-4">
             <button
@@ -324,7 +347,7 @@ const ConfigureInterface = observer(
               <ArrowLeft className="h-6 w-6 text-gray-700" />
             </button>
             <h1 className="text-xl md:text-2xl font-bold text-gray-800">
-              Configure: {anInterface.id}
+              Configure: {anInterface.interface_id}
               <span
                 className={`text-sm ml-2 font-normal ${
                   anInterface.isConfigured ? "text-green-600" : "text-gray-500"

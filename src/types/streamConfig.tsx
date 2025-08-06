@@ -1,16 +1,8 @@
 import type { InterfaceConfig } from "./interfaceConfig";
-
 export interface IOCardConfig {
   card_type: string;
   interfaces: Record<string, InterfaceConfig>;
 }
-
-// src/types/streamConfig.ts
-
-// ===================================================================
-// YEH NAYI AUR CENTRALIZED TYPE FILE HAI.
-// Yeh file khaas taur par aapke WebSocket ke JSON structure ke liye banayi gayi hai.
-// ===================================================================
 
 // --- Calculator ke andar istemal hone wale Types ---
 export type TemperatureUnit = "Celsius" | "Fahrenheit" | "Kelvin";
@@ -70,8 +62,18 @@ export interface VolumeConfiguration {
   min_operating_volume: number | null;
   bidirectional: boolean;
 }
+export interface ConversionRow {
+  name: string;
+  liveValue: string | number; // Live value string ya number ho sakta hai
+  unit: string;
+  linkedDevice: string;
+  keyboardInput: number;
+}
 
-export type CompressibilityKFactorConfig = any;
+export interface CompressibilityKFactorConfig {
+  method: string;
+  rows: ConversionRow[];
+}
 
 // --- Poora Calculator Object ---
 export interface CalculatorConfig {
@@ -79,7 +81,7 @@ export interface CalculatorConfig {
   pressure_config: PressureCalculatorConfig;
   flow_rate_config: FlowRateCalculatorConfig;
   volume_configuration: VolumeConfiguration;
-  compressibility_kfactor_config: CompressibilityKFactorConfig | null;
+  compressibility_kfactor_config: CompressibilityKFactorConfig;
   calculation_profile: any | null;
 }
 
@@ -131,6 +133,14 @@ export const createDefaultStreamConfig = (): CalculatorConfig => ({
     min_operating_volume: null,
     bidirectional: false,
   },
-  compressibility_kfactor_config: null,
+  compressibility_kfactor_config:  {
+    method: "GERG88_1", // Default method
+    rows: [ // Default rows, aap inko khaali bhi chor sakte hain ya default values de sakte hain
+      { name: "Methane (CH4)", liveValue: "N/A", unit: "%", linkedDevice: "", keyboardInput: 95.0 },
+      { name: "Ethane (C2H6)", liveValue: "N/A", unit: "%", linkedDevice: "", keyboardInput: 3.0 },
+      { name: "Propane (C3H8)", liveValue: "N/A", unit: "%", linkedDevice: "", keyboardInput: 0.5 },
+      // ... aur baaqi gas components
+    ],
+  },
   calculation_profile: null,
 });

@@ -5,7 +5,7 @@ import type { InterfaceConfig } from "../types/interfaceConfig";
 import type { DeviceConfig } from "../types/device";
 
 export class Interface {
-  public id: string;
+  public interface_id: string;
   public name: string;
   public config: InterfaceConfig;
   public devices: Device[] = [];
@@ -20,7 +20,7 @@ export class Interface {
     const { interface_id, interface_type, devices, ...configData } =
       interfaceData;
 
-    this.id = interface_id;
+    this.interface_id = interface_id;
     this.name = interface_type;
     this.isConfigured = isInitiallyConfigured; // Set the initial status
 

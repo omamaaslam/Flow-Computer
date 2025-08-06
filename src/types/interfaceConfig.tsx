@@ -10,9 +10,18 @@ interface BaseInterfaceConfig {
 // REVISED: Using string literals for better type safety and simpler form handling.
 export interface DigitalInputConfig extends BaseInterfaceConfig {
   interface_type: "DigitalInputInterface";
-  debounce_time_ms: number;
+  debounce_time_ms: number | null;
   edge_detection: "Rising" | "Falling" | "Both";
-  input_type: "Dry Contact" | "Wet Contact";
+  input_type: "drycontact" | "pulsecount" | "opencollector";
+  pull_config: "Pull-down" | "Pull-up" | "None";
+  signal_logic: "Active High" | "Active Low";
+}
+
+export interface DigitalOutputConfig extends BaseInterfaceConfig {
+  interface_type: "DigitalOutputInterface";
+  debounce_time_ms: number | null;
+  edge_detection: "Rising" | "Falling" | "Both";
+  input_type: "drycontact" | "pulsecount" | "opencollector";
   pull_config: "Pull-down" | "Pull-up" | "None";
   signal_logic: "Active High" | "Active Low";
 }
@@ -55,6 +64,7 @@ export interface RtdConfig extends BaseInterfaceConfig {
 // The main export: InterfaceConfig can be any one of the specific config types.
 export type InterfaceConfig =
   | DigitalInputConfig
+  | DigitalOutputConfig
   | HartConfig
   | ModbusConfig
   | RtdConfig;

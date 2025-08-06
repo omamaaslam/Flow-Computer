@@ -1,18 +1,18 @@
-// src/components/configurationFlow/Stream/io_card/Interface/DI_InterfaceSettingsForm.tsx
+// src/components/configurationFlow/Stream/io_card/Interface/DO_InterfaceSettingsForm.tsx
 
 import React, { useState, useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
-import type { DigitalInputConfig } from "../../../../../types/interfaceConfig";
+import type { DigitalOutputConfig } from "../../../../../types/interfaceConfig";
 
-interface DIInterfaceSettingsFormProps {
-  currentConfig: DigitalInputConfig;
-  onSave: (config: DigitalInputConfig) => void;
+interface DOInterfaceSettingsFormProps {
+  currentConfig: DigitalOutputConfig;
+  onSave: (config: DigitalOutputConfig) => void;
   onClose: () => void;
 }
 
 // --- NEW, STRONGER VALIDATION FUNCTION ---
 // This function now correctly checks for empty, non-numeric, and out-of-range values.
-const validate = (data: Partial<DigitalInputConfig>) => {
+const validate = (data: Partial<DigitalOutputConfig>) => {
   const errors: { [key: string]: string } = {};
 
   const debounceValue = data.debounce_time_ms;
@@ -29,12 +29,12 @@ const validate = (data: Partial<DigitalInputConfig>) => {
   return errors;
 };
 
-const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
+const DOInterfaceSettingsForm: React.FC<DOInterfaceSettingsFormProps> =
   observer(({ currentConfig, onSave, onClose }) => {
     // Local state will hold strings for text inputs to allow flexible user typing
     const [formState, setFormState] = useState({
       ...currentConfig,
-      debounce_time_ms: String(currentConfig.debounce_time_ms), // Store as string for the input field
+      debounce_time_ms: String(currentConfig.debounce_time_ms) ?? 5000,
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isDirty, setIsDirty] = useState(false);
@@ -43,7 +43,7 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
     const initialFormStateRef = useRef(
       JSON.stringify({
         ...currentConfig,
-        debounce_time_ms: String(currentConfig.debounce_time_ms),
+      debounce_time_ms: String(currentConfig.debounce_time_ms) ?? 5000,
       })
     );
 
@@ -72,7 +72,7 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
 
     const handleSave = () => {
       // Before saving, create a final, correctly-typed config object
-      const finalConfig: DigitalInputConfig = {
+      const finalConfig: DigitalOutputConfig = {
         ...formState,
         debounce_time_ms: Number(formState.debounce_time_ms),
       };
@@ -211,4 +211,4 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
     );
   });
 
-export default DIInterfaceSettingsForm;
+export default DOInterfaceSettingsForm;

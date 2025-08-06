@@ -19,6 +19,7 @@ import PressureForm from "./PressureForm";
 import VolumeForm from "./VolumeForm";
 import TemperatureForm from "./TemperatureForm";
 import { defaultVolumeConfig } from "./VolumeForm"; // Import default config
+import { createDefaultStreamConfig } from "../../../types/streamConfig";
 
 type ModalType =
   | "volume"
@@ -66,6 +67,10 @@ const StreamConfiguration = observer(() => {
         snapshot = toJS(currentStream.calculator.volume_configuration);
         break;
       case "conversion":
+        if (!currentStream.calculator.compressibility_kfactor_config) {
+          currentStream.calculator.compressibility_kfactor_config = 
+            createDefaultStreamConfig().compressibility_kfactor_config!;
+        }
         snapshot = toJS(
           currentStream.calculator.compressibility_kfactor_config
         );
@@ -157,9 +162,10 @@ const StreamConfiguration = observer(() => {
       title: "Conversion Settings",
       Component: () => (
         <ConversionForm
-        // config={currentStream.calculator.compressibility_kfactor_config}
-        // onCommit={handleSave}
-        // onClose={closeModal}
+        store={globalStore} 
+        config={currentStream.calculator.compressibility_kfactor_config}
+        onCommit={handleSave}
+        onClose={closeModal}
         />
       ),
     },

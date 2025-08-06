@@ -42,7 +42,7 @@ const ConfigurationPage = observer(() => {
   // We ALWAYS find the interface because it's guaranteed to exist in the store.
   const foundInterface = configuringInterfaceId
     ? globalStore.streams[0]?.ioCards[0]?.interfaces.find(
-        (iface) => iface.id === configuringInterfaceId
+        (iface) => iface.interface_id === configuringInterfaceId
       )
     : null;
 

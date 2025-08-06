@@ -32,8 +32,6 @@ const App = observer(() => {
       try {
         // Step 1: WebSocket se connect karein
         await connectWebSocket();
-        console.log("WebSocket se connection hogaya, ab updates sunenge...");
-
         // Step 2: Hamesha ke liye updates sunna shuru karein
         globalStore.listenForUpdates();
       } catch (error) {
