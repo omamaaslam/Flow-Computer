@@ -21,6 +21,7 @@ import ModbusInterfaceSettingsForm from "./ModbusInterfaceSettingsForm.tsx";
 import RTDInterfaceSettingsForm from "./RTDInterfaceSettingsForm.tsx";
 import GasDeviceForm from "./Device/GasDeviceForm.tsx";
 import DeviceIcon from "../../../../DeviceIcon.tsx";
+import Legend from "../../../../Legend.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
@@ -312,6 +313,7 @@ const ConfigureInterface = observer(
 
     return (
       <>
+       <Legend />
         <div className="w-full bg-white p-4 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8 border border-gray-200">
           <div className="flex items-center gap-4 border-b pb-4 mb-4">
             <button
