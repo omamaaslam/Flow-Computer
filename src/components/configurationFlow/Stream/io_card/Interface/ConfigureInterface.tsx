@@ -1,5 +1,3 @@
-// src/components/configurationFlow/Interfaces/ConfigureInterface.tsx
-
 import { useState, useEffect } from "react";
 import { Settings, ArrowLeft } from "lucide-react";
 import MuiModalWrapper from "../../../MuiModalWrapper.tsx";
@@ -102,15 +100,31 @@ const ConfigureInterface = observer(
     const [editingDevice, setEditingDevice] = useState<Device | null>(null);
     const [bridgeData, setBridgeData] = useState<any>(null);
 
+    // --- 👇 NEW STATE FOR LOADING INDICATOR ---
+    const [isSaving, setIsSaving] = useState(false);
+
     useEffect(() => {
       if (!anInterface.isConfigured) {
         handleOpenSettingsModal();
       }
     }, [anInterface]);
 
-    const handleSaveInterfaceConfig = (config: InterfaceConfig) => {
-      anInterface.updateConfig(config);
-      closeModal();
+    // --- 👇 KEY CHANGE: THIS FUNCTION IS NOW ASYNC ---
+    const handleSaveInterfaceConfig = async (config: InterfaceConfig) => {
+      setIsSaving(true); // 1. Start loading indicator
+      try {
+        // 2. Call the async method on the store and wait for it
+        await anInterface.updateConfig(config);
+        // 3. If successful, close the modal
+        closeModal();
+      } catch (error) {
+        // 4. If it fails, log the error. The modal remains open for the user to try again.
+        console.error("Failed to save interface configuration:", error);
+        // Optionally: show a user-friendly error message here (e.g., using a toast library)
+      } finally {
+        // 5. No matter what, stop the loading indicator
+        setIsSaving(false);
+      }
     };
 
     const handleSettingsCancel = () => {
@@ -122,7 +136,6 @@ const ConfigureInterface = observer(
 
     const handleOpenSettingsModal = () => {
       const interfaceNameUpper = anInterface.name.toUpperCase();
-      // 👇 FIX 2: Add a check for "DO" BEFORE "DI"
       if (interfaceNameUpper.includes("DIGITALOUTPUT")) {
         setModalView("Do_InterfaceSettings");
       } else if (interfaceNameUpper.includes("DIGITALINPUT")) {
@@ -201,17 +214,17 @@ const ConfigureInterface = observer(
       switch (modalView) {
         case "addDevice_selectType":
         case "addDevice_configure":
-          return `Add Device for ${anInterface.name}`;
+          return `Add Device for ${anInterface.interface_id}`;
         case "modbusSettings":
-          return `Modbus Settings: ${anInterface.name}`;
+          return `Modbus Settings: ${anInterface.interface_id}`;
         case "RTDSettings":
-          return `RTD Settings: ${anInterface.name}`;
+          return `RTD Settings: ${anInterface.interface_id}`;
         case "HART1":
-          return `HART Settings: ${anInterface.name}`;
+          return `HART Settings: ${anInterface.interface_id}`;
         case "Di_InterfaceSettings":
-          return `DI Settings: ${anInterface.name}`;
+          return `DI Settings: ${anInterface.interface_id}`;
         case "Do_InterfaceSettings":
-          return `DO Settings: ${anInterface.name}`;
+          return `DO Settings: ${anInterface.interface_id}`;
         default:
           return "";
       }
@@ -219,16 +232,15 @@ const ConfigureInterface = observer(
 
     const currentConfig = anInterface.getConfig();
 
-    // --- UPDATED RENDERMODALCONTENT FUNCTION ---
     const renderModalContent = () => {
       const settingsProps = {
         onSave: handleSaveInterfaceConfig,
         onClose: handleSettingsCancel,
+        isSaving: isSaving, // Pass the loading state as a prop
       };
 
       switch (modalView) {
         case "modbusSettings":
-          // Type Guard: Check if the config is of the correct type before rendering
           if (currentConfig.interface_type === "ModbusInterface") {
             return (
               <ModbusInterfaceSettingsForm
@@ -240,7 +252,6 @@ const ConfigureInterface = observer(
           return null;
 
         case "RTDSettings":
-          // Type Guard
           if (currentConfig.interface_type === "RtdInterface") {
             return (
               <RTDInterfaceSettingsForm
@@ -252,7 +263,6 @@ const ConfigureInterface = observer(
           return null;
 
         case "HART1":
-          // Type Guard
           if (currentConfig.interface_type === "HartInterface") {
             return (
               <HartInterfaceSettingsForm
@@ -264,7 +274,6 @@ const ConfigureInterface = observer(
           return null;
 
         case "Di_InterfaceSettings":
-          // Type Guard
           if (currentConfig.interface_type === "DigitalInputInterface") {
             return (
               <DI_InterfaceSettingsForm
@@ -276,7 +285,6 @@ const ConfigureInterface = observer(
           return null;
 
         case "Do_InterfaceSettings":
-          // Type Guard for Digital Output
           if (currentConfig.interface_type === "DigitalOutputInterface") {
             return (
               <DO_InterfaceSettingsForm
@@ -287,7 +295,6 @@ const ConfigureInterface = observer(
           }
           return null;
 
-        // Device forms are fine as they don't depend on the interface config type
         case "addDevice_selectType":
           return (
             <AddDeviceForm
@@ -338,6 +345,7 @@ const ConfigureInterface = observer(
       <>
         <Legend />
         <div className="w-full bg-white p-4 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8 border border-gray-200">
+          {/* Rest of the JSX is unchanged */}
           <div className="flex items-center gap-4 border-b pb-4 mb-4">
             <button
               onClick={onBack}

@@ -1,12 +1,12 @@
-// src/components/configurationFlow/Stream/io_card/Interface/RTDInterfaceSettingsForm.tsx
-
 import React, { useState, useEffect, useRef } from "react";
 import type { RtdConfig } from "../../../../../types/interfaceConfig";
 
+// --- 👇 KEY CHANGE: ADD isSaving TO THE PROPS INTERFACE ---
 interface RTDInterfaceSettingsFormProps {
   currentConfig: RtdConfig;
   onSave: (config: RtdConfig) => void;
   onClose: () => void;
+  isSaving: boolean; // Accept the loading state prop
 }
 
 const validate = (data: Partial<RtdConfig>) => {
@@ -32,10 +32,12 @@ const validate = (data: Partial<RtdConfig>) => {
   return errors;
 };
 
+// --- 👇 KEY CHANGE: DESTRUCTURE isSaving FROM PROPS ---
 const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
   currentConfig,
   onSave,
   onClose,
+  isSaving,
 }) => {
   const [formState, setFormState] = useState({
     ...currentConfig,
@@ -50,7 +52,7 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
   const isInitiallyConfigured = currentConfig.enabled;
 
   useEffect(() => {
-    const validationData = { ...formState /* convert for validation */ };
+    const validationData = { ...formState };
     const validationErrors = validate(validationData as any);
     setErrors(validationErrors);
     setIsDirty(JSON.stringify(formState) !== initialFormStateRef.current);
@@ -75,12 +77,16 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
     }
   };
 
+  // --- 👇 KEY CHANGE: ADD isSaving TO THE DISABLED LOGIC ---
   const isSaveDisabled =
-    Object.keys(errors).length > 0 || (isInitiallyConfigured && !isDirty);
+    isSaving ||
+    Object.keys(errors).length > 0 ||
+    (isInitiallyConfigured && !isDirty);
 
   return (
     <>
       <div className="flex flex-col space-y-4">
+        {/* All form inputs remain the same */}
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">
             Wire Type
@@ -178,7 +184,9 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
       <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
         <button
           onClick={onClose}
-          className="px-5 py-2 rounded-full font-semibold text-sm bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors"
+          // --- 👇 KEY CHANGE: DISABLE BUTTON WHILE SAVING ---
+          disabled={isSaving}
+          className="px-5 py-2 rounded-full font-semibold text-sm bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors disabled:opacity-50"
         >
           Cancel
         </button>
@@ -191,7 +199,8 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
               : "bg-yellow-400 hover:bg-yellow-500"
           }`}
         >
-          Save
+          {/* --- 👇 KEY CHANGE: SHOW DIFFERENT TEXT WHILE SAVING --- */}
+          {isSaving ? "Saving..." : "Save"}
         </button>
       </div>
     </>

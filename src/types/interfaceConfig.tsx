@@ -3,7 +3,7 @@
 // A base interface for properties that are common to all interface types.
 interface BaseInterfaceConfig {
   enabled: boolean;
-  interface_id: number;
+  interface_id: string;
 }
 
 // Specific configuration for Digital Input (DI1)

@@ -12,7 +12,7 @@ const ALL_INTERFACES_META: { [id: string]: { type: string } } = {
   DI4: { type: "DigitalInputInterface" }, // NOTE: Your SVG has two DI4s. You may need unique IDs like DI4_1, DI4_2
   DI5: { type: "DigitalInputInterface" },
   HI1: { type: "HartInterface" },
-  HART2: { type: "HartInterface" },
+  HI2: { type: "HartInterface" },
   TI1: { type: "RtdInterface" },
   AI1: { type: "AnalogInputInterface" }, // You'll need to define AnalogInputInterface in your types
   AI2: { type: "AnalogInputInterface" },
@@ -79,6 +79,7 @@ export class IOCard {
   get interfaceStatuses() {
     const statuses: { [id: string]: "configured" | "unconfigured" } = {};
     this.interfaces.forEach((iface) => {
+      // console.log("Interface ID:", iface.interface_id, iface.isConfigured);
       statuses[iface.interface_id] = iface.isConfigured
         ? "configured"
         : "unconfigured";

@@ -24,7 +24,7 @@ const UNCONFIGURED_STATUSES: InterfaceStatuses = {
   DO2: "unconfigured",
   DI4_2: "unconfigured",
   AI2: "unconfigured",
-  HART2: "unconfigured",
+  HI2: "unconfigured",
   AO1: "unconfigured",
   DI1: "unconfigured",
   DI3: "unconfigured",
@@ -52,7 +52,7 @@ const getColorForStatus = (status: InterfaceStatus | undefined): string => {
   if (status && statusColorMap[status]) {
     return statusColorMap[status];
   }
-  // Otherwise, return the default 'unconfigured' color. This makes it type-safe.
+
   return statusColorMap.unconfigured;
 };
 
@@ -91,8 +91,8 @@ const InterfacesConfiguration = observer(
               onDi4_2Click={() => onConfigure("DI4_2")}
               ai2StatusColor={getColorForStatus(statuses.AI2)}
               onAi2Click={() => onConfigure("AI2")}
-              hart2StatusColor={getColorForStatus(statuses.HART2)}
-              onHart2Click={() => onConfigure("HART2")}
+              hart2StatusColor={getColorForStatus(statuses.HI2 )}
+              onHart2Click={() => onConfigure("HI2")}
               ao1StatusColor={getColorForStatus(statuses.AO1)}
               onAo1Click={() => onConfigure("AO1")}
               di3StatusColor={getColorForStatus(statuses.DI3)}

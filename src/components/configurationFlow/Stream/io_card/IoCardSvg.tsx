@@ -130,7 +130,7 @@ const IoCardSvg = (props: IoCardSvgProps) => {
       </g>
       <g onClick={props.onHart2Click} className="cursor-pointer group">
         <rect x="5" y="472.48" width="158.459" height="38.6486" rx="5.39562" fill={props.hart2StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.23" y="494.8" textAnchor="middle" dy=".3em" fill={getTextColor(props.hart2StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">HART2</text>
+        <text x="84.23" y="494.8" textAnchor="middle" dy=".3em" fill={getTextColor(props.hart2StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">HI2</text>
       </g>
       <g onClick={props.onAo1Click} className="cursor-pointer group">
         <rect x="5" y="565.842" width="158.387" height="39.1182" rx="5.39562" fill={props.ao1StatusColor} className="transition-all group-hover:brightness-110" />

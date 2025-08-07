@@ -113,7 +113,7 @@ export const updateInterface = (
 };
 
 
-export const addInterface = (
+export const addInterfaceConfig = (
   stream_id: string,
   interface_type: string,
   interface_id: string,
