@@ -119,7 +119,7 @@ const ConfigureInterface = observer(
         closeModal();
       } catch (error) {
         // 4. If it fails, log the error. The modal remains open for the user to try again.
-        console.error("Failed to save interface configuration:", error);
+        console.error(error);
         // Optionally: show a user-friendly error message here (e.g., using a toast library)
       } finally {
         // 5. No matter what, stop the loading indicator

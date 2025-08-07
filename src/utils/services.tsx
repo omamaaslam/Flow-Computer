@@ -17,7 +17,7 @@ const sendAndWait = (
           resolve(data);
         }
       } catch (error) {
-        // Ignore non-JSON messages
+        console.log(error);
       }
     };
 
@@ -88,7 +88,6 @@ export const getDeviceSnapshot = (
   return sendAndWait(msg, isMatch);
 };
 
-
 // ==============================================================================================
 //                                 UPDATE API START HERE
 // ==============================================================================================
@@ -99,7 +98,6 @@ export const updateInterface = (
   data: any
 ) => {
   const msg = {
-    command: "get_global_state_snapshot",
     scope: "update_interface",
     stream_id: stream_id,
     interface_id: interface_id,
@@ -108,10 +106,29 @@ export const updateInterface = (
       ...data,
     },
   };
-  const isMatch = (res: any) => res?.interfaces?.[interface_id] !== undefined;
+
+  const isMatch = (res: any) => {
+
+    if (
+      res?.success &&
+      typeof res.success === "string" &&
+      res.success.includes(`'${interface_id}'`)
+    ) {
+      console.log(`✅ Matched success message for ${interface_id}`);
+      return true;
+    }
+    if (
+      res?.streams?.[stream_id]?.io_card?.interfaces?.[interface_id] !==
+      undefined
+    ) {
+      console.log(`✅ Matched full snapshot for ${interface_id}`);
+      return true;
+    }
+    return false;
+  };
+
   return sendAndWait(msg, isMatch);
 };
-
 
 export const addInterfaceConfig = (
   stream_id: string,

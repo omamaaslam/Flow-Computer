@@ -1,6 +1,7 @@
 // src/components/InterfacesConfiguration.tsx
 
 import globalStore from "../../../../../stores/GlobalStore";
+import type { Stream } from "../../../../../stores/Stream";
 import Legend from "../../../../Legend";
 import IoCardSvg from "../IoCardSvg";
 import { observer } from "mobx-react-lite";
@@ -12,6 +13,7 @@ type InterfaceStatuses = {
 };
 
 interface InterfacesConfigurationProps {
+  stream: Stream;
   onConfigure: (interfaceId: string) => void;
 }
 
@@ -57,8 +59,8 @@ const getColorForStatus = (status: InterfaceStatus | undefined): string => {
 };
 
 const InterfacesConfiguration = observer(
-  ({ onConfigure }: InterfacesConfigurationProps) => {
-    const ioCard = globalStore.streams[0]?.ioCards[0];
+  ({ stream, onConfigure }: InterfacesConfigurationProps) => {
+    const ioCard = stream.ioCards[0];
     const statuses = ioCard ? ioCard.interfaceStatuses : UNCONFIGURED_STATUSES;
 
     return (
@@ -91,7 +93,7 @@ const InterfacesConfiguration = observer(
               onDi4_2Click={() => onConfigure("DI4_2")}
               ai2StatusColor={getColorForStatus(statuses.AI2)}
               onAi2Click={() => onConfigure("AI2")}
-              hart2StatusColor={getColorForStatus(statuses.HI2 )}
+              hart2StatusColor={getColorForStatus(statuses.HI2)}
               onHart2Click={() => onConfigure("HI2")}
               ao1StatusColor={getColorForStatus(statuses.AO1)}
               onAo1Click={() => onConfigure("AO1")}

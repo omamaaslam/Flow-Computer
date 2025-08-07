@@ -1,5 +1,5 @@
 // Configuration.tsx
-
+import { useParams } from "react-router-dom";
 import { useState } from "react";
 import StreamConfiguration from "../../StreamConfiguration";
 import InterfacesConfiguration from "./InterfacesConfiguration";
@@ -10,10 +10,15 @@ import globalStore from "../../../../../stores/GlobalStore";
 type ActiveTab = "stream" | "interfaces";
 
 const ConfigurationPage = observer(() => {
+  const { streamId } = useParams<{ streamId: string }>();
   const [activeTab, setActiveTab] = useState<ActiveTab>("stream");
   const [configuringInterfaceId, setConfiguringInterfaceId] = useState<
     string | null
   >(null);
+
+  const selectedStream = streamId
+    ? globalStore.streams.find((s) => s.id === streamId)
+    : globalStore.streams[0];
 
   const handleSelectInterfaceToConfigure = (interfaceId: string) => {
     setConfiguringInterfaceId(interfaceId);
@@ -38,13 +43,17 @@ const ConfigurationPage = observer(() => {
       : `${baseClasses} ${inactiveClasses}`;
   };
 
-  // --- THE NEW, SIMPLIFIED LOGIC ---
-  // We ALWAYS find the interface because it's guaranteed to exist in the store.
-  const foundInterface = configuringInterfaceId
-    ? globalStore.streams[0]?.ioCards[0]?.interfaces.find(
-        (iface) => iface.interface_id === configuringInterfaceId
-      )
-    : null;
+  const foundInterface =
+    configuringInterfaceId && selectedStream
+      ? selectedStream.ioCards[0]?.interfaces.find(
+          (iface) => iface.interface_id === configuringInterfaceId
+        )
+      : null;
+
+  // Agar stream na mile to loading ya error state dikhayein
+  if (!selectedStream) {
+    return <div>Loading Stream or Stream not found...</div>;
+  }
 
   return (
     <div className="py-2 md:py-0 w-full max-w-screen-xl mx-auto space-y-6">
@@ -69,6 +78,7 @@ const ConfigurationPage = observer(() => {
           <>
             {!configuringInterfaceId ? (
               <InterfacesConfiguration
+                stream={selectedStream}
                 onConfigure={handleSelectInterfaceToConfigure}
               />
             ) : foundInterface ? (

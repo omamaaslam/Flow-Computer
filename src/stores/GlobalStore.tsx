@@ -62,10 +62,17 @@ class GlobalStore {
         const data = JSON.parse(event.data);
         console.log("⬇️ WebSocket se naya data mila:", data);
 
-        // runInAction se MobX saari tabdeeliyon ko ek batch mein process karta hai
-        runInAction(() => {
-          this.setGlobalSnapshot(data);
-        });
+        // --- 👇 FIX IS HERE: Sirf snapshot messages ko process karein ---
+        // Agar message me 'streams' property hai, tabhi state update karein.
+        if (data && data.streams) {
+          // runInAction se MobX saari tabdeeliyon ko ek batch mein process karta hai
+          runInAction(() => {
+            this.setGlobalSnapshot(data);
+          });
+        } else {
+          // Doosre messages (jaise {success: "..."}) ko global level par ignore karein.
+          console.log("Ignoring non-snapshot message at global level:", data);
+        }
       } catch (error) {
         console.error(
           "WebSocket se aaye data ko parse karne mein error:",
