@@ -31,13 +31,13 @@ export class IOCard {
   card_type: string;
   // This array will ALWAYS contain an Interface object for every possible slot
   interfaces: Interface[] = [];
-
-  constructor(ioCardData: any) {
+  stream_id: string;
+  constructor(ioCardData: any, stream_id: string) {
     makeAutoObservable(this, {
       interfaceStatuses: computed,
     });
     this.card_type = ioCardData.card_type;
-
+    this.stream_id = stream_id;
     const configuredInterfacesData = ioCardData.interfaces || {};
 
     // Create instances for ALL predefined interfaces, every time.
@@ -49,7 +49,11 @@ export class IOCard {
         // --- CONFIGURED ---
         // If data exists, create the interface instance with server data.
         // We pass a flag to the constructor to mark it as configured.
-        interfaceInstance = new Interface(configDataFromServer, true);
+        interfaceInstance = new Interface(
+          configDataFromServer,
+          true,
+          this.stream_id
+        );
       } else {
         // --- UNCONFIGURED ---
         // If data does NOT exist, create a new, default instance.
@@ -61,7 +65,11 @@ export class IOCard {
           // Add any other default properties required by your types
         };
         // We pass false to mark it as unconfigured initially.
-        interfaceInstance = new Interface(newInterfaceData, false);
+        interfaceInstance = new Interface(
+          newInterfaceData,
+          false,
+          this.stream_id
+        );
       }
       this.interfaces.push(interfaceInstance);
     }
@@ -71,7 +79,9 @@ export class IOCard {
   get interfaceStatuses() {
     const statuses: { [id: string]: "configured" | "unconfigured" } = {};
     this.interfaces.forEach((iface) => {
-      statuses[iface.interface_id] = iface.isConfigured ? "configured" : "unconfigured";
+      statuses[iface.interface_id] = iface.isConfigured
+        ? "configured"
+        : "unconfigured";
     });
     return statuses;
   }

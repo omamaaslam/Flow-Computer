@@ -1,8 +1,9 @@
 // src/stores/Interface.tsx
-import { action, makeAutoObservable } from "mobx";
+import { action, makeAutoObservable, runInAction } from "mobx";
 import { Device } from "./Device";
 import type { InterfaceConfig } from "../types/interfaceConfig";
 import type { DeviceConfig } from "../types/device";
+import { updateInterface } from "../utils/services";
 
 export class Interface {
   public interface_id: string;
@@ -10,19 +11,23 @@ export class Interface {
   public config: InterfaceConfig;
   public devices: Device[] = [];
   public isConfigured: boolean = false;
-
-  constructor(interfaceData: any, isInitiallyConfigured: boolean) {
+  public stream_id: string;
+  constructor(
+    interfaceData: any,
+    isInitiallyConfigured: boolean,
+    stream_id: string
+  ) {
     makeAutoObservable(this, {
-      isConfigured: true, // Keep it as an observable property
-      setConfigured: action, // Mark the method as an action
+      isConfigured: true,
+      setConfigured: action,
     });
 
     const { interface_id, interface_type, devices, ...configData } =
       interfaceData;
-
+    this.stream_id = stream_id;
     this.interface_id = interface_id;
     this.name = interface_type;
-    this.isConfigured = isInitiallyConfigured; // Set the initial status
+    this.isConfigured = isInitiallyConfigured;
 
     if (devices && Object.keys(devices).length > 0) {
       this.devices = Object.values<any>(devices).map(
@@ -61,10 +66,22 @@ export class Interface {
     }
   }
 
-  updateConfig(newConfig: Partial<this["config"]>) {
-    this.config = { ...this.config, ...newConfig };
-    // After a user saves the form for the first time, we mark it as configured.
-    this.setConfigured(true);
+  // updateConfig(newConfig: Partial<this["config"]>) {
+  //   this.config = { ...this.config, ...newConfig };
+  //   this.setConfigured(true);
+  // }
+
+  async updateConfig(newConfig: Partial<this["config"]>) {
+    try {
+      await updateInterface(this.stream_id, this.interface_id, newConfig);
+      runInAction(() => {
+        this.config = { ...this.config, ...newConfig };
+        this.isConfigured = true;
+      });
+    } catch (error) {
+      console.error("Failed to update interface settings:", error);
+      throw error;
+    }
   }
 
   removeDevice(deviceId: string) {

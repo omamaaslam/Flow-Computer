@@ -29,7 +29,7 @@ export class Stream {
     this.name = streamData.stream_name || this.name;
 
     if (streamData.io_card) {
-      this.ioCards = [new IOCard(streamData.io_card)];
+      this.ioCards = [new IOCard(streamData.io_card, this.id)];
     } else {
       this.ioCards = [];
     }

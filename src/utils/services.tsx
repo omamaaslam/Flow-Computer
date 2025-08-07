@@ -87,3 +87,49 @@ export const getDeviceSnapshot = (
   const isMatch = (res: any) => res?.devices?.[deviceId] !== undefined;
   return sendAndWait(msg, isMatch);
 };
+
+
+// ==============================================================================================
+//                                 UPDATE API START HERE
+// ==============================================================================================
+
+export const updateInterface = (
+  stream_id: string,
+  interface_id: string,
+  data: any
+) => {
+  const msg = {
+    command: "get_global_state_snapshot",
+    scope: "update_interface",
+    stream_id: stream_id,
+    interface_id: interface_id,
+    data: {
+      interface_id: interface_id,
+      ...data,
+    },
+  };
+  const isMatch = (res: any) => res?.interfaces?.[interface_id] !== undefined;
+  return sendAndWait(msg, isMatch);
+};
+
+
+export const addInterface = (
+  stream_id: string,
+  interface_type: string,
+  interface_id: string,
+  data: any
+) => {
+  const msg = {
+    command: "get_global_state_snapshot",
+    scope: "add_interface",
+    stream_id: stream_id,
+    interface_type: interface_type,
+
+    data: {
+      interface_id,
+      ...data,
+    },
+  };
+  const isMatch = (res: any) => res?.interfaces?.[interface_id] !== undefined;
+  return sendAndWait(msg, isMatch);
+};

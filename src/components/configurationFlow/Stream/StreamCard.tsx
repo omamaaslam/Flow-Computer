@@ -67,9 +67,6 @@ const StreamCard: React.FC<StreamCardProps> = observer(
           <div className="flex flex-col items-start gap-1.5 w-full">
             <div className="flex items-center justify-center px-2 py-1.5 md:px-4 md:py-2 gap-1 w-full border-2 border-dashed border-[#F0F0F0] rounded-[4px]">
               <div className="flex items-center gap-1 md:gap-2 flex-wrap">
-                <span className="text-[12px] sm:text-[13px] md:text-[16px] font-semibold text-[#FFB700]">
-                  Stream {stream.id}:
-                </span>
                 <span className="text-[13px] sm:text-[14px] md:text-[20px] font-semibold text-white">
                   {stream.name}
                 </span>
