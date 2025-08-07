@@ -124,6 +124,8 @@ export const updateInterface = (
       console.log(`✅ Matched full snapshot for ${interface_id}`);
       return true;
     }
+
+
     return false;
   };
 
@@ -137,16 +139,33 @@ export const addInterfaceConfig = (
   data: any
 ) => {
   const msg = {
-    command: "get_global_state_snapshot",
     scope: "add_interface",
     stream_id: stream_id,
     interface_type: interface_type,
-
     data: {
       interface_id,
       ...data,
     },
   };
-  const isMatch = (res: any) => res?.interfaces?.[interface_id] !== undefined;
+
+  // --- 👇 FIX IS HERE ---
+  // isMatch function ko update kiya gaya hai taaki woh dono tarah ke responses ko handle kar sake.
+  const isMatch = (res: any) => {
+    // 1. Simple success message ko check karein.
+    if (res?.success && typeof res.success === 'string' && res.success.includes(`'${interface_id}'`)) {
+      console.log(`✅ Matched ADD success message for ${interface_id}`);
+      return true;
+    }
+
+    // 2. Fallback: Agar server poora snapshot bhejta hai to use bhi handle karein.
+    if (res?.streams?.[stream_id]?.io_card?.interfaces?.[interface_id] !== undefined) {
+      console.log(`✅ Matched full snapshot for ADD on ${interface_id}`);
+      return true;
+    }
+    
+    // Agar koi bhi condition match na ho to false return karein.
+    return false;
+  };
+
   return sendAndWait(msg, isMatch);
 };

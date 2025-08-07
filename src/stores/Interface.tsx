@@ -3,7 +3,7 @@ import { action, makeAutoObservable, runInAction } from "mobx";
 import { Device } from "./Device";
 import type { InterfaceConfig } from "../types/interfaceConfig";
 import type { DeviceConfig } from "../types/device";
-import { updateInterface } from "../utils/services";
+import { addInterfaceConfig, updateInterface } from "../utils/services";
 
 export class Interface {
   public interface_id: string;
@@ -39,6 +39,30 @@ export class Interface {
       interface_type: interface_type,
       ...configData,
     } as InterfaceConfig;
+  }
+
+  async addConfig(newConfig: Partial<this["config"]>) {
+    try {
+      // Call the service function to add the new interface config
+      await addInterfaceConfig(
+        this.stream_id,
+        this.name,
+        this.interface_id,
+        newConfig
+      );
+
+      // On success, update the local state in a single transaction
+      runInAction(() => {
+        this.config = { ...this.config, ...newConfig };
+        this.isConfigured = true; // Mark it as configured
+      });
+    } catch (error) {
+      console.error(
+        `Failed to ADD interface configuration for '${this.interface_id}':`,
+        error
+      );
+      throw error; // Re-throw the error to be caught by the UI component
+    }
   }
 
   // An action to explicitly set the configured status

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import type { RtdConfig } from "../../../../../types/interfaceConfig";
 
-// --- 👇 KEY CHANGE: ADD isSaving TO THE PROPS INTERFACE ---
 interface RTDInterfaceSettingsFormProps {
   currentConfig: RtdConfig;
   onSave: (config: RtdConfig) => void;
   onClose: () => void;
-  isSaving: boolean; // Accept the loading state prop
+  isSaving: boolean;
+  interface_id: string;
 }
 
 const validate = (data: Partial<RtdConfig>) => {
@@ -32,28 +32,40 @@ const validate = (data: Partial<RtdConfig>) => {
   return errors;
 };
 
-// --- 👇 KEY CHANGE: DESTRUCTURE isSaving FROM PROPS ---
 const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
   currentConfig,
   onSave,
   onClose,
   isSaving,
+  interface_id,
 }) => {
+  // --- 👇 KEY CHANGE: Robust state initialization with defaults ---
   const [formState, setFormState] = useState({
     ...currentConfig,
-    excitation_current_ma: String(currentConfig.excitation_current_ma),
-    sampling_interval_ms: String(currentConfig.sampling_interval_ms),
-    reference_resistor_ohms: String(currentConfig.reference_resistor_ohms),
+    // Provide a valid string default for every form field
+    excitation_current_ma: String(currentConfig.excitation_current_ma || "0.5"),
+    sampling_interval_ms: String(currentConfig.sampling_interval_ms || "1000"),
+    reference_resistor_ohms: String(
+      currentConfig.reference_resistor_ohms || "100"
+    ),
+    wire_type: currentConfig.wire_type || "ThreeWire",
+    measurement_mode: currentConfig.measurement_mode || "Continuous",
   });
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isDirty, setIsDirty] = useState(false);
-
   const initialFormStateRef = useRef(JSON.stringify(formState));
   const isInitiallyConfigured = currentConfig.enabled;
 
   useEffect(() => {
-    const validationData = { ...formState };
-    const validationErrors = validate(validationData as any);
+    // Create a temporary object with correct types BEFORE validating.
+    const validationData = {
+      ...formState,
+      excitation_current_ma: Number(formState.excitation_current_ma),
+      sampling_interval_ms: Number(formState.sampling_interval_ms),
+      reference_resistor_ohms: Number(formState.reference_resistor_ohms),
+    };
+    const validationErrors = validate(validationData);
     setErrors(validationErrors);
     setIsDirty(JSON.stringify(formState) !== initialFormStateRef.current);
   }, [formState]);
@@ -65,12 +77,19 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
+  // --- 👇 KEY CHANGE: Build finalConfig with correct types ---
   const handleSave = () => {
     const finalConfig: RtdConfig = {
-      ...formState,
+      interface_type: "RtdInterface",
+      interface_id: interface_id,
+      enabled: true,
+    
       excitation_current_ma: Number(formState.excitation_current_ma),
       sampling_interval_ms: Number(formState.sampling_interval_ms),
       reference_resistor_ohms: Number(formState.reference_resistor_ohms),
+      wire_type: formState.wire_type as RtdConfig["wire_type"],
+      measurement_mode:
+        formState.measurement_mode as RtdConfig["measurement_mode"],
     };
     if (Object.keys(validate(finalConfig)).length === 0) {
       onSave(finalConfig);
@@ -86,7 +105,6 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
   return (
     <>
       <div className="flex flex-col space-y-4">
-        {/* All form inputs remain the same */}
         <div className="space-y-1">
           <label className="block text-sm font-medium text-gray-700">
             Wire Type
@@ -109,6 +127,7 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
           <input
             name="excitation_current_ma"
             type="number"
+            step="0.1" // Good for float inputs
             placeholder="0.1-1.0"
             value={formState.excitation_current_ma}
             onChange={handleChange}
@@ -184,7 +203,6 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
       <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
         <button
           onClick={onClose}
-          // --- 👇 KEY CHANGE: DISABLE BUTTON WHILE SAVING ---
           disabled={isSaving}
           className="px-5 py-2 rounded-full font-semibold text-sm bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors disabled:opacity-50"
         >
@@ -199,7 +217,6 @@ const RTDInterfaceSettingsForm: React.FC<RTDInterfaceSettingsFormProps> = ({
               : "bg-yellow-400 hover:bg-yellow-500"
           }`}
         >
-          {/* --- 👇 KEY CHANGE: SHOW DIFFERENT TEXT WHILE SAVING --- */}
           {isSaving ? "Saving..." : "Save"}
         </button>
       </div>

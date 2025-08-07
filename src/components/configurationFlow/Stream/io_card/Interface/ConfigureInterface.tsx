@@ -111,18 +111,18 @@ const ConfigureInterface = observer(
 
     // --- 👇 KEY CHANGE: THIS FUNCTION IS NOW ASYNC ---
     const handleSaveInterfaceConfig = async (config: InterfaceConfig) => {
-      setIsSaving(true); // 1. Start loading indicator
+      setIsSaving(true);
       try {
-        // 2. Call the async method on the store and wait for it
-        await anInterface.updateConfig(config);
-        // 3. If successful, close the modal
+        if (anInterface.isConfigured) {
+          await anInterface.updateConfig(config);
+        } else {
+          await anInterface.addConfig(config);
+        }
+        // On success (for both add and update), close the modal
         closeModal();
       } catch (error) {
-        // 4. If it fails, log the error. The modal remains open for the user to try again.
         console.error(error);
-        // Optionally: show a user-friendly error message here (e.g., using a toast library)
       } finally {
-        // 5. No matter what, stop the loading indicator
         setIsSaving(false);
       }
     };
@@ -236,7 +236,8 @@ const ConfigureInterface = observer(
       const settingsProps = {
         onSave: handleSaveInterfaceConfig,
         onClose: handleSettingsCancel,
-        isSaving: isSaving, // Pass the loading state as a prop
+        isSaving: isSaving,
+        interface_id: anInterface.interface_id
       };
 
       switch (modalView) {

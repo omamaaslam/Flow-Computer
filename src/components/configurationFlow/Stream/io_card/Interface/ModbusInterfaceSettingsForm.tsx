@@ -8,6 +8,7 @@ interface ModbusInterfaceSettingsFormProps {
   currentConfig: ModbusConfig;
   onSave: (config: ModbusConfig) => void;
   onClose: () => void;
+  isSaving: boolean;
 }
 
 // Validation function specific to Modbus settings
@@ -27,17 +28,21 @@ const validate = (data: Partial<ModbusConfig>) => {
 };
 
 const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
-  observer(({ currentConfig, onSave, onClose }) => {
+  observer(({ currentConfig, onSave, onClose, isSaving }) => {
     // Store numeric fields as strings for better UX in input fields
-    const [formState, setFormState] = useState({
+      const [formState, setFormState] = useState({
+      // Start with the base config to keep non-form properties
       ...currentConfig,
-      baud_rate: String(currentConfig.baud_rate),
-      data_bits: String(currentConfig.data_bits),
-      max_slaves: String(currentConfig.max_slaves),
-      poll_interval_ms: String(currentConfig.poll_interval_ms),
-      retry_count: String(currentConfig.retry_count),
-      stop_bits: String(currentConfig.stop_bits),
-      timeout_ms: String(currentConfig.timeout_ms),
+      // NOW, provide a valid string default for every form field
+      baud_rate: String(currentConfig.baud_rate || '9600'),
+      data_bits: String(currentConfig.data_bits || '8'),
+      max_slaves: String(currentConfig.max_slaves || '5'),
+      parity: currentConfig.parity || 'None',
+      poll_interval_ms: String(currentConfig.poll_interval_ms || '1000'),
+      pull_up_enabled: currentConfig.pull_up_enabled ?? false,
+      retry_count: String(currentConfig.retry_count || '3'),
+      stop_bits: String(currentConfig.stop_bits || '1'),
+      timeout_ms: String(currentConfig.timeout_ms || '1000'),
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isDirty, setIsDirty] = useState(false);
@@ -77,15 +82,20 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
         retry_count: Number(formState.retry_count),
         stop_bits: Number(formState.stop_bits),
         timeout_ms: Number(formState.timeout_ms),
+        port_name: "5173",
+        physical_layer: "RS485",
       };
 
       if (Object.keys(validate(finalConfig)).length === 0) {
+        console.warn(finalConfig);
         onSave(finalConfig);
       }
     };
 
     const isSaveDisabled =
-      Object.keys(errors).length > 0 || (isInitiallyConfigured && !isDirty);
+      isSaving || // Disable if saving
+      Object.keys(errors).length > 0 ||
+      (isInitiallyConfigured && !isDirty);
 
     return (
       <>
@@ -233,7 +243,7 @@ const ModbusInterfaceSettingsForm: React.FC<ModbusInterfaceSettingsFormProps> =
                 : "bg-yellow-500 hover:bg-yellow-600"
             }`}
           >
-            Save
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </>

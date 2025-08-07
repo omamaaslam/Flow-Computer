@@ -1,22 +1,21 @@
-// src/components/configurationFlow/Stream/io_card/Interface/DI_InterfaceSettingsForm.tsx
-
 import React, { useState, useEffect, useRef } from "react";
 import { observer } from "mobx-react-lite";
 import type { DigitalInputConfig } from "../../../../../types/interfaceConfig";
 
+// Props interface updated to include isSaving
 interface DIInterfaceSettingsFormProps {
   currentConfig: DigitalInputConfig;
   onSave: (config: DigitalInputConfig) => void;
   onClose: () => void;
+  isSaving: boolean;
+  interface_id: string;
 }
 
-// --- NEW, STRONGER VALIDATION FUNCTION ---
-// This function now correctly checks for empty, non-numeric, and out-of-range values.
 const validate = (data: Partial<DigitalInputConfig>) => {
   const errors: { [key: string]: string } = {};
-
   const debounceValue = data.debounce_time_ms;
 
+  // Use Number() for validation as data might be a string from the form
   if (debounceValue == null || String(debounceValue).trim() === "") {
     errors.debounce_time_ms = "Debounce time is required.";
   } else if (isNaN(Number(debounceValue))) {
@@ -24,42 +23,38 @@ const validate = (data: Partial<DigitalInputConfig>) => {
   } else if (Number(debounceValue) < 0 || Number(debounceValue) > 10000) {
     errors.debounce_time_ms = "Must be between 0 and 10,000.";
   }
-
-  // Other fields are selects with default values, so they are always valid.
   return errors;
 };
 
 const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
-  observer(({ currentConfig, onSave, onClose }) => {
-    // Local state will hold strings for text inputs to allow flexible user typing
+  observer(({ currentConfig, onSave, onClose, isSaving, interface_id }) => {
+    // Robust state initialization with defaults
     const [formState, setFormState] = useState({
       ...currentConfig,
-      debounce_time_ms: String(currentConfig.debounce_time_ms), // Store as string for the input field
+      // Provide a valid string default for every form field
+      debounce_time_ms: String(currentConfig.debounce_time_ms || "10"),
+      // NOTE: Ensure these values match your type definitions.
+      // E.g., 'DryContact', not 'drycontect'
+      input_type: currentConfig.input_type || "DryContact",
+      signal_logic: currentConfig.signal_logic || "ActiveHigh",
+      edge_detection: currentConfig.edge_detection || "Rising",
+      pull_config: currentConfig.pull_config || "PullUp",
     });
+
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [isDirty, setIsDirty] = useState(false);
-
-    // Store a clean, correctly-typed initial state for comparison
-    const initialFormStateRef = useRef(
-      JSON.stringify({
-        ...currentConfig,
-        debounce_time_ms: String(currentConfig.debounce_time_ms),
-      })
-    );
-
-    // Check if the interface was already configured when the form opened
+    const initialFormStateRef = useRef(JSON.stringify(formState));
     const isInitiallyConfigured = currentConfig.enabled;
 
     useEffect(() => {
-      // We validate against a correctly-typed version of the state
+      // Create a temporary object with correct types BEFORE validating.
       const validationData = {
         ...formState,
         debounce_time_ms: Number(formState.debounce_time_ms),
       };
+
       const validationErrors = validate(validationData);
       setErrors(validationErrors);
-
-      // Check if the form has been changed from its initial state
       setIsDirty(JSON.stringify(formState) !== initialFormStateRef.current);
     }, [formState]);
 
@@ -71,14 +66,23 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
     };
 
     const handleSave = () => {
-      // Before saving, create a final, correctly-typed config object
+      // Build finalConfig with correct types
       const finalConfig: DigitalInputConfig = {
-        ...formState,
+        interface_type: "DigitalInputInterface",
+        interface_id: interface_id,
+        enabled: true, 
         debounce_time_ms: Number(formState.debounce_time_ms),
+        input_type: formState.input_type as DigitalInputConfig["input_type"],
+        signal_logic:
+          formState.signal_logic as DigitalInputConfig["signal_logic"],
+        edge_detection:
+          formState.edge_detection as DigitalInputConfig["edge_detection"],
+        pull_config: formState.pull_config as DigitalInputConfig["pull_config"],
       };
-      // Double-check for validity before sending
+
       if (Object.keys(validate(finalConfig)).length === 0) {
         onSave(finalConfig);
+        // console.warn(finalConfig);
       } else {
         console.error(
           "Save blocked due to invalid data.",
@@ -87,10 +91,11 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
       }
     };
 
-    // The final, correct logic for the save button's disabled state
+    // Include isSaving in disabled logic
     const isSaveDisabled =
-      Object.keys(errors).length > 0 || // 1. Disable if there are any validation errors
-      (isInitiallyConfigured && !isDirty); // 2. If it's an existing config, also disable if no changes were made
+      isSaving ||
+      Object.keys(errors).length > 0 ||
+      (isInitiallyConfigured && !isDirty);
 
     // Common styling for form elements
     const inputBaseClass =
@@ -103,6 +108,7 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
           DI Settings: DigitalInputInterface
         </h2>
         <div className="space-y-5">
+          {/* Added explicit `value` attributes to options */}
           <div className="space-y-1">
             <label htmlFor="input_type" className={labelClass}>
               Input Type
@@ -114,11 +120,13 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
               onChange={handleChange}
               className={`${inputBaseClass} appearance-none`}
             >
-              <option value="drycontect">Dry Contact</option>
-              <option value="pulsecount">Pulse Count</option>
-              <option value="opencollector">Open COllector</option>
+              {/* NOTE: Fixed "drycontect" typo and used values matching your types */}
+              <option value="DryContact">Dry Contact</option>
+              <option value="PulseCount">Pulse Count</option>
+              <option value="OpenCollector">Open Collector</option>
             </select>
           </div>
+
           <div className="space-y-1">
             <label htmlFor="debounce_time_ms" className={labelClass}>
               Debounce Time (ms)
@@ -140,6 +148,7 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
               </p>
             )}
           </div>
+
           <div className="space-y-1">
             <label htmlFor="signal_logic" className={labelClass}>
               Signal Logic
@@ -151,8 +160,8 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
               onChange={handleChange}
               className={`${inputBaseClass} appearance-none`}
             >
-              <option>Active High</option>
-              <option>Active Low</option>
+              <option value="ActiveHigh">Active High</option>
+              <option value="ActiveLow">Active Low</option>
             </select>
           </div>
           <div className="space-y-1">
@@ -166,9 +175,9 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
               onChange={handleChange}
               className={`${inputBaseClass} appearance-none`}
             >
-              <option>Rising</option>
-              <option>Falling</option>
-              <option>Both</option>
+              <option value="Rising">Rising</option>
+              <option value="Falling">Falling</option>
+              <option value="Both">Both</option>
             </select>
           </div>
           <div className="space-y-1">
@@ -182,16 +191,19 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
               onChange={handleChange}
               className={`${inputBaseClass} appearance-none`}
             >
-              <option>Pull-down</option>
-              <option>Pull-up</option>
-              <option>None</option>
+              <option value="PullUp">Pull-up</option>
+              <option value="PullDown">Pull-down</option>
+              <option value="None">None</option>
             </select>
           </div>
         </div>
+
+        {/* Updated buttons with isSaving logic */}
         <div className="flex justify-end gap-3 mt-8 pt-4 border-t">
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-full font-semibold text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
+            disabled={isSaving}
+            className="px-5 py-2 rounded-full font-semibold text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -204,7 +216,7 @@ const DIInterfaceSettingsForm: React.FC<DIInterfaceSettingsFormProps> =
                 : "bg-yellow-500 hover:bg-yellow-600"
             }`}
           >
-            Save
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </>

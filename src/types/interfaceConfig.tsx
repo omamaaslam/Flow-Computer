@@ -12,7 +12,7 @@ export interface DigitalInputConfig extends BaseInterfaceConfig {
   interface_type: "DigitalInputInterface";
   debounce_time_ms: number | null;
   edge_detection: "Rising" | "Falling" | "Both";
-  input_type: "drycontact" | "pulsecount" | "opencollector";
+  input_type: "DryContact" | "pulsecount" | "opencollector";
   pull_config: "Pull-down" | "Pull-up" | "None";
   signal_logic: "Active High" | "Active Low";
 }
@@ -21,7 +21,7 @@ export interface DigitalOutputConfig extends BaseInterfaceConfig {
   interface_type: "DigitalOutputInterface";
   debounce_time_ms: number | null;
   edge_detection: "Rising" | "Falling" | "Both";
-  input_type: "drycontact" | "pulsecount" | "opencollector";
+  input_type: "DryContact" | "pulsecount" | "opencollector";
   pull_config: "Pull-down" | "Pull-up" | "None";
   signal_logic: "Active High" | "Active Low";
 }
@@ -48,6 +48,8 @@ export interface ModbusConfig extends BaseInterfaceConfig {
   retry_count: number;
   stop_bits: number;
   timeout_ms: number;
+  port_name: string;
+  physical_layer: string
   device_congif?: { [key: string]: any };
 }
 
