@@ -12,6 +12,7 @@ import Home from "./components/Home";
 import Configuration from "./components/configurationFlow/Stream/io_card/Interface/Configuration";
 import { connectWebSocket } from "./utils/api";
 import MonitorScreen from "./components/MonitorScreen";
+import { getGlobalStateSnapshot } from "./utils/services";
 
 const App = observer(() => {
   const navigate = useNavigate();
@@ -34,6 +35,8 @@ const App = observer(() => {
         await connectWebSocket();
         // Step 2: Hamesha ke liye updates sunna shuru karein
         globalStore.listenForUpdates();
+        await getGlobalStateSnapshot();
+        console.log("Global state snapshot request sent. The listener will handle the response.");
       } catch (error) {
         console.error("App shuru karne mein masla hua:", error);
       }
