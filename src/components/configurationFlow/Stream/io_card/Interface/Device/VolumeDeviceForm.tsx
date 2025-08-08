@@ -16,6 +16,7 @@ interface VolumeDeviceFormProps {
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
   initialData?: DeviceConfig | null;
+  interface_id: string;
 }
 
 const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
@@ -23,6 +24,7 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
   onSave,
   interface_type,
   initialData,
+  interface_id,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
@@ -57,6 +59,7 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
 
   const handleSubmit = () => {
     const finalConfig: DeviceConfig = {
+      device_id: interface_id,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,

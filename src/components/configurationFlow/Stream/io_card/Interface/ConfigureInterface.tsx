@@ -222,7 +222,6 @@ const ConfigureInterface = observer(
           return `Modbus Settings: ${anInterface.interface_id}`;
         case "RTDSettings":
           return `RTD Settings: ${anInterface.interface_id}`;
-        // ... other cases
         default:
           return "";
       }
@@ -244,6 +243,7 @@ const ConfigureInterface = observer(
         onSave: handleSaveDeviceConfiguration,
         onBack: closeModal,
         interface_type: anInterface.name,
+        interface_id: anInterface.interface_id
       };
 
       switch (modalView) {
@@ -287,6 +287,7 @@ const ConfigureInterface = observer(
             <AddDeviceForm
               onClose={closeModal}
               onNext={handleDeviceTypeSelection}
+              interfaceId={anInterface.interface_id}
             />
           );
         case "addDevice_configure":

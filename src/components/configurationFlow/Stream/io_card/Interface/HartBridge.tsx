@@ -170,10 +170,8 @@ const HartBridge: React.FC<HartBridgeProps> = ({
             onChange={(val) => handleStateChange("variableType", val)}
             placeholder="One of: PV, SV, TV, QV"
             options={[
-              { value: "PV", label: "PV" },
-              { value: "SV", label: "SV" },
-              { value: "TV", label: "TV" },
-              { value: "QV", label: "QV" },
+              { value: "P", label: "P" },
+              { value: "S", label: "S" },
             ]}
           />
         </FormField>

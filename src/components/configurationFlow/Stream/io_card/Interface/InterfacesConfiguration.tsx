@@ -1,11 +1,8 @@
-// src/components/InterfacesConfiguration.tsx
-
 import type { Stream } from "../../../../../stores/Stream";
 import Legend from "../../../../Legend";
 import IoCardSvg from "../IoCardSvg";
 import { observer } from "mobx-react-lite";
 
-// Define the core types
 type InterfaceStatus = "configured" | "unconfigured" | "alert" | "error";
 type InterfaceStatuses = {
   [key: string]: InterfaceStatus;
@@ -16,7 +13,6 @@ interface InterfacesConfigurationProps {
   onConfigure: (interfaceId: string) => void;
 }
 
-// A fallback object to use while data is loading
 const UNCONFIGURED_STATUSES: InterfaceStatuses = {
   MOD_M: "unconfigured",
   DI2: "unconfigured",
@@ -45,15 +41,10 @@ const statusColorMap: Record<InterfaceStatus, string> = {
   error: "#FF3D00",
 };
 
-// 👇 *** THE FIX IS HERE: A Helper Function *** 👇
-// This function safely gets the color for a given status.
-// It provides a default color if the status is unknown, satisfying TypeScript.
 const getColorForStatus = (status: InterfaceStatus | undefined): string => {
-  // If the status is valid and exists in our map, return its color.
   if (status && statusColorMap[status]) {
     return statusColorMap[status];
   }
-
   return statusColorMap.unconfigured;
 };
 
@@ -65,7 +56,6 @@ const InterfacesConfiguration = observer(
     return (
       <>
         <Legend />
-
         <div className="bg-white mx-auto rounded-2xl shadow-md py-4 px-2 border border-gray-200 flex flex-col items-center">
           <h2 className="text-xl md:text-2xl font-semibold text-gray-800 text-center mb-4">
             V1

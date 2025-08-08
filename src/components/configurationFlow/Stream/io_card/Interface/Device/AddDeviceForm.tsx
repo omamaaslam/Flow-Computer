@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import ReactDOM from "react-dom";
 
 const CustomCombobox = ({
@@ -106,49 +106,88 @@ const CustomCombobox = ({
 interface AddDeviceFormProps {
   onClose: () => void;
   onNext: (deviceType: string) => void;
+  interfaceId: string;
 }
 
-const AddDeviceForm: React.FC<AddDeviceFormProps> = ({ onClose, onNext }) => {
+const allDeviceOptions = [
+  { value: "TemperatureDevice", label: "Temperature" },
+  { value: "PressureDevice", label: "Pressure" },
+  { value: "VolumeDevice", label: "Volume" },
+  { value: "PulseVolumeDevice", label: "Pulse Volume" },
+  { value: "FlowRateDevice", label: "Flow Rate" },
+  { value: "PulseFlowRateDevice", label: "Pulse Flow Rate" },
+  { value: "CH4", label: "Methanes" },
+  { value: "N2", label: "Nitrogen" },
+  { value: "CO2", label: "Carbon Dioxide" },
+  { value: "C2H6", label: "Ethane" },
+  { value: "C3H8", label: "Propane" },
+  { value: "H2O", label: "Water" },
+  { value: "H2S", label: "Hydrogen sulfides" },
+  { value: "H2", label: "Hydrogen" },
+  { value: "CO", label: "Carbon monoxide" },
+  { value: "O2", label: "Oxygen" },
+  { value: "IC4H10", label: "i-Butane" },
+  { value: "C4H10", label: "n-butane" },
+  { value: "IC5H12", label: "i-Pentane" },
+  { value: "C5H12", label: "n-Pentanes" },
+  { value: "C6H14", label: "n-hexanes" },
+  { value: "C7H16", label: "n-heptanes" },
+  { value: "C8H18", label: "n-octanes" },
+  { value: "C9H20", label: "n-Nonane" },
+  { value: "C10H22", label: "n-Decane" },
+  { value: "HE", label: "Helium" },
+  { value: "AR", label: "Argon" },
+  { value: "HI", label: "heating value" },
+  { value: "RD", label: "density ratio" },
+  { value: "WI", label: "Wobbe index" },
+];
+
+const AddDeviceForm: React.FC<AddDeviceFormProps> = ({
+  onClose,
+  onNext,
+  interfaceId,
+}) => {
   const [selectedType, setSelectedType] = useState<string>("");
+
+  const filteredOptions = useMemo(() => {
+    const id = interfaceId.toUpperCase();
+    if (id === "TI1") {
+      return allDeviceOptions.filter(
+        (opt) => opt.value === "TemperatureDevice"
+      );
+    }
+    if (id === "HI1" || id === "HI2") {
+      return allDeviceOptions.filter((opt) =>
+        ["TemperatureDevice", "PressureDevice"].includes(opt.value)
+      );
+    }
+    if (id.startsWith("DI")) {
+      return allDeviceOptions.filter((opt) => opt.value === "VolumeDevice");
+    }
+    const specialDevices = [
+      "TemperatureDevice",
+      "PressureDevice",
+      "VolumeDevice",
+    ];
+    return allDeviceOptions.filter(
+      (opt) => !specialDevices.includes(opt.value)
+    );
+  }, [interfaceId]);
+
+  useEffect(() => {
+    if (
+      selectedType &&
+      !filteredOptions.some((opt) => opt.value === selectedType)
+    ) {
+      setSelectedType("");
+    }
+  }, [filteredOptions, selectedType]);
 
   const handleNextClick = () => {
     if (selectedType) {
       onNext(selectedType);
     }
   };
-
-  const deviceOptions = [
-    { value: "TemperatureDevice", label: "Temperature" },
-    { value: "PressureDevice", label: "Pressure" },
-    { value: "VolumeDevice", label: "Volume" },
-    { value: "PulseVolumeDevice", label: "Pulse Volume" },
-    { value: "FlowRateDevice", label: "Flow Rate" },
-    { value: "PulseFlowRateDevice", label: "Pulse Flow Rate" },
-    { value: "CH4", label: "Methanes" },
-    { value: "N2", label: "Nitrogen" },
-    { value: "CO2", label: "Carbon Dioxide" },
-    { value: "C2H6", label: "Ethane" },
-    { value: "C3H8", label: "Propane" },
-    { value: "H2O", label: "Water" },
-    { value: "H2S", label: "Hydrogen sulfides" },
-    { value: "H2", label: "Hydrogen" },
-    { value: "CO", label: "Carbon monoxide" },
-    { value: "O2", label: "Oxygen" },
-    { value: "IC4H10", label: "i-Butane" },
-    { value: "C4H10", label: "n-butane" },
-    { value: "IC5H12", label: "i-Pentane" },
-    { value: "C5H12", label: "n-Pentanes" },
-    { value: "C6H14", label: "n-hexanes" },
-    { value: "C7H16", label: "n-heptanes" },
-    { value: "C8H18", label: "n-octanes" },
-    { value: "C9H20", label: "n-Nonane" },
-    { value: "C10H22", label: "n-Decane" },
-    { value: "HE", label: "Helium" },
-    { value: "AR", label: "Argon" },
-    { value: "HI", label: "heating value" },
-    { value: "RD", label: "density ratio" },
-    { value: "WI", label: "Wobbe index" },
-  ];
 
   return (
     <>
@@ -159,7 +198,7 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({ onClose, onNext }) => {
         <CustomCombobox
           value={selectedType}
           onChange={setSelectedType}
-          options={deviceOptions}
+          options={filteredOptions}
           placeholder="Please select a device type"
         />
       </div>

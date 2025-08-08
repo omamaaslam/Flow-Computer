@@ -18,12 +18,14 @@ interface PressureDeviceFormProps {
   interface_type: string;
   initialData?: DeviceConfig | null;
   bridgeData?: any | null;
+  interface_id: string;
 }
 
 const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   onBack,
   onSave,
   interface_type,
+  interface_id,
   initialData,
   bridgeData,
 }) => {
@@ -95,7 +97,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
 
     // Construct the final config, ensuring all required fields are present
     const finalConfig: DeviceConfig = {
-      device_id: initialData?.id || `pressure_dev_${Date.now()}`,
+      device_id: `${interface_id}`,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,

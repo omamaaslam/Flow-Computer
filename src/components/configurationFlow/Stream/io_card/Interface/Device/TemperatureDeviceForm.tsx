@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { DeviceConfig } from "../../../../../../types/device";
+import BridgeComponent from "../BridgeComponent";
 // Since this form is for a simple RTD Temperature device, the BridgeComponent is not needed.
 // If you need it for other scenarios, you would use conditional rendering.
 // import BridgeComponent from "../BridgeComponent";
@@ -19,6 +20,7 @@ interface TemperatureDeviceFormProps {
   onSave: (config: DeviceConfig) => void;
   interface_type: string; // Renamed from interfaceName for consistency
   initialData?: DeviceConfig | null;
+  interface_id: string
 }
 
 const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
@@ -26,6 +28,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   onSave,
   interface_type,
   initialData,
+  interface_id
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
@@ -83,7 +86,7 @@ console.log(interface_type);
 
     const finalConfig: DeviceConfig = {
       // Use existing ID if editing, otherwise generate a new one
-      device_id: initialData?.id || `temp_dev_${Date.now()}`,
+      device_id: interface_id,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,
@@ -112,14 +115,19 @@ console.log(interface_type);
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex justify-start items-center gap-6 text-slate-400">
-        <div>Status: {initialData?.data?.status ?? "N/A"}</div>
         <div>Timestamp: {initialData?.data?.timestamp ?? "N/A"}</div>
+        <div>Status: {initialData?.data?.status ?? "N/A"}</div>
         <div>Live Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>
 
       {/* The BridgeComponent is not rendered for a simple TemperatureDevice on an RTD interface. */}
       {/* If you add this device to a Modbus interface, you would conditionally render it here based on `interface_type` */}
-
+      <BridgeComponent
+        interface_type={interface_type}
+        formState={formState}
+        errors={{}}
+        handleStateChange={handleStateChange}
+      />
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab("general")}
