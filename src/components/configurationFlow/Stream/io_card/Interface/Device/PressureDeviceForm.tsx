@@ -11,125 +11,19 @@ const Input = (props: InputProps) => (
   />
 );
 
-// CustomCombobox definition is now inside this file
-interface CustomComboboxProps {
-  options: { value: string; label: string }[];
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  hasError?: boolean;
-}
-
-const CustomCombobox: React.FC<CustomComboboxProps> = ({
-  options,
-  value,
-  onChange,
-  placeholder,
-  hasError,
-}) => {
-  const [isOpen, setIsOpen] = React.useState(false);
-  const comboboxRef = React.useRef<HTMLDivElement>(null);
-
-  const handleClickOutside = (event: MouseEvent | TouchEvent) => {
-    if (
-      comboboxRef.current &&
-      !comboboxRef.current.contains(event.target as Node)
-    ) {
-      setIsOpen(false);
-    }
-  };
-
-  React.useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, []);
-
-  return (
-    <div className="relative w-full" ref={comboboxRef}>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => setIsOpen(true)}
-        placeholder={placeholder}
-        className={`w-full border rounded-md py-1.5 pl-3 pr-8 text-sm placeholder:text-gray-400 bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 ${
-          hasError ? "border-red-500" : "border-gray-300"
-        }`}
-      />
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="absolute inset-y-0 right-0 flex items-center px-2"
-        aria-label="Toggle options"
-      >
-        <svg
-          className="h-4 w-4 text-gray-500"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M19 9l-7 7-7-7"
-          ></path>
-        </svg>
-      </button>
-      {isOpen && (
-        <div className="absolute z-[2000] top-full mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-200 animate-fadeIn p-2">
-          <div className="max-h-60 overflow-y-auto">
-            {options.map((option) => (
-              <div
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                className={`flex items-center gap-4 p-2.5 rounded-md cursor-pointer text-sm transition-colors ${
-                  value === option.value
-                    ? "bg-yellow-100/50"
-                    : "hover:bg-gray-100"
-                }`}
-              >
-                <div
-                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                    value === option.value
-                      ? "border-yellow-500"
-                      : "border-gray-400"
-                  }`}
-                >
-                  {value === option.value && (
-                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  )}
-                </div>
-                <span>{option.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
 // Main form component starts here
 interface PressureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
-  interfaceName: string;
+  interface_type: string;
   initialData?: DeviceConfig | null;
-  bridgeData?: any | null; // Receives Modbus/HART specific data
+  bridgeData?: any | null;
 }
 
 const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   onBack,
   onSave,
-  interfaceName,
+  interface_type,
   initialData,
   bridgeData,
 }) => {
@@ -137,56 +31,55 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     "general"
   );
 
+  // Define the full shape of the form's state
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",
     model: "",
     tag_name: "",
-    g_size: "",
+    build_year: "2025",
+    version: "v1.0",
     pressure_min: "",
     pressure_max: "",
     unit: "bar",
-    correction_c0: "",
-    correction_c1: "",
-    correction_c2: "",
-    correction_c3: "",
-    // Bridge-related state fields (using snake_case)
+    scaling_factor: "1.0",
+    offset: "0.0",
+    correction_c0: "0.0",
+    correction_c1: "1.0",
+    correction_c2: "0.0",
+    correction_c3: "0.0",
+    // Bridge-related state fields
     slave_id: "",
     register_count: "",
     register_address: "",
     data_type: "",
-    pollingAddress: "",
-    commandSet: "",
-    variableType: "",
   });
 
   useEffect(() => {
-    const generalData = initialData || {};
-    const interfaceSpecificData = bridgeData || {};
+    // Explicitly type `data` to let TypeScript know its shape
+    const data: Partial<DeviceConfig> = initialData || {};
+    const interfaceSpecificData: any = bridgeData || {};
 
     setFormState({
-      // Populate general data from 'devices' object
-      manufacturer: generalData.manufacturer ?? "",
-      serial_number: generalData.serial_number ?? "",
-      model: generalData.model ?? "",
-      tag_name: generalData.tag_name ?? "",
-      g_size: String(generalData.g_size ?? ""),
-      pressure_min: String(generalData.pressure_min ?? ""),
-      pressure_max: String(generalData.pressure_max ?? ""),
-      unit: generalData.unit ?? "bar",
-      correction_c0: String(generalData.correction_c0 ?? ""),
-      correction_c1: String(generalData.correction_c1 ?? ""),
-      correction_c2: String(generalData.correction_c2 ?? ""),
-      correction_c3: String(generalData.correction_c3 ?? ""),
-
-      // Populate bridge data from 'list' object
+      manufacturer: data.manufacturer ?? "",
+      serial_number: data.serial_number ?? "",
+      model: data.model ?? "",
+      tag_name: data.tag_name ?? "",
+      build_year: data.build_year ?? "2025",
+      version: data.version ?? "v1.0",
+      pressure_min: String(data.pressure_min ?? ""),
+      pressure_max: String(data.pressure_max ?? ""),
+      unit: data.unit ?? "bar",
+      scaling_factor: String(data.scaling_factor ?? "1.0"),
+      offset: String(data.offset ?? "0.0"),
+      correction_c0: String(data.correction_c0 ?? "0.0"),
+      correction_c1: String(data.correction_c1 ?? "1.0"),
+      correction_c2: String(data.correction_c2 ?? "0.0"),
+      correction_c3: String(data.correction_c3 ?? "0.0"),
       slave_id: String(interfaceSpecificData.slave_address ?? ""),
       register_count: String(interfaceSpecificData.register_count ?? ""),
       register_address: String(interfaceSpecificData.register_address ?? ""),
       data_type: interfaceSpecificData.data_type ?? "",
-      pollingAddress: String(interfaceSpecificData.pollingAddress ?? ""),
-      commandSet: interfaceSpecificData.commandSet ?? "",
-      variableType: interfaceSpecificData.variableType ?? "",
     });
   }, [initialData, bridgeData]);
 
@@ -195,46 +88,55 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   };
 
   const validateAndSave = () => {
+    const safeParseFloat = (val: string) =>
+      val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
+    const safeParseInt = (val: string) =>
+      val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
+
+    // Construct the final config, ensuring all required fields are present
     const finalConfig: DeviceConfig = {
-      // General & Parameters data
+      device_id: initialData?.id || `pressure_dev_${Date.now()}`,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,
       tag_name: formState.tag_name,
-      g_size: formState.g_size,
-      pressure_min: parseFloat(formState.pressure_min),
-      pressure_max: parseFloat(formState.pressure_max),
-      unit: formState.unit,
-      correction_c0: parseFloat(formState.correction_c0),
-      correction_c1: parseFloat(formState.correction_c1),
-      correction_c2: parseFloat(formState.correction_c2),
-      correction_c3: parseFloat(formState.correction_c3),
-
-      // Bridge data
-      slave_address: parseInt(formState.slave_id, 10),
-      register_address: parseInt(formState.register_address, 10),
-      register_count: parseInt(formState.register_count, 10),
+      build_year: formState.build_year,
+      version: formState.version,
+      pressure_min: safeParseFloat(formState.pressure_min),
+      pressure_max: safeParseFloat(formState.pressure_max),
+      scaling_factor: safeParseFloat(formState.scaling_factor),
+      offset: safeParseFloat(formState.offset),
+      unit: formState.unit as any,
+      correction_c0: safeParseFloat(formState.correction_c0),
+      correction_c1: safeParseFloat(formState.correction_c1),
+      correction_c2: safeParseFloat(formState.correction_c2),
+      correction_c3: safeParseFloat(formState.correction_c3),
+      slave_address: safeParseInt(formState.slave_id),
+      register_address: safeParseInt(formState.register_address),
+      register_count: safeParseInt(formState.register_count),
       data_type: formState.data_type,
     };
     onSave(finalConfig);
   };
 
   const pressureUnitOptions = [
-    { value: "bar", label: "bar" },
-    { value: "psi", label: "psi" },
-    { value: "kPa", label: "kPa" },
-    { value: "mbar", label: "mbar" },
+    // Bar', 'Pascal', 'Pa', or 'PSI'
+    { value: "Bar", label: "Bar" },
+    { value: "Pascal", label: "Pascal" },
+    { value: "Pa", label: "Pa" },
+    { value: "PSI", label: "PSI" },
   ];
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="flex justify-start items-center gap-6 text-blue-400">
-        <div>Status: {initialData?.data.status}</div>
-        <div>Timestamp: {initialData?.data.timestamp}</div>
-        <div>Value: {initialData?.data.value}</div>
+      <div className="flex justify-start items-center gap-6 text-slate-400">
+        <div>Status: {initialData?.data?.status ?? "N/A"}</div>
+        <div>Timestamp: {initialData?.data?.timestamp ?? "N/A"}</div>
+        <div>Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>
+
       <BridgeComponent
-        interfaceName={interfaceName}
+        interface_type={interface_type}
         formState={formState}
         errors={{}}
         handleStateChange={handleStateChange}
@@ -312,12 +214,24 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                G-Size
+                Build Year
               </label>
               <Input
-                value={formState.g_size}
-                onChange={(e) => handleStateChange("g_size", e.target.value)}
-                placeholder="Set G-size"
+                value={formState.build_year}
+                onChange={(e) =>
+                  handleStateChange("build_year", e.target.value)
+                }
+                placeholder="e.g., 2025"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">
+                Version
+              </label>
+              <Input
+                value={formState.version}
+                onChange={(e) => handleStateChange("version", e.target.value)}
+                placeholder="e.g., v1.0"
               />
             </div>
           </div>
@@ -336,6 +250,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                     handleStateChange("pressure_min", e.target.value)
                   }
                   placeholder="Set Pmin"
+                  type="number"
                 />
               </div>
               <div className="space-y-1">
@@ -348,6 +263,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                     handleStateChange("pressure_max", e.target.value)
                   }
                   placeholder="Set Pmax"
+                  type="number"
                 />
               </div>
             </div>
@@ -355,12 +271,43 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
               <label className="block text-xs font-medium text-gray-600">
                 Pressure Unit
               </label>
-              <CustomCombobox
+              <select
                 value={formState.unit}
-                onChange={(value) => handleStateChange("unit", value)}
-                options={pressureUnitOptions}
-                placeholder="Select a unit"
-              />
+                onChange={(e) => handleStateChange("unit", e.target.value)}
+                className="w-full border rounded-md py-1.5 px-3 text-sm border-gray-300"
+              >
+                {pressureUnitOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-x-6">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-gray-600">
+                  Scaling Factor
+                </label>
+                <Input
+                  value={formState.scaling_factor}
+                  onChange={(e) =>
+                    handleStateChange("scaling_factor", e.target.value)
+                  }
+                  placeholder="e.g., 1.0"
+                  type="number"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-gray-600">
+                  Offset
+                </label>
+                <Input
+                  value={formState.offset}
+                  onChange={(e) => handleStateChange("offset", e.target.value)}
+                  placeholder="e.g., -0.1"
+                  type="number"
+                />
+              </div>
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
@@ -373,6 +320,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                     handleStateChange("correction_c0", e.target.value)
                   }
                   placeholder="C0"
+                  type="number"
                 />
                 <Input
                   value={formState.correction_c1}
@@ -380,6 +328,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                     handleStateChange("correction_c1", e.target.value)
                   }
                   placeholder="C1"
+                  type="number"
                 />
                 <Input
                   value={formState.correction_c2}
@@ -387,6 +336,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                     handleStateChange("correction_c2", e.target.value)
                   }
                   placeholder="C2"
+                  type="number"
                 />
                 <Input
                   value={formState.correction_c3}
@@ -394,6 +344,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                     handleStateChange("correction_c3", e.target.value)
                   }
                   placeholder="C3"
+                  type="number"
                 />
               </div>
             </div>

@@ -1,9 +1,13 @@
-// src/stores/Interface.tsx
 import { action, makeAutoObservable, runInAction } from "mobx";
 import { Device } from "./Device";
 import type { InterfaceConfig } from "../types/interfaceConfig";
 import type { DeviceConfig } from "../types/device";
-import { addInterfaceConfig, updateInterface } from "../utils/services";
+import {
+  addDevice as addDeviceService,
+  updateDevice as updateDeviceService,
+  addInterfaceConfig,
+  updateInterface,
+} from "../utils/services";
 
 export class Interface {
   public interface_id: string;
@@ -12,6 +16,7 @@ export class Interface {
   public devices: Device[] = [];
   public isConfigured: boolean = false;
   public stream_id: string;
+
   constructor(
     interfaceData: any,
     isInitiallyConfigured: boolean,
@@ -43,7 +48,6 @@ export class Interface {
 
   async addConfig(newConfig: Partial<this["config"]>) {
     try {
-      // Call the service function to add the new interface config
       await addInterfaceConfig(
         this.stream_id,
         this.name,
@@ -51,49 +55,84 @@ export class Interface {
         newConfig
       );
 
-      // On success, update the local state in a single transaction
       runInAction(() => {
         this.config = { ...this.config, ...newConfig };
-        this.isConfigured = true; // Mark it as configured
+        this.isConfigured = true;
       });
     } catch (error) {
       console.error(
         `Failed to ADD interface configuration for '${this.interface_id}':`,
         error
       );
-      throw error; // Re-throw the error to be caught by the UI component
+      throw error;
     }
   }
 
-  // An action to explicitly set the configured status
   setConfigured(status: boolean) {
     this.isConfigured = status;
   }
 
-  addDevice(name: string, config: DeviceConfig) {
-    const newDeviceData = {
-      ...config,
-      device_id: `device_${Date.now()}`,
-      device_type: name,
-    };
-    const newDevice = new Device(newDeviceData);
-    this.devices.push(newDevice);
-  }
+  async addDevice(deviceType: string, deviceConfig: DeviceConfig) {
+    const deviceId = deviceConfig.device_id;
 
-  updateDevice(deviceId: string, newConfig: DeviceConfig) {
-    const deviceToUpdate = this.devices.find(
-      (device) => device.id === deviceId
-    );
-    if (deviceToUpdate) {
-      // Pass the partial flat config to the device's update method
-      deviceToUpdate.updateConfig(newConfig);
+    if (!deviceId) {
+      console.error("Cannot add a device without a device_id.");
+      throw new Error("Device ID is missing.");
+    }
+
+    try {
+      await addDeviceService(
+        this.stream_id,
+        this.interface_id,
+        deviceType,
+        deviceConfig,
+        deviceId
+      );
+
+      runInAction(() => {
+        const newDevice = new Device({
+          device_type: deviceType,
+          ...deviceConfig,
+        });
+        this.devices.push(newDevice);
+      });
+    } catch (error) {
+      console.error(
+        `Failed to ADD device '${deviceConfig.device_id}' to interface '${this.interface_id}':`,
+        error
+      );
+      throw error;
     }
   }
 
-  // updateConfig(newConfig: Partial<this["config"]>) {
-  //   this.config = { ...this.config, ...newConfig };
-  //   this.setConfigured(true);
-  // }
+  async updateDevice(deviceId: string, newConfig: DeviceConfig) {
+    const deviceToUpdate = this.devices.find(
+      (device) => device.id === deviceId
+    );
+
+    if (!deviceToUpdate) {
+      console.error(`Device with ID ${deviceId} not found for update.`);
+      return;
+    }
+
+    try {
+      // Call the new service function
+      await updateDeviceService(
+        this.stream_id,
+        this.interface_id,
+        deviceId,
+        newConfig
+      );
+
+      // On success, update the local state optimistically
+      runInAction(() => {
+        deviceToUpdate.updateConfig(newConfig); // Use the existing method on the Device instance
+      });
+    } catch (error) {
+      console.error(`Failed to UPDATE device '${deviceId}':`, error);
+      throw error;
+    }
+  }
 
   async updateConfig(newConfig: Partial<this["config"]>) {
     try {

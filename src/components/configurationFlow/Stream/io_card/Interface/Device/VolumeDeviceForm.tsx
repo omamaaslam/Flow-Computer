@@ -14,26 +14,25 @@ const Input = (props: InputProps) => (
 interface VolumeDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
-  interfaceName: string;
+  interface_type: string;
   initialData?: DeviceConfig | null;
 }
 
 const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
   onBack,
   onSave,
-  interfaceName,
+  interface_type,
   initialData,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
   const [formState, setFormState] = useState({
-    manufacturer: "",
-    serial_number: "",
-    model: "",
-    tag_name: "",
-    build_year: "",
-    g_size: "",
+    manufacturer: "Omega Traders",
+    serial_number: "SN-123456",
+    model: "2023",
+    tag_name: "RMA",
+    build_year: "2023",
     volume_min: "",
     volume_max: "",
   });
@@ -46,7 +45,6 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
         model: initialData.model || "",
         tag_name: initialData.tag_name || "",
         build_year: initialData.build_year || "",
-        g_size: String(initialData.g_size || ""),
         volume_min: String(initialData.volume_min || ""),
         volume_max: String(initialData.volume_max || ""),
       });
@@ -64,7 +62,6 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
       serial_number: formState.serial_number,
       tag_name: formState.tag_name,
       build_year: formState.build_year,
-      g_size: formState.g_size,
       volume_min: parseFloat(formState.volume_min),
       volume_max: parseFloat(formState.volume_max),
     };
@@ -79,7 +76,7 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
         <div>Value: {initialData?.data.value}</div>
       </div>
       <BridgeComponent
-        interfaceName={interfaceName}
+        interface_type={interface_type}
         formState={formState}
         errors={{}}
         handleStateChange={handleStateChange}
@@ -151,16 +148,6 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
                 value={formState.tag_name}
                 onChange={(e) => handleStateChange("tag_name", e.target.value)}
                 placeholder="Set tag name"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">
-                G-Size
-              </label>
-              <Input
-                value={formState.g_size}
-                onChange={(e) => handleStateChange("g_size", e.target.value)}
-                placeholder="Set G-size"
               />
             </div>
           </div>

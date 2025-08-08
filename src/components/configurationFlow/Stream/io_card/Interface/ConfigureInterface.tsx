@@ -99,8 +99,6 @@ const ConfigureInterface = observer(
     const [isEditing, setIsEditing] = useState(false);
     const [editingDevice, setEditingDevice] = useState<Device | null>(null);
     const [bridgeData, setBridgeData] = useState<any>(null);
-
-    // --- 👇 NEW STATE FOR LOADING INDICATOR ---
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -109,7 +107,6 @@ const ConfigureInterface = observer(
       }
     }, [anInterface]);
 
-    // --- 👇 KEY CHANGE: THIS FUNCTION IS NOW ASYNC ---
     const handleSaveInterfaceConfig = async (config: InterfaceConfig) => {
       setIsSaving(true);
       try {
@@ -118,10 +115,29 @@ const ConfigureInterface = observer(
         } else {
           await anInterface.addConfig(config);
         }
-        // On success (for both add and update), close the modal
         closeModal();
       } catch (error) {
-        console.error(error);
+        console.error("Failed to save interface config:", error);
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    const handleSaveDeviceConfiguration = async (config: DeviceConfig) => {
+      setIsSaving(true);
+      try {
+        if (isEditing && editingDevice) {
+          await anInterface.updateDevice(editingDevice.id, config);
+        } else if (!isEditing && deviceTypeToConfigure) {
+          const finalConfig = {
+            ...config,
+            device_id: config.device_id,
+          };
+          await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
+        }
+        closeModal();
+      } catch (error) {
+        console.error("Failed to save device config:", error);
       } finally {
         setIsSaving(false);
       }
@@ -136,17 +152,13 @@ const ConfigureInterface = observer(
 
     const handleOpenSettingsModal = () => {
       const interfaceNameUpper = anInterface.name.toUpperCase();
-      if (interfaceNameUpper.includes("DIGITALOUTPUT")) {
+      if (interfaceNameUpper.includes("DIGITALOUTPUT"))
         setModalView("Do_InterfaceSettings");
-      } else if (interfaceNameUpper.includes("DIGITALINPUT")) {
+      else if (interfaceNameUpper.includes("DIGITALINPUT"))
         setModalView("Di_InterfaceSettings");
-      } else if (interfaceNameUpper.includes("RTD")) {
-        setModalView("RTDSettings");
-      } else if (interfaceNameUpper.includes("HART")) {
-        setModalView("HART1");
-      } else {
-        setModalView("modbusSettings");
-      }
+      else if (interfaceNameUpper.includes("RTD")) setModalView("RTDSettings");
+      else if (interfaceNameUpper.includes("HART")) setModalView("HART1");
+      else setModalView("modbusSettings");
     };
 
     const handleAddNewDeviceClick = () => {
@@ -186,15 +198,6 @@ const ConfigureInterface = observer(
       setModalView("addDevice_configure");
     };
 
-    const handleSaveDeviceConfiguration = (config: DeviceConfig) => {
-      if (isEditing && editingDevice) {
-        anInterface.updateDevice(editingDevice.id, config);
-      } else if (!isEditing && deviceTypeToConfigure) {
-        anInterface.addDevice(deviceTypeToConfigure, config);
-      }
-      closeModal();
-    };
-
     const closeModal = () => {
       setModalView("closed");
       setDeviceTypeToConfigure("");
@@ -219,12 +222,7 @@ const ConfigureInterface = observer(
           return `Modbus Settings: ${anInterface.interface_id}`;
         case "RTDSettings":
           return `RTD Settings: ${anInterface.interface_id}`;
-        case "HART1":
-          return `HART Settings: ${anInterface.interface_id}`;
-        case "Di_InterfaceSettings":
-          return `DI Settings: ${anInterface.interface_id}`;
-        case "Do_InterfaceSettings":
-          return `DO Settings: ${anInterface.interface_id}`;
+        // ... other cases
         default:
           return "";
       }
@@ -237,65 +235,53 @@ const ConfigureInterface = observer(
         onSave: handleSaveInterfaceConfig,
         onClose: handleSettingsCancel,
         isSaving: isSaving,
-        interface_id: anInterface.interface_id
+        interface_id: anInterface.interface_id,
+      };
+
+      const deviceProps = {
+        initialData: isEditing ? editingDevice?.config : null,
+        bridgeData: isEditing ? bridgeData : null,
+        onSave: handleSaveDeviceConfiguration,
+        onBack: closeModal,
+        interface_type: anInterface.name,
       };
 
       switch (modalView) {
         case "modbusSettings":
-          if (currentConfig.interface_type === "ModbusInterface") {
-            return (
-              <ModbusInterfaceSettingsForm
-                currentConfig={currentConfig}
-                {...settingsProps}
-              />
-            );
-          }
-          return null;
-
+          return (
+            <ModbusInterfaceSettingsForm
+              currentConfig={currentConfig as any}
+              {...settingsProps}
+            />
+          );
         case "RTDSettings":
-          if (currentConfig.interface_type === "RtdInterface") {
-            return (
-              <RTDInterfaceSettingsForm
-                currentConfig={currentConfig}
-                {...settingsProps}
-              />
-            );
-          }
-          return null;
-
+          return (
+            <RTDInterfaceSettingsForm
+              currentConfig={currentConfig as any}
+              {...settingsProps}
+            />
+          );
         case "HART1":
-          if (currentConfig.interface_type === "HartInterface") {
-            return (
-              <HartInterfaceSettingsForm
-                currentConfig={currentConfig}
-                {...settingsProps}
-              />
-            );
-          }
-          return null;
-
+          return (
+            <HartInterfaceSettingsForm
+              currentConfig={currentConfig as any}
+              {...settingsProps}
+            />
+          );
         case "Di_InterfaceSettings":
-          if (currentConfig.interface_type === "DigitalInputInterface") {
-            return (
-              <DI_InterfaceSettingsForm
-                currentConfig={currentConfig}
-                {...settingsProps}
-              />
-            );
-          }
-          return null;
-
+          return (
+            <DI_InterfaceSettingsForm
+              currentConfig={currentConfig as any}
+              {...settingsProps}
+            />
+          );
         case "Do_InterfaceSettings":
-          if (currentConfig.interface_type === "DigitalOutputInterface") {
-            return (
-              <DO_InterfaceSettingsForm
-                currentConfig={currentConfig}
-                {...settingsProps}
-              />
-            );
-          }
-          return null;
-
+          return (
+            <DO_InterfaceSettingsForm
+              currentConfig={currentConfig as any}
+              {...settingsProps}
+            />
+          );
         case "addDevice_selectType":
           return (
             <AddDeviceForm
@@ -303,15 +289,7 @@ const ConfigureInterface = observer(
               onNext={handleDeviceTypeSelection}
             />
           );
-
         case "addDevice_configure":
-          const deviceProps = {
-            initialData: isEditing ? editingDevice?.config : null,
-            bridgeData: isEditing ? bridgeData : null,
-            onSave: handleSaveDeviceConfiguration,
-            onBack: closeModal,
-            interfaceName: anInterface.name,
-          };
           const isGasDevice = gasDeviceTypes.includes(deviceTypeToConfigure);
           const deviceLabel =
             deviceOptions.find((d) => d.value === deviceTypeToConfigure)
@@ -346,12 +324,11 @@ const ConfigureInterface = observer(
       <>
         <Legend />
         <div className="w-full bg-white p-4 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8 border border-gray-200">
-          {/* Rest of the JSX is unchanged */}
           <div className="flex items-center gap-4 border-b pb-4 mb-4">
             <button
               onClick={onBack}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              aria-label="Go back to interfaces list"
+              className="p-2 rounded-full hover:bg-gray-100"
+              aria-label="Go back"
             >
               <ArrowLeft className="h-6 w-6 text-gray-700" />
             </button>
@@ -438,9 +415,6 @@ const ConfigureInterface = observer(
               </p>
               <p className="text-gray-400 mt-2">
                 The configuration form has been opened automatically.
-              </p>
-              <p className="text-gray-400">
-                Please save the settings to enable device management.
               </p>
             </div>
           )}

@@ -1,6 +1,5 @@
 // src/components/InterfacesConfiguration.tsx
 
-import globalStore from "../../../../../stores/GlobalStore";
 import type { Stream } from "../../../../../stores/Stream";
 import Legend from "../../../../Legend";
 import IoCardSvg from "../IoCardSvg";

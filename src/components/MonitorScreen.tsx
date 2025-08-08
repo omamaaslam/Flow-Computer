@@ -21,13 +21,11 @@ const ThermometerIcon = ({ size = 100 }: { size?: number }) => (
   />
 );
 
-// --- Reusable Info Card (For Large Screen Layout) ---
-// *** MODIFIED to accept a className prop ***
 const InfoCard = ({
   title,
   children,
   scrollable = false,
-  className = "", // Added className prop with a default value
+  className = "",
 }: {
   title: string;
   children: React.ReactNode;

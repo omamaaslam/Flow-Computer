@@ -1,7 +1,6 @@
-// src/components/configurationFlow/PulseFlowRateDeviceForm.tsx
 import React, { useState, useEffect } from "react";
 import type { DeviceConfig } from "../../../../../../types/device";
-import BridgeComponent from "../BridgeComponent";
+// import BridgeComponent from "../BridgeComponent";
 
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
@@ -14,27 +13,31 @@ const Input = (props: InputProps) => (
 interface PulseFlowRateDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
-  interfaceName: string;
+  interface_type: string;
   initialData?: DeviceConfig | null;
 }
 
 const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
   onBack,
   onSave,
-  interfaceName,
+  interface_type,
   initialData,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
+  console.log(interface_type);
   const lfOptions = [2, 5];
   const hfOptions = [5, 20, 50, 100, 250, 500, 1000, 1500, 2000, 3000, 4000];
+
+  // --- 👇 FIX #1: Add all required fields to the state ---
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",
     model: "",
     tag_name: "",
-    g_size: "",
+    build_year: "2025",
+    version: "v1.0",
     frequency_type: "LF",
     frequency_hz: lfOptions[0].toString(),
     pulse_duration_ms: "",
@@ -46,26 +49,27 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
   });
 
   useEffect(() => {
-    if (initialData) {
-      setFormState({
-        manufacturer: initialData.manufacturer ?? "",
-        serial_number: initialData.serial_number ?? "",
-        model: initialData.model ?? "",
-        tag_name: initialData.tag_name ?? "",
-        g_size: String(initialData.g_size ?? ""),
-        frequency_type: initialData.frequency_type ?? "LF",
-        frequency_hz: String(
-          initialData.frequency_hz ??
-            (initialData.frequency_type === "HF" ? hfOptions[0] : lfOptions[0])
-        ),
-        pulse_duration_ms: String(initialData.pulse_duration_ms ?? ""),
-        pulse_pause_ms: String(initialData.pulse_pause_ms ?? ""),
-        scaling_factor: String(initialData.scaling_factor ?? ""),
-        offset: String(initialData.offset ?? ""),
-        flowrate_min: String(initialData.flowrate_min ?? ""),
-        flowrate_max: String(initialData.flowrate_max ?? ""),
-      });
-    }
+    // --- 👇 FIX #2: Populate all fields in useEffect ---
+    const data: Partial<DeviceConfig> = initialData || {};
+    setFormState({
+      manufacturer: data.manufacturer ?? "",
+      serial_number: data.serial_number ?? "",
+      model: data.model ?? "",
+      tag_name: data.tag_name ?? "",
+      build_year: data.build_year ?? "2025",
+      version: data.version ?? "v1.0",
+      frequency_type: data.frequency_type ?? "LF",
+      frequency_hz: String(
+        data.frequency_hz ??
+          (data.frequency_type === "HF" ? hfOptions[0] : lfOptions[0])
+      ),
+      pulse_duration_ms: String(data.pulse_duration_ms ?? ""),
+      pulse_pause_ms: String(data.pulse_pause_ms ?? ""),
+      scaling_factor: String(data.scaling_factor ?? ""),
+      offset: String(data.offset ?? ""),
+      flowrate_min: String(data.flowrate_min ?? ""),
+      flowrate_max: String(data.flowrate_max ?? ""),
+    });
   }, [initialData]);
 
   const handleStateChange = (field: string, value: string) => {
@@ -80,20 +84,28 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
   };
 
   const handleSubmit = () => {
+    const safeParseInt = (val: string) =>
+      val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
+    const safeParseFloat = (val: string) =>
+      val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
+
+    // --- 👇 FIX #3: Include all required fields in the final object ---
     const finalConfig: DeviceConfig = {
+      device_id: initialData?.id || `pulseflow_dev_${Date.now()}`,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,
       tag_name: formState.tag_name,
-      g_size: formState.g_size,
+      build_year: formState.build_year,
+      version: formState.version,
       frequency_type: formState.frequency_type,
-      frequency_hz: parseInt(formState.frequency_hz, 10),
-      pulse_duration_ms: parseInt(formState.pulse_duration_ms, 10),
-      pulse_pause_ms: parseInt(formState.pulse_pause_ms, 10),
-      scaling_factor: parseFloat(formState.scaling_factor),
-      offset: parseFloat(formState.offset),
-      flowrate_min: parseFloat(formState.flowrate_min),
-      flowrate_max: parseFloat(formState.flowrate_max),
+      frequency_hz: safeParseInt(formState.frequency_hz),
+      pulse_duration_ms: safeParseInt(formState.pulse_duration_ms),
+      pulse_pause_ms: safeParseInt(formState.pulse_pause_ms),
+      scaling_factor: safeParseFloat(formState.scaling_factor),
+      offset: safeParseFloat(formState.offset),
+      flowrate_min: safeParseFloat(formState.flowrate_min),
+      flowrate_max: safeParseFloat(formState.flowrate_max),
     };
     onSave(finalConfig);
   };
@@ -103,17 +115,14 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
 
   return (
     <div className="flex flex-col space-y-6">
-       <div className="flex justify-start items-center gap-6 text-blue-400">
-        <div>Status: {initialData?.data.status}</div>
-        <div>Timestamp: {initialData?.data.timestamp}</div>
-        <div>Value: {initialData?.data.value}</div>
+      <div className="flex justify-start items-center gap-6 text-slate-400">
+        <div>Status: {initialData?.data?.status ?? "N/A"}</div>
+        <div>Timestamp: {initialData?.data?.timestamp ?? "N/A"}</div>
+        <div>Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>
-      <BridgeComponent
-        interfaceName={interfaceName}
-        formState={formState}
-        errors={{}}
-        handleStateChange={handleStateChange}
-      />
+
+      {/* Assuming BridgeComponent is not needed for this device type */}
+
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab("general")}
@@ -185,12 +194,24 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                G-Size
+                Build Year
               </label>
               <Input
-                value={formState.g_size}
-                onChange={(e) => handleStateChange("g_size", e.target.value)}
-                placeholder="Set G-size"
+                value={formState.build_year}
+                onChange={(e) =>
+                  handleStateChange("build_year", e.target.value)
+                }
+                placeholder="e.g., 2025"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">
+                Version
+              </label>
+              <Input
+                value={formState.version}
+                onChange={(e) => handleStateChange("version", e.target.value)}
+                placeholder="e.g., v1.0"
               />
             </div>
           </div>
@@ -224,9 +245,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
                 className="w-full border border-gray-300 rounded-md py-1.5 px-3 text-sm bg-white shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
               >
                 {frequencyOptions.map((freq) => (
-                  <option key={freq} value={freq}>{`${freq}${
-                    formState.frequency_type === "HF" ? " Hz" : ""
-                  }`}</option>
+                  <option key={freq} value={freq}>{`${freq} Hz`}</option>
                 ))}
               </select>
             </div>
@@ -240,6 +259,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
                   handleStateChange("pulse_duration_ms", e.target.value)
                 }
                 placeholder="Set value"
+                type="number"
               />
             </div>
             <div className="space-y-1">
@@ -252,6 +272,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
                   handleStateChange("pulse_pause_ms", e.target.value)
                 }
                 placeholder="Set value"
+                type="number"
               />
             </div>
             <div className="space-y-1">
@@ -264,6 +285,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
                   handleStateChange("scaling_factor", e.target.value)
                 }
                 placeholder="Set value"
+                type="number"
               />
             </div>
             <div className="space-y-1">
@@ -274,6 +296,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
                 value={formState.offset}
                 onChange={(e) => handleStateChange("offset", e.target.value)}
                 placeholder="Set value"
+                type="number"
               />
             </div>
             <div className="space-y-1">
@@ -286,6 +309,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
                   handleStateChange("flowrate_min", e.target.value)
                 }
                 placeholder="Set Minimum Flowrate"
+                type="number"
               />
             </div>
             <div className="space-y-1">
@@ -298,6 +322,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
                   handleStateChange("flowrate_max", e.target.value)
                 }
                 placeholder="Set Maximum Flowrate"
+                type="number"
               />
             </div>
           </div>

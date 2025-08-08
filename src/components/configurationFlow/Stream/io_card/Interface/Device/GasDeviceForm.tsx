@@ -1,5 +1,3 @@
-// src/components/configurationFlow/Interfaces/Device/GasDeviceForm.tsx
-
 import React, { useState, useEffect } from "react";
 import type { DeviceConfig } from "../../../../../../types/device";
 import BridgeComponent from "../BridgeComponent";
@@ -16,13 +14,12 @@ const Input = (props: InputProps) => (
 interface GasDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
-  interfaceName: string;
+  interface_type: string;
   initialData?: DeviceConfig | null;
   deviceTypeLabel: string; // e.g., "Methanes"
 }
 
-// --- NEWLY ADDED ---
-// Default state for the form
+// Default state for the form, including ALL required fields
 const defaultFormState = {
   // BridgeComponent state
   slave_id: "1",
@@ -34,46 +31,47 @@ const defaultFormState = {
   serial_number: "SN-12345",
   model: "Model-X",
   tag_name: "Gas-Device-Tag",
-  g_size: "G100",
+  build_year: "2025",
+  version: "v1.0",
   // Gas-specific field
   gas_value: "0.0",
 };
-// --- END OF NEWLY ADDED ---
 
 const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
   onBack,
   onSave,
-  interfaceName,
+  interface_type,
   initialData,
   deviceTypeLabel,
 }) => {
-  // Initialize state with default values
   const [formState, setFormState] = useState(defaultFormState);
 
-  // useEffect now merges initialData (for editing) over the default state
   useEffect(() => {
-    if (initialData) {
+    // Explicitly type `data` to let TypeScript know its shape
+    const data: Partial<DeviceConfig> = initialData || {};
+    const interfaceSpecificData: any = initialData || {}; // For gas devices, bridge data is part of the main config
+
+    setFormState({
       // Start with default values and overwrite with any existing data
-      setFormState({
-        ...defaultFormState,
-        slave_id: initialData.slave_id ?? defaultFormState.slave_id,
-        register_address:
-          initialData.register_address ?? defaultFormState.register_address,
-        register_count:
-          initialData.register_count ?? defaultFormState.register_count,
-        data_type: initialData.data_type ?? defaultFormState.data_type,
-        manufacturer: initialData.manufacturer ?? defaultFormState.manufacturer,
-        serial_number:
-          initialData.serial_number ?? defaultFormState.serial_number,
-        model: initialData.model ?? defaultFormState.model,
-        tag_name: initialData.tag_name ?? defaultFormState.tag_name,
-        g_size: String(initialData.g_size ?? defaultFormState.g_size),
-        gas_value: String(initialData.gas_value ?? defaultFormState.gas_value),
-      });
-    } else {
-      // If creating a new device, ensure state is set to defaults
-      setFormState(defaultFormState);
-    }
+      slave_id: String(
+        interfaceSpecificData.slave_id ?? defaultFormState.slave_id
+      ),
+      register_address: String(
+        interfaceSpecificData.register_address ??
+          defaultFormState.register_address
+      ),
+      register_count: String(
+        interfaceSpecificData.register_count ?? defaultFormState.register_count
+      ),
+      data_type: interfaceSpecificData.data_type ?? defaultFormState.data_type,
+      manufacturer: data.manufacturer ?? defaultFormState.manufacturer,
+      serial_number: data.serial_number ?? defaultFormState.serial_number,
+      model: data.model ?? defaultFormState.model,
+      tag_name: data.tag_name ?? defaultFormState.tag_name,
+      build_year: data.build_year ?? defaultFormState.build_year,
+      version: data.version ?? defaultFormState.version,
+      gas_value: String(data.gas_value ?? defaultFormState.gas_value),
+    });
   }, [initialData]);
 
   const handleStateChange = (field: string, value: string) => {
@@ -81,39 +79,47 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
   };
 
   const handleSubmit = () => {
+    const safeParseFloat = (val: string) =>
+      val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
+    const safeParseInt = (val: string) =>
+      val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
+
+    // Construct the final config, ensuring all required fields are present
     const finalConfig: DeviceConfig = {
-      // Bridge fields
-      slave_id: formState.slave_id,
-      register_address: formState.register_address,
-      register_count: formState.register_count,
-      data_type: formState.data_type,
+      device_id: initialData?.id || `gas_dev_${Date.now()}`,
       // General fields
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,
       tag_name: formState.tag_name,
-      g_size: formState.g_size,
+      build_year: formState.build_year,
+      version: formState.version,
+      // Bridge fields (for gas devices, these are part of the main config)
+      slave_address: safeParseInt(formState.slave_id),
+      register_address: safeParseInt(formState.register_address),
+      register_count: safeParseInt(formState.register_count),
+      data_type: formState.data_type,
       // Gas-specific field
-      gas_value: parseFloat(formState.gas_value) || null,
+      gas_value: safeParseFloat(formState.gas_value),
     };
     onSave(finalConfig);
   };
 
   return (
     <div className="flex flex-col space-y-6">
-      <div className="flex justify-start items-center gap-6 text-blue-400">
-        <div>Status: {initialData?.data.status}</div>
-        <div>Timestamp: {initialData?.data.timestamp}</div>
-        <div>Value: {initialData?.data.value}</div>
+      <div className="flex justify-start items-center gap-6 text-slate-400">
+        <div>Status: {initialData?.data?.status ?? "N/A"}</div>
+        <div>Timestamp: {initialData?.data?.timestamp ?? "N/A"}</div>
+        <div>Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>
+
       <BridgeComponent
-        interfaceName={interfaceName}
+        interface_type={interface_type}
         formState={formState}
         errors={{}}
         handleStateChange={handleStateChange}
       />
 
-      {/* General fields directly displayed without tabs */}
       <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn border-t pt-6">
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600">
@@ -157,16 +163,25 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
         </div>
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600">
-            G-Size
+            Build Year
           </label>
           <Input
-            value={formState.g_size}
-            onChange={(e) => handleStateChange("g_size", e.target.value)}
-            placeholder="Set G-size"
+            value={formState.build_year}
+            onChange={(e) => handleStateChange("build_year", e.target.value)}
+            placeholder="e.g., 2025"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="block text-xs font-medium text-gray-600">
+            Version
+          </label>
+          <Input
+            value={formState.version}
+            onChange={(e) => handleStateChange("version", e.target.value)}
+            placeholder="e.g., v1.0"
           />
         </div>
 
-        {/* New non-editable gas value field */}
         <div className="space-y-1 col-span-2">
           <label className="block text-xs font-medium text-gray-600">
             {deviceTypeLabel}
@@ -185,7 +200,6 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
         </div>
       </div>
 
-      {/* Action buttons */}
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <button
           onClick={onBack}

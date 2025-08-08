@@ -88,8 +88,25 @@ export const getDeviceSnapshot = (
   return sendAndWait(msg, isMatch);
 };
 
+
+export const get_result = () => {
+  const msg = {
+    command: "ram_live_data"
+  };
+
+  const isMatch = (res: any) => {
+    if (res?.streams !== undefined) {
+      console.log("✅ Matched full data snapshot (ram_live_data).");
+      return true;
+    }
+    return false;
+  };
+
+  return sendAndWait(msg, isMatch);
+};
+
 // ==============================================================================================
-//                                 UPDATE API START HERE
+//                                 ADD / UPDATE API START HERE
 // ==============================================================================================
 
 export const updateInterface = (
@@ -98,7 +115,7 @@ export const updateInterface = (
   data: any
 ) => {
   const msg = {
-    scope: "update_interface",
+    command: "update_interface_configuration",
     stream_id: stream_id,
     interface_id: interface_id,
     data: {
@@ -108,7 +125,6 @@ export const updateInterface = (
   };
 
   const isMatch = (res: any) => {
-
     if (
       res?.success &&
       typeof res.success === "string" &&
@@ -125,7 +141,6 @@ export const updateInterface = (
       return true;
     }
 
-
     return false;
   };
 
@@ -139,8 +154,9 @@ export const addInterfaceConfig = (
   data: any
 ) => {
   const msg = {
-    scope: "add_interface",
+    command: "set_interface_configuration",
     stream_id: stream_id,
+    interface_id: interface_id,
     interface_type: interface_type,
     data: {
       interface_id,
@@ -152,18 +168,123 @@ export const addInterfaceConfig = (
   // isMatch function ko update kiya gaya hai taaki woh dono tarah ke responses ko handle kar sake.
   const isMatch = (res: any) => {
     // 1. Simple success message ko check karein.
-    if (res?.success && typeof res.success === 'string' && res.success.includes(`'${interface_id}'`)) {
+    if (
+      res?.success &&
+      typeof res.success === "string" &&
+      res.success.includes(`'${interface_id}'`)
+    ) {
       console.log(`✅ Matched ADD success message for ${interface_id}`);
       return true;
     }
 
     // 2. Fallback: Agar server poora snapshot bhejta hai to use bhi handle karein.
-    if (res?.streams?.[stream_id]?.io_card?.interfaces?.[interface_id] !== undefined) {
+    if (
+      res?.streams?.[stream_id]?.io_card?.interfaces?.[interface_id] !==
+      undefined
+    ) {
       console.log(`✅ Matched full snapshot for ADD on ${interface_id}`);
       return true;
     }
-    
+
     // Agar koi bhi condition match na ho to false return karein.
+    return false;
+  };
+
+  return sendAndWait(msg, isMatch);
+};
+
+export const addDevice = (
+  stream_id: string,
+  interface_id: string,
+  device_type: string,
+  device_data: any,
+  device_id: string
+) => {
+  const msg = {
+    command: "set_device_configuration",
+    stream_id: stream_id,
+    interface_id: interface_id,
+    device_type: device_type,
+    device_id: device_id,
+    data: {
+      ...device_data,
+      device_id,
+    },
+  };
+
+  const isMatch = (res: any) => {
+    if (
+      res?.success &&
+      typeof res.success === "string" &&
+      res.success.includes(`'${device_id}'`)
+    ) {
+      console.log(`✅ Matched ADD DEVICE success message for ${device_id}`);
+      return true;
+    }
+
+    const device =
+      res?.streams?.[stream_id]?.io_card?.interfaces?.[interface_id]?.devices?.[
+        device_id
+      ];
+
+    if (device !== undefined) {
+      console.log(
+        `✅ Matched full snapshot for ADD DEVICE on ${interface_id} with device ${device_id}`
+      );
+      return true;
+    }
+
+    return false;
+  };
+
+  return sendAndWait(msg, isMatch);
+};
+
+export const updateDevice = (
+  stream_id: string,
+  interface_id: string,
+  device_id: string,
+  device_data: any
+) => {
+  // Construct the payload for updating a device.
+  // Note: There is no 'device_type' in the update payload,
+  // as the device type cannot be changed.
+  const msg = {
+    command: "update_device_configuration",
+    stream_id: stream_id,
+    interface_id: interface_id,
+    device_id: device_id,
+    data: {
+      ...device_data,
+      device_id: device_id, // Ensure device_id is in the data object
+    },
+  };
+
+  const isMatch = (res: any) => {
+    // 1. Check for a simple success message, looking for the device ID.
+    if (
+      res?.success &&
+      typeof res.success === "string" &&
+      res.success.includes(`'${device_id}'`)
+    ) {
+      console.log(`✅ Matched UPDATE DEVICE success message for ${device_id}`);
+      return true;
+    }
+
+    // 2. Fallback: Check if the device exists in the full state snapshot.
+    // This is useful for confirmation.
+    const device =
+      res?.streams?.[stream_id]?.io_card?.interfaces?.[interface_id]?.devices?.[
+        device_id
+      ];
+
+    if (device !== undefined) {
+      console.log(
+        `✅ Matched full snapshot for UPDATE DEVICE on ${interface_id} with device ${device_id}`
+      );
+      return true;
+    }
+
     return false;
   };
 

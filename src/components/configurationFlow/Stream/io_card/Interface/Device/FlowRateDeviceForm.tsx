@@ -15,14 +15,14 @@ const Input = (props: InputProps) => (
 interface FlowRateDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
-  interfaceName: string;
+  interface_type: string;
   initialData?: DeviceConfig | null;
 }
 
 const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
   onBack,
   onSave,
-  interfaceName,
+  interface_type,
   initialData,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
@@ -31,9 +31,9 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",
+    build_year: "",
     model: "",
     tag_name: "",
-    g_size: "",
     flowrate_min: "",
     flowrate_max: "",
   });
@@ -45,7 +45,7 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
         serial_number: initialData.serial_number || "",
         model: initialData.model || "",
         tag_name: initialData.tag_name || "",
-        g_size: String(initialData.g_size || ""),
+        build_year: initialData.build_year || "",
         flowrate_min: String(initialData.flowrate_min || ""),
         flowrate_max: String(initialData.flowrate_max || ""),
       });
@@ -58,11 +58,12 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
 
   const handleSubmit = () => {
     const finalConfig: DeviceConfig = {
+      device_id: interface_type,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,
+      build_year: formState.build_year,
       tag_name: formState.tag_name,
-      g_size: formState.g_size,
       flowrate_min: parseFloat(formState.flowrate_min),
       flowrate_max: parseFloat(formState.flowrate_max),
     };
@@ -72,7 +73,7 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
   return (
     <div className="flex flex-col space-y-6">
       <BridgeComponent
-        interfaceName={interfaceName}
+        interface_type={interface_type}
         formState={formState}
         errors={{}}
         handleStateChange={handleStateChange}
@@ -144,16 +145,6 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
                 value={formState.tag_name}
                 onChange={(e) => handleStateChange("tag_name", e.target.value)}
                 placeholder="Set tag name"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-600">
-                G-Size
-              </label>
-              <Input
-                value={formState.g_size}
-                onChange={(e) => handleStateChange("g_size", e.target.value)}
-                placeholder="Set G-size"
               />
             </div>
           </div>

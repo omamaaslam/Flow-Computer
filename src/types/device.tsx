@@ -6,11 +6,9 @@ export interface DeviceConfig {
   model?: string;
   serial_number?: string;
   tag_name?: string;
-  build_year?: string;
+  build_year: string;
   version?: string;
-  g_size?: string;
 
-  // Temperature Parameters
   temp_min?: number;
   temp_max?: number;
   unit?: string;
