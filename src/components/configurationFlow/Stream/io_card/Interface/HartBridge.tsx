@@ -168,7 +168,7 @@ const HartBridge: React.FC<HartBridgeProps> = ({
             hasError={!!errors.variableType}
             value={formState.variableType}
             onChange={(val) => handleStateChange("variableType", val)}
-            placeholder="One of: PV, SV, TV, QV"
+            placeholder="One of: P, S"
             options={[
               { value: "P", label: "P" },
               { value: "S", label: "S" },

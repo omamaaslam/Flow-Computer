@@ -33,7 +33,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     "general"
   );
 
-  // Define the full shape of the form's state
+  // Define the full shape of the form's state, including HART fields
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",
@@ -55,11 +55,16 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     register_count: "",
     register_address: "",
     data_type: "",
+    // HART-specific fields
+    pollingAddress: "",
+    commandSet: "Universal",
+    variableType: "",
   });
 
   useEffect(() => {
-    // Explicitly type `data` to let TypeScript know its shape
-    const data: Partial<DeviceConfig> = initialData || {};
+    // Explicitly type `data` to let TypeScript know its shape and allow extra props
+    const data: Partial<DeviceConfig> & { [key: string]: any } =
+      initialData || {};
     const interfaceSpecificData: any = bridgeData || {};
 
     setFormState({
@@ -82,6 +87,10 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       register_count: String(interfaceSpecificData.register_count ?? ""),
       register_address: String(interfaceSpecificData.register_address ?? ""),
       data_type: interfaceSpecificData.data_type ?? "",
+      // Load HART fields from device config (initialData)
+      pollingAddress: String(data.pollingAddress ?? ""),
+      commandSet: data.commandSet ?? "Universal",
+      variableType: data.variableType ?? "",
     });
   }, [initialData, bridgeData]);
 
@@ -95,9 +104,19 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     const safeParseInt = (val: string) =>
       val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
 
-    // Construct the final config, ensuring all required fields are present
-    const finalConfig: DeviceConfig = {
-      device_id: `${interface_id}`,
+    // Determine device_id based on interface type
+    let deviceId = `${interface_id}`;
+    if (interface_type.toUpperCase().includes("HART")) {
+      const { pollingAddress, variableType } = formState;
+      // This check is crucial. Both values must be present.
+      if (pollingAddress && variableType) {
+        deviceId = `${interface_id}T${pollingAddress}${variableType}`;
+      }
+    }
+
+    // Construct the final config, using 'any' to allow for dynamic properties
+    const finalConfig: any = {
+      device_id: deviceId,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,
@@ -118,11 +137,18 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       register_count: safeParseInt(formState.register_count),
       data_type: formState.data_type,
     };
+
+    // If it's a HART interface, also include the HART-specific fields in the saved config
+    if (interface_type.toUpperCase().includes("HART")) {
+      finalConfig.pollingAddress = formState.pollingAddress;
+      finalConfig.commandSet = formState.commandSet;
+      finalConfig.variableType = formState.variableType;
+    }
+    console.log(finalConfig)
     onSave(finalConfig);
   };
 
   const pressureUnitOptions = [
-    // Bar', 'Pascal', 'Pa', or 'PSI'
     { value: "Bar", label: "Bar" },
     { value: "Pascal", label: "Pascal" },
     { value: "Pa", label: "Pa" },
@@ -170,6 +196,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       <div>
         {activeTab === "general" && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
+            {/* General Fields... (unchanged) */}
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
                 Device Manufacturer
@@ -241,6 +268,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
 
         {activeTab === "parameters" && (
           <div className="flex flex-col space-y-4 animate-fadeIn">
+            {/* Parameters Fields... (typo fixed here) */}
             <div className="grid grid-cols-2 gap-x-6">
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
