@@ -107,7 +107,6 @@ const StreamConfiguration = observer(() => {
 
   const handleSave = () => {
     if (!currentStream) return;
-    // Yeh line aapki requirement ke hisaab se console par object print karegi.
     console.log("Saving new config to server:", toJS(currentStream.calculator));
     setActiveModal(null);
   };

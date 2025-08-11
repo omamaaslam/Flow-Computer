@@ -34,8 +34,9 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
     build_year: "",
     model: "",
     tag_name: "",
-    flowrate_min: "",
-    flowrate_max: "",
+    min_flow_rate: "",
+    max_flow_rate: "",
+    version: "v1.2",
   });
 
   useEffect(() => {
@@ -46,8 +47,9 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
         model: initialData.model || "",
         tag_name: initialData.tag_name || "",
         build_year: initialData.build_year || "",
-        flowrate_min: String(initialData.flowrate_min || ""),
-        flowrate_max: String(initialData.flowrate_max || ""),
+        min_flow_rate: String(initialData.min_flow_rate || ""),
+        max_flow_rate: String(initialData.max_flow_rate || ""),
+        version: String(initialData.version || ""),
       });
     }
   }, [initialData]);
@@ -63,9 +65,10 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
       model: formState.model,
       serial_number: formState.serial_number,
       build_year: formState.build_year,
+      version: formState.version,
       tag_name: formState.tag_name,
-      flowrate_min: parseFloat(formState.flowrate_min),
-      flowrate_max: parseFloat(formState.flowrate_max),
+      min_flow_rate: parseFloat(formState.min_flow_rate),
+      max_flow_rate: parseFloat(formState.max_flow_rate),
     };
     onSave(finalConfig);
   };
@@ -156,9 +159,9 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
                 Minimum Flowrate
               </label>
               <Input
-                value={formState.flowrate_min}
+                value={formState.min_flow_rate}
                 onChange={(e) =>
-                  handleStateChange("flowrate_min", e.target.value)
+                  handleStateChange("min_flow_rate", e.target.value)
                 }
                 placeholder="Set Minimum Flowrate"
               />
@@ -168,9 +171,9 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
                 Maximum Flowrate
               </label>
               <Input
-                value={formState.flowrate_max}
+                value={formState.max_flow_rate}
                 onChange={(e) =>
-                  handleStateChange("flowrate_max", e.target.value)
+                  handleStateChange("max_flow_rate", e.target.value)
                 }
                 placeholder="Set Maximum Flowrate"
               />

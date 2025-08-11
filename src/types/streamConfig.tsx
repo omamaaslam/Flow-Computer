@@ -4,11 +4,8 @@ export interface IOCardConfig {
   interfaces: Record<string, InterfaceConfig>;
 }
 
-// --- Calculator ke andar istemal hone wale Types ---
 export type TemperatureUnit = "Celsius" | "Fahrenheit" | "Kelvin";
-export type PressureUnit = "Bar" | "Psi" | "Kpa" | "Atm"; // JSON ke 'Bar', 'Celsius' se match karna zaroori hai
-
-// --- Calculator ki har section ke liye alag Interface ---
+export type PressureUnit = "Bar" | "Psi" | "Kpa" | "Atm";
 
 export type VolumeOperatingMode =
   | "encoderOnly"
@@ -22,11 +19,11 @@ export type VolumeOperatingMode =
 
 export interface TemperatureCalculatorConfig {
   unit: TemperatureUnit;
-  base_temperature: number;
-  substitute_temperature: number;
-  min_operating_temperature: number;
-  max_operating_temperature: number;
-  temp_linked_device_id: string; // JSON se property ka naam 'temp_linked_device_id' hai
+  base_temperature: number | null;
+  substitute_temperature: number | null;
+  min_operating_temperature: number | null;
+  max_operating_temperature: number | null;
+  temp_linked_device_id: string;
 }
 
 export interface PressureCalculatorConfig {
@@ -50,8 +47,6 @@ export interface FlowRateCalculatorConfig {
   creep_time_seconds: number;
 }
 
-// JSON me yeh null hain, isliye abhi 'any' type use kar rahe hain.
-// Jab inka structure milega, to 'any' ko sahi interface se replace kar sakte hain.
 export interface VolumeConfiguration {
   operating_mode: VolumeOperatingMode | null;
   gas_meter_1: string;
@@ -64,7 +59,7 @@ export interface VolumeConfiguration {
 }
 export interface ConversionRow {
   name: string;
-  liveValue: string | number; // Live value string ya number ho sakta hai
+  liveValue: string | number;
   unit: string;
   linkedDevice: string;
   keyboardInput: number;
@@ -85,7 +80,6 @@ export interface CalculatorConfig {
   calculation_profile: any | null;
 }
 
-// --- Top-Level Stream Object ---
 export interface StreamData {
   stream_id: string;
   stream_name: string;
@@ -93,15 +87,13 @@ export interface StreamData {
   io_card: IOCardConfig;
 }
 
-// --- Default Values banane wala Function ---
-// Yeh function hamesha ek valid CalculatorConfig object dega
 export const createDefaultStreamConfig = (): CalculatorConfig => ({
   temperature_config: {
     unit: "Celsius",
-    base_temperature: 15.0,
-    substitute_temperature: 20.0,
-    min_operating_temperature: -10.0,
-    max_operating_temperature: 50.0,
+    base_temperature: null,
+    substitute_temperature: null,
+    min_operating_temperature: null,
+    max_operating_temperature: null,
     temp_linked_device_id: "",
   },
   pressure_config: {

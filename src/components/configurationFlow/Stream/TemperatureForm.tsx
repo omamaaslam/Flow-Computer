@@ -7,18 +7,13 @@ import type { TemperatureCalculatorConfig } from "../../../types/streamConfig";
 
 // Interface for the component's props
 interface TemperatureFormProps {
-  // 'config' is a direct reference to the LIVE, observable object in the MobX store.
-  // This is the key to reactivity.
   config: TemperatureCalculatorConfig;
   onCommit: () => void;
   onClose: () => void;
 }
 
-// Wrap the component in 'observer' to make it reactive
 const TemperatureForm: React.FC<TemperatureFormProps> = observer(
   ({ config, onCommit, onClose }) => {
-    // --- THE SMART INPUT HANDLER ---
-    // This function correctly handles different input types (text, numbers, selects)
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
