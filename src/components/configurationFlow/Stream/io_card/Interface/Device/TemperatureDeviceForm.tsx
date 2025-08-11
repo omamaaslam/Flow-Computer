@@ -21,6 +21,7 @@ interface TemperatureDeviceFormProps {
   interface_type: string; // Renamed from interfaceName for consistency
   initialData?: DeviceConfig | null;
   interface_id: string;
+  bridgeData?: any | null;
 }
 
 const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
@@ -29,6 +30,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   interface_type,
   initialData,
   interface_id,
+  bridgeData,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
@@ -49,14 +51,22 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     correction_c0: "0.0",
     correction_c1: "1.0",
     correction_c2: "0.0",
-    correction_c3: "0.0",
+    correction_c3: "0.0", // Bridge-related state fields
+    slave_id: "",
+    register_count: "",
+    register_address: "",
+    data_type: "",
+    // HART-specific fields
+    pollingAddress: "",
+    commandSet: "Universal",
+    variableType: "",
   });
 
   useEffect(() => {
     // --- 👇 THE FIX IS HERE ---
     // We tell TypeScript that `initialData || {}` should be treated as a Partial DeviceConfig.
     const data: Partial<DeviceConfig> = initialData || {};
-
+    const interfaceSpecificData: any = bridgeData || {};
     setFormState({
       manufacturer: data.manufacturer ?? "",
       serial_number: data.serial_number ?? "",
@@ -73,8 +83,16 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
       correction_c1: String(data.correction_c1 ?? "1.0"),
       correction_c2: String(data.correction_c2 ?? "0.0"),
       correction_c3: String(data.correction_c3 ?? "0.0"),
+      slave_id: String(interfaceSpecificData.slave_address ?? ""),
+      register_count: String(interfaceSpecificData.register_count ?? ""),
+      register_address: String(interfaceSpecificData.register_address ?? ""),
+      data_type: interfaceSpecificData.data_type ?? "",
+      // Load HART fields from device config (initialData)
+      pollingAddress: String(data.pollingAddress ?? ""),
+      commandSet: data.commandSet ?? "Universal",
+      variableType: data.variableType ?? "",
     });
-  }, [initialData]);
+  }, [initialData, bridgeData]);
 
   const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
@@ -83,7 +101,18 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   const validateAndSave = () => {
     const safeParseFloat = (val: string) =>
       val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
+    const safeParseInt = (val: string) =>
+      val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
 
+    // Determine device_id based on interface type
+    let deviceId = `${interface_id}`;
+    if (interface_type.toUpperCase().includes("HART")) {
+      const { pollingAddress, variableType } = formState;
+      // This check is crucial. Both values must be present.
+      if (pollingAddress && variableType) {
+        deviceId = `${interface_id}T${pollingAddress}${variableType}`;
+      }
+    }
     const finalConfig: DeviceConfig = {
       // Use existing ID if editing, otherwise generate a new one
       device_id: interface_id,
@@ -102,7 +131,17 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
       correction_c1: safeParseFloat(formState.correction_c1),
       correction_c2: safeParseFloat(formState.correction_c2),
       correction_c3: safeParseFloat(formState.correction_c3),
+      slave_address: safeParseInt(formState.slave_id),
+      register_address: safeParseInt(formState.register_address),
+      register_count: safeParseInt(formState.register_count),
+      data_type: formState.data_type,
     };
+    // If it's a HART interface, also include the HART-specific fields in the saved config
+    if (interface_type.toUpperCase().includes("HART")) {
+      finalConfig.pollingAddress = formState.pollingAddress;
+      finalConfig.commandSet = formState.commandSet;
+      finalConfig.variableType = formState.variableType;
+    }
     onSave(finalConfig);
   };
 
