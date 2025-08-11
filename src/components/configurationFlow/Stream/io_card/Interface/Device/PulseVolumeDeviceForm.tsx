@@ -15,6 +15,7 @@ interface PulseVolumeDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
+  interface_id: string;
   initialData?: DeviceConfig | null;
 }
 
@@ -23,6 +24,7 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
   onSave,
   interface_type,
   initialData,
+  interface_id
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
@@ -85,7 +87,7 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
 
     // --- FIX #3: Ensure final config matches DeviceConfig type exactly ---
     const finalConfig: DeviceConfig = {
-      device_id: initialData?.id || `pulsevol_dev_${Date.now()}`,
+      device_id: interface_id,
       manufacturer: formState.manufacturer,
       model: formState.model,
       build_year: formState.build_year,

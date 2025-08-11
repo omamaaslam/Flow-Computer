@@ -79,7 +79,13 @@ export class Interface {
       console.error("Cannot add a device without a device_id.");
       throw new Error("Device ID is missing.");
     }
-
+    console.log("ya bhej raha hu", {
+      stream_id: this.stream_id,
+      interface_id: this.interface_id,
+      deviceType: deviceType,
+      deviceConfig: deviceConfig,
+      deviceId: deviceId,
+    });
     try {
       await addDeviceService(
         this.stream_id,

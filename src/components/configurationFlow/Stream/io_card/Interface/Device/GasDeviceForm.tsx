@@ -16,7 +16,8 @@ interface GasDeviceFormProps {
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
   initialData?: DeviceConfig | null;
-  deviceTypeLabel: string; // e.g., "Methanes"
+  deviceTypeLabel: string;
+  interface_id: string;
 }
 
 // Default state for the form, including ALL required fields
@@ -43,6 +44,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
   interface_type,
   initialData,
   deviceTypeLabel,
+  interface_id
 }) => {
   const [formState, setFormState] = useState(defaultFormState);
 
@@ -86,7 +88,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
 
     // Construct the final config, ensuring all required fields are present
     const finalConfig: DeviceConfig = {
-      device_id: initialData?.id || `gas_dev_${Date.now()}`,
+      device_id: `${interface_id}D`,
       // General fields
       manufacturer: formState.manufacturer,
       model: formState.model,

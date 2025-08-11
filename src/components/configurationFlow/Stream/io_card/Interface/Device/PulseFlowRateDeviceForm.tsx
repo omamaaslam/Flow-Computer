@@ -15,6 +15,7 @@ interface PulseFlowRateDeviceFormProps {
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
   initialData?: DeviceConfig | null;
+  interface_id: string;
 }
 
 const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
@@ -22,6 +23,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
   onSave,
   interface_type,
   initialData,
+  interface_id
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
@@ -91,7 +93,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
 
     // --- 👇 FIX #3: Include all required fields in the final object ---
     const finalConfig: DeviceConfig = {
-      device_id: initialData?.id || `pulseflow_dev_${Date.now()}`,
+      device_id: interface_id,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,

@@ -243,7 +243,7 @@ const ConfigureInterface = observer(
         onSave: handleSaveDeviceConfiguration,
         onBack: closeModal,
         interface_type: anInterface.name,
-        interface_id: anInterface.interface_id
+        interface_id: anInterface.interface_id,
       };
 
       switch (modalView) {

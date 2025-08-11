@@ -290,3 +290,10 @@ export const updateDevice = (
 
   return sendAndWait(msg, isMatch);
 };
+
+
+// export const set_temperature_config = (stream_id:string) => { 
+//   const msg = {
+//     command: "set_temperature_config",
+//   };
+// }
