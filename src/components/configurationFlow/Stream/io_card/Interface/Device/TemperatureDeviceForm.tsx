@@ -20,7 +20,7 @@ interface TemperatureDeviceFormProps {
   onSave: (config: DeviceConfig) => void;
   interface_type: string; // Renamed from interfaceName for consistency
   initialData?: DeviceConfig | null;
-  interface_id: string
+  interface_id: string;
 }
 
 const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
@@ -28,12 +28,12 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   onSave,
   interface_type,
   initialData,
-  interface_id
+  interface_id,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
-console.log(interface_type);
+  console.log(interface_type);
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",
@@ -115,7 +115,13 @@ console.log(interface_type);
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex justify-start items-center gap-6 text-slate-400">
-        <div>Timestamp: {initialData?.data?.timestamp ?? "N/A"}</div>
+        <div>
+          Timestamp:{" "}
+          {new Date(initialData?.data.timestamp * 1000).toLocaleTimeString([], {
+            hour12: false,
+          })}
+        </div>
+
         <div>Status: {initialData?.data?.status ?? "N/A"}</div>
         <div>Live Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>

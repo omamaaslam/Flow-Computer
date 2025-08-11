@@ -129,10 +129,12 @@ const ConfigureInterface = observer(
         if (isEditing && editingDevice) {
           await anInterface.updateDevice(editingDevice.id, config);
         } else if (!isEditing && deviceTypeToConfigure) {
+          const d = anInterface.devices.length + 1;
           const finalConfig = {
             ...config,
-            device_id: config.device_id,
+            device_id: `${config.device_id}D${d}`,
           };
+          console.log("I am adding a new device", finalConfig)
           await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
         }
         closeModal();

@@ -35,8 +35,9 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
     model: "2023",
     tag_name: "RMA",
     build_year: "2023",
-    volume_min: "",
-    volume_max: "",
+    min_volume: "",
+    max_volume: "",
+    version: "v1.0",
   });
 
   useEffect(() => {
@@ -47,8 +48,9 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
         model: initialData.model || "",
         tag_name: initialData.tag_name || "",
         build_year: initialData.build_year || "",
-        volume_min: String(initialData.volume_min || ""),
-        volume_max: String(initialData.volume_max || ""),
+        min_volume: String(initialData.min_volume),
+        max_volume: String(initialData.max_volume || ""),
+        version: initialData.version || "v1.3",
       });
     }
   }, [initialData]);
@@ -65,8 +67,9 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
       serial_number: formState.serial_number,
       tag_name: formState.tag_name,
       build_year: formState.build_year,
-      volume_min: parseFloat(formState.volume_min),
-      volume_max: parseFloat(formState.volume_max),
+      min_volume: parseFloat(formState.min_volume),
+      max_volume: parseFloat(formState.max_volume),
+      version: formState.version,
     };
     onSave(finalConfig);
   };
@@ -75,7 +78,13 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
     <div className="flex flex-col space-y-6">
       <div className="flex justify-start items-center gap-6 text-blue-400">
         <div>Status: {initialData?.data.status}</div>
-        <div>Timestamp: {initialData?.data.timestamp}</div>
+        <div>
+          Timestamp:{" "}
+          {new Date(initialData?.data.timestamp * 1000).toLocaleTimeString([], {
+            hour12: false,
+          })}
+        </div>
+
         <div>Value: {initialData?.data.value}</div>
       </div>
       <BridgeComponent
@@ -153,6 +162,16 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
                 placeholder="Set tag name"
               />
             </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-gray-600">
+                Version
+              </label>
+              <Input
+                value={formState.version}
+                onChange={(e) => handleStateChange("version", e.target.value)}
+                placeholder="v1.2"
+              />
+            </div>
           </div>
         )}
         {activeTab === "parameters" && (
@@ -162,9 +181,9 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
                 Min Volume
               </label>
               <Input
-                value={formState.volume_min}
+                value={formState.min_volume}
                 onChange={(e) =>
-                  handleStateChange("volume_min", e.target.value)
+                  handleStateChange("min_volume", e.target.value)
                 }
                 placeholder="Set Min Volume"
               />
@@ -174,9 +193,9 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
                 Max Volume
               </label>
               <Input
-                value={formState.volume_max}
+                value={formState.max_volume}
                 onChange={(e) =>
-                  handleStateChange("volume_max", e.target.value)
+                  handleStateChange("max_volume", e.target.value)
                 }
                 placeholder="Set Max Volume"
               />

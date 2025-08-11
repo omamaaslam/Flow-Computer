@@ -14,7 +14,7 @@ interface InterfacesConfigurationProps {
 }
 
 const UNCONFIGURED_STATUSES: InterfaceStatuses = {
-  MOD_M: "unconfigured",
+  MODM1: "unconfigured",
   DI2: "unconfigured",
   DI4_left: "unconfigured",
   AI1: "unconfigured",
@@ -62,8 +62,8 @@ const InterfacesConfiguration = observer(
           </h2>
           <div className="w-full max-w-2xl flex justify-center">
             <IoCardSvg
-              mod1StatusColor={getColorForStatus(statuses.MOD_M)}
-              onMod1Click={() => onConfigure("MOD_M")}
+              mod1StatusColor={getColorForStatus(statuses.MODM1)}
+              onMod1Click={() => onConfigure("MODM1")}
               di1StatusColor={getColorForStatus(statuses.DI1)}
               onDi1Click={() => onConfigure("DI1")}
               hi1StatusColor={getColorForStatus(statuses.HI1)}

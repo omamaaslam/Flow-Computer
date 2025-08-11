@@ -102,7 +102,7 @@ const IoCardSvg = (props: IoCardSvgProps) => {
       {/* Step 2: Update the props and text inside the SVG */}
       <g onClick={props.onMod1Click} className="cursor-pointer group">
         <rect x="5" y="37.0715" width="158.387" height="39.1182" rx="5.39562" fill={props.mod1StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.19" y="60.5" textAnchor="middle" dy=".3em" fill={getTextColor(props.mod1StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">MOD1</text>
+        <text x="84.19" y="60.5" textAnchor="middle" dy=".3em" fill={getTextColor(props.mod1StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">MODM1</text>
       </g>
       <g onClick={props.onDi2Click} className="cursor-pointer group">
         <rect x="5" y="101.819" width="158.387" height="39.1182" rx="5.39562" fill={props.di2StatusColor} className="transition-all group-hover:brightness-110" />

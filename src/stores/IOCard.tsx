@@ -5,7 +5,7 @@ import { Interface } from "./Interface";
 
 // This map now acts as the single source of truth for ALL possible interfaces
 const ALL_INTERFACES_META: { [id: string]: { type: string } } = {
-  MOD_M: { type: "ModbusInterface" },
+  MODM1: { type: "ModbusInterface" },
   DI1: { type: "DigitalInputInterface" },
   DI2: { type: "DigitalInputInterface" },
   DI3: { type: "DigitalInputInterface" },

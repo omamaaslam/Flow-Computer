@@ -88,7 +88,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
 
     // Construct the final config, ensuring all required fields are present
     const finalConfig: DeviceConfig = {
-      device_id: `${interface_id}D`,
+      device_id: interface_id,
       // General fields
       manufacturer: formState.manufacturer,
       model: formState.model,

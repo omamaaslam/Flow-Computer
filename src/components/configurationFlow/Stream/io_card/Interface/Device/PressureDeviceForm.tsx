@@ -144,7 +144,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       finalConfig.commandSet = formState.commandSet;
       finalConfig.variableType = formState.variableType;
     }
-    console.log(finalConfig)
+    console.log(finalConfig);
     onSave(finalConfig);
   };
 
@@ -159,7 +159,13 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     <div className="flex flex-col space-y-6">
       <div className="flex justify-start items-center gap-6 text-slate-400">
         <div>Status: {initialData?.data?.status ?? "N/A"}</div>
-        <div>Timestamp: {initialData?.data?.timestamp ?? "N/A"}</div>
+        <div>
+          Timestamp:{" "}
+          {new Date(initialData?.data.timestamp * 1000).toLocaleTimeString([], {
+            hour12: false,
+          })}
+        </div>
+
         <div>Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>
 
