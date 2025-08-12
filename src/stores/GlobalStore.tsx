@@ -103,6 +103,10 @@ class GlobalStore {
       (device) => device.config.device_type === "PressureDevice"
     );
   }
+
+  get get_all_di_devices() {
+    return;
+  }
 }
 
 const globalStore = new GlobalStore();

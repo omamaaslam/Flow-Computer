@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
 import type {
   VolumeConfiguration,
@@ -43,6 +43,12 @@ interface VolumeFormProps {
 
 const VolumeForm: React.FC<VolumeFormProps> = observer(
   ({ config, onSave, onClose, isSaving }) => {
+    // --- NAYA STATE LOGIC ---
+    // Track karta hai ke user ne "Next" par click kiya hai ya nahi
+    const [isModeSelected, setIsModeSelected] = useState(false);
+    // Track karta hai ke Operating Mode dropdown dikhana hai ya text
+    const [isModeLocked, setIsModeLocked] = useState(false);
+
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
@@ -63,31 +69,70 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
       (config as any)[name] = updatedValue;
     };
 
+    // "Next" button click hone par form ka state update karta hai
+    const handleNext = () => {
+      setIsModeSelected(true); // Form ke baaqi hissay ko dikhayein
+      setIsModeLocked(true); // Mode ko lock karke text dikhayein
+    };
+
+    // "Change" button click hone par mode ko unlock karta hai
+    const handleUnlockMode = () => {
+      setIsModeLocked(false); // Mode ko unlock karein taake user change kar sake
+    };
+
+    // Logic to decide if two meter dropdowns should be shown
     const showTwoMeters =
       config.operating_mode === "twoPulse1-1" ||
       config.operating_mode === "twoPulseX-Y";
 
+    // Helper to get the display label for the selected mode value
+    const selectedModeLabel =
+      operatingModes.find((mode) => mode.value === config.operating_mode)
+        ?.label || "";
+
     return (
       <div className="flex flex-col gap-3">
+        {/* === SECTION 1: OPERATING MODE === */}
         <div className="border border-gray-200 rounded-md shadow-sm p-3 space-y-3">
           <div className="space-y-1">
             <label className="block font-medium text-xs text-gray-700">
               Operating Mode
             </label>
-            <select
-              name="operating_mode"
-              value={config.operating_mode}
-              onChange={handleInputChange}
-              className={`w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 text-gray-800`}
-            >
-              {operatingModes.map((mode) => (
-                <option key={mode.value} value={mode.value}>
-                  {mode.label}
+
+            {/* Naya UI logic: Dropdown ya Text+Change button dikhayein */}
+            {isModeLocked ? (
+              <div className="flex items-center justify-between p-2 bg-gray-100 rounded-sm">
+                <span className="text-sm font-semibold text-gray-800">
+                  {selectedModeLabel}
+                </span>
+                <button
+                  onClick={handleUnlockMode}
+                  className="text-xs font-semibold text-yellow-600 hover:underline"
+                >
+                  Change
+                </button>
+              </div>
+            ) : (
+              <select
+                name="operating_mode"
+                value={config.operating_mode ?? ""}
+                onChange={handleInputChange}
+                className="w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 text-gray-800"
+              >
+                <option value="" disabled>
+                  Select an Operating Mode...
                 </option>
-              ))}
-            </select>
+                {operatingModes.map((mode) => (
+                  <option key={mode.value} value={mode.value}>
+                    {mode.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
-          {config.operating_mode && (
+
+          {/* Baaqi ke form fields sirf tab dikhenge jab pehli baar mode select ho chuka ho */}
+          {isModeSelected && config.operating_mode && (
             <div className="animate-fade-in-up">
               {showTwoMeters ? (
                 <div className="grid grid-cols-2 gap-x-3">
@@ -139,7 +184,9 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
             </div>
           )}
         </div>
-        {config.operating_mode && (
+
+        {/* === SECTION 2: VOLUME DETAILS === */}
+        {isModeSelected && config.operating_mode && (
           <div className="border border-gray-200 rounded-md shadow-sm p-3 space-y-2.5 animate-fade-in-up">
             <h3 className="text-sm font-semibold text-gray-800">Volume</h3>
             <div className="grid grid-cols-2 gap-x-3 gap-y-3 text-xs">
@@ -193,6 +240,8 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
             </div>
           </div>
         )}
+
+        {/* === SECTION 3: BUTTONS === */}
         <div className="flex justify-end gap-2 pt-1">
           <button
             onClick={onClose}
@@ -201,13 +250,24 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
           >
             Cancel
           </button>
-          <button
-            onClick={onSave}
-            disabled={isSaving}
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-wait"
-          >
-            {isSaving ? "Saving..." : "Save"}
-          </button>
+
+          {!isModeSelected ? (
+            <button
+              onClick={handleNext}
+              disabled={!config.operating_mode}
+              className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 disabled:text-gray-600 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          ) : (
+            <button
+              onClick={onSave}
+              disabled={isSaving || !config.operating_mode}
+              className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-wait"
+            >
+              {isSaving ? "Saving..." : "Save"}
+            </button>
+          )}
         </div>
       </div>
     );
