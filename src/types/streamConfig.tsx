@@ -15,6 +15,7 @@ export type VolumeOperatingMode =
   | "encoderWithOnePulseInput"
   | "onePulseInputWithEncoder"
   | "encoderWithTwoPulseInputs"
+  | "modbus"
   | "twoPulseInputsWithEncoder";
 
 export interface TemperatureCalculatorConfig {
@@ -28,7 +29,7 @@ export interface TemperatureCalculatorConfig {
 
 export interface PressureCalculatorConfig {
   unit: PressureUnit;
-  base_pressure: number;
+  base_pressure: number | null;
   substitute_pressure: number;
   min_operating_pressure: number;
   max_operating_pressure: number;
@@ -48,7 +49,7 @@ export interface FlowRateCalculatorConfig {
 }
 
 export interface VolumeConfiguration {
-  operating_mode: VolumeOperatingMode | any;
+  operating_mode: VolumeOperatingMode | "";
   gas_meter_1: string;
   gas_meter_2: string;
   flow_rate: number | null;
@@ -72,12 +73,18 @@ export interface CompressibilityKFactorConfig {
   gas_components: GasComponent[];
 }
 
+export interface pipeline_profile_config {
+  name: string;
+  device_id: string;
+}
+
 export interface CalculatorConfig {
   temperature_config: TemperatureCalculatorConfig;
   pressure_config: PressureCalculatorConfig;
   flow_rate_config: FlowRateCalculatorConfig;
   volume_configuration: VolumeConfiguration;
   compressibility_kfactor_config: CompressibilityKFactorConfig;
+  pipeline_profile_configuration: pipeline_profile_config;
   calculation_profile: any | null;
 }
 
@@ -99,7 +106,7 @@ export const createDefaultStreamConfig = (): CalculatorConfig => ({
   },
   pressure_config: {
     unit: "Bar",
-    base_pressure: 1.01325,
+    base_pressure: null,
     substitute_pressure: 1.0,
     min_operating_pressure: 0.8,
     max_operating_pressure: 10.0,
@@ -117,7 +124,7 @@ export const createDefaultStreamConfig = (): CalculatorConfig => ({
     creep_time_seconds: 60,
   },
   volume_configuration: {
-    operating_mode: null,
+    operating_mode: "",
     gas_meter_1: "",
     gas_meter_2: "",
     flow_rate: null,
@@ -200,6 +207,10 @@ export const createDefaultStreamConfig = (): CalculatorConfig => ({
         linked_device_id: "",
       },
     ],
+  },
+  pipeline_profile_configuration: {
+    name: "",
+    device_id: "",
   },
   calculation_profile: null,
 });

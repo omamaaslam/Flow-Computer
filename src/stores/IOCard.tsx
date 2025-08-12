@@ -78,7 +78,6 @@ export class IOCard {
   get interfaceStatuses() {
     const statuses: { [id: string]: "configured" | "unconfigured" } = {};
     this.interfaces.forEach((iface) => {
-      console.log(iface.interface_id)
       // console.log("Interface ID:", iface.interface_id, iface.isConfigured);
       statuses[iface.interface_id] = iface.isConfigured
         ? "configured"

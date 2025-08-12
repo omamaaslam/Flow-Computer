@@ -25,6 +25,7 @@ import {
   setVolumeConfig,
   setCompressibilityConfig,
 } from "../../../utils/services";
+import PipelineProfileForm from "./PipelineProfileForm";
 
 // UI-aware ModalType
 type ModalType =
@@ -195,6 +196,7 @@ const StreamConfiguration = observer(() => {
       title: "Configure Temperature",
       Component: () => (
         <TemperatureForm
+          store={globalStore}
           config={currentStream.calculator.temperature_config}
           onSave={handleSave}
           onClose={closeModal}
@@ -210,6 +212,7 @@ const StreamConfiguration = observer(() => {
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
+          store={globalStore}
         />
       ),
     },
@@ -227,8 +230,8 @@ const StreamConfiguration = observer(() => {
     pipelineProfile: {
       title: "Configure Pipeline Profile",
       Component: () => (
-        <FlowRateForm
-          config={currentStream.calculator.flow_rate_config}
+        <PipelineProfileForm
+          config={currentStream.calculator.pipeline_profile_configuration}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}

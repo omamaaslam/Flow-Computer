@@ -91,6 +91,18 @@ class GlobalStore {
       )
     );
   }
+
+  get temperatureDevices(): Device[] {
+    return this.allDevices.filter(
+      (device) => device.config.device_type === "TemperatureDevice"
+    );
+  }
+
+  get pressureDevices(): Device[] {
+    return this.allDevices.filter(
+      (device) => device.config.device_type === "PressureDevice"
+    );
+  }
 }
 
 const globalStore = new GlobalStore();

@@ -153,13 +153,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex justify-start items-center gap-6 text-slate-400">
-        <div>
-          Timestamp:{" "}
-          {new Date(initialData?.data.timestamp * 1000).toLocaleTimeString([], {
-            hour12: false,
-          })}
-        </div>
-
+        <div>Timestamp: {initialData?.data.timestamp}</div>
         <div>Status: {initialData?.data?.status ?? "N/A"}</div>
         <div>Live Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>

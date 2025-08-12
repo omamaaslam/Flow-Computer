@@ -6,6 +6,7 @@ import type {
 } from "../../../types/streamConfig";
 
 const operatingModes = [
+  { value: "modbus", label: "Modbus" },
   { value: "encoderOnly", label: "Encoder Only" },
   { value: "onePulse", label: "One pulse input" },
   { value: "twoPulse1-1", label: "Two pulse inputs (1:1)" },
@@ -23,7 +24,7 @@ const operatingModes = [
 ];
 
 export const defaultVolumeConfig: VolumeConfiguration = {
-  operating_mode: "encoderOnly",
+  operating_mode: "",
   gas_meter_1: "Meter A",
   gas_meter_2: "",
   flow_rate: null,
@@ -75,7 +76,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
             </label>
             <select
               name="operating_mode"
-              value={config.operating_mode || ""}
+              value={config.operating_mode}
               onChange={handleInputChange}
               className={`w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 text-gray-800`}
             >

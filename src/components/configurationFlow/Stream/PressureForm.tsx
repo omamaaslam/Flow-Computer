@@ -1,17 +1,19 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
-import { Gauge } from "lucide-react";
 import type { PressureCalculatorConfig } from "../../../types/streamConfig";
+import type globalStore from "../../../stores/GlobalStore";
 
 interface PressureFormProps {
   config: PressureCalculatorConfig;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;
+  store: typeof globalStore;
 }
 
 const PressureForm: React.FC<PressureFormProps> = observer(
-  ({ config, onSave, onClose, isSaving }) => {
+  ({ store, config, onSave, onClose, isSaving }) => {
+    const available_pressure_devices = store.pressureDevices;
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
@@ -29,15 +31,6 @@ const PressureForm: React.FC<PressureFormProps> = observer(
     return (
       <>
         <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm text-gray-800">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 p-2 border border-dashed border-yellow-400 bg-white rounded-md shadow-sm">
-              <label className="block font-medium text-xs">
-                Live Operating Pressure (P)
-              </label>
-              <Gauge className="text-yellow-500" size={16} />
-              <span className="font-semibold text-xs text-yellow-500">N/A</span>
-            </div>
-          </div>
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Substitute Pressure (P)
@@ -59,8 +52,15 @@ const PressureForm: React.FC<PressureFormProps> = observer(
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             >
-              <option value="">None</option>
-              <option value="HI1T1S">HI1T1S (HART)</option>
+              {available_pressure_devices.length === 0 && (
+                <option value="">None</option>
+              )}
+
+              {available_pressure_devices.map((device) => (
+                <option key={device.id} value={device.id}>
+                  {`${device.id}`}
+                </option>
+              ))}
             </select>
           </div>
           <div className="space-y-1">

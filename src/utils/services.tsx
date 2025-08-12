@@ -1,3 +1,4 @@
+import globalStore from "../stores/GlobalStore";
 import { sendMessage, addListener, removeListener } from "./api";
 
 const sendAndWait = (
@@ -311,7 +312,7 @@ export const setTemperatureConfig = (streamId: string, data: any) => {
 
 export const setPressureConfig = (streamId: string, data: any) => {
   const msg = {
-    command: "set_pressure_config",
+    scope: "set_pressure_config",
     stream_id: streamId,
     data: data,
   };
@@ -356,3 +357,4 @@ export const setCompressibilityConfig = (streamId: string, data: any) => {
   );
   return sendAndWait(msg, isMatch);
 };
+
