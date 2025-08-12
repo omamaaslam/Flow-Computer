@@ -104,8 +104,14 @@ class GlobalStore {
     );
   }
 
-  get get_all_di_devices() {
-    return;
+ get get_all_di_devices(): Device[] {
+    return this.streams.flatMap(stream =>
+      stream.ioCards.flatMap(card =>
+        card.interfaces
+          .filter(iface => iface.interface_id.startsWith('DI'))
+          .flatMap(iface => iface.devices)
+      )
+    );
   }
 }
 

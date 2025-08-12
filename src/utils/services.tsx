@@ -306,6 +306,7 @@ export const setTemperatureConfig = (streamId: string, data: any) => {
     stream_id: streamId,
     data: data,
   };
+  console.log(msg)
   const isMatch = createStreamConfigMatcher(streamId, "temperature_config");
   return sendAndWait(msg, isMatch);
 };
@@ -316,8 +317,9 @@ export const setPressureConfig = (streamId: string, data: any) => {
     stream_id: streamId,
     data: data,
   };
-  const isMatch = createStreamConfigMatcher(streamId, "pressure_config");
-  return sendAndWait(msg, isMatch);
+  console.log(msg)
+  // const isMatch = createStreamConfigMatcher(streamId, "pressure_config");
+  // return sendAndWait(msg, isMatch);
 };
 
 export const setFlowRateConfig = (streamId: string, data: any) => {
@@ -326,8 +328,9 @@ export const setFlowRateConfig = (streamId: string, data: any) => {
     stream_id: streamId,
     data: data,
   };
-  const isMatch = createStreamConfigMatcher(streamId, "flow_rate_config");
-  return sendAndWait(msg, isMatch);
+  console.log(msg)
+  // const isMatch = createStreamConfigMatcher(streamId, "flow_rate_config");
+  // return sendAndWait(msg, isMatch);
 };
 
 export const setVolumeConfig = (
@@ -341,8 +344,9 @@ export const setVolumeConfig = (
     volume_type: volumeType,
     data: data,
   };
-  const isMatch = createStreamConfigMatcher(streamId, "volume_configuration");
-  return sendAndWait(msg, isMatch);
+  console.log(msg)
+  // const isMatch = createStreamConfigMatcher(streamId, "volume_configuration");
+  // return sendAndWait(msg, isMatch);
 };
 
 export const setCompressibilityConfig = (streamId: string, data: any) => {

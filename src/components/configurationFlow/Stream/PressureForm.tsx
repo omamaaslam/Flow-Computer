@@ -14,18 +14,24 @@ interface PressureFormProps {
 const PressureForm: React.FC<PressureFormProps> = observer(
   ({ store, config, onSave, onClose, isSaving }) => {
     const available_pressure_devices = store.pressureDevices;
+    // Inside PressureForm.tsx
+
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
-      const { name, value, type } = e.target;
-      let finalValue: string | number = value;
+      const { name, value } = e.target;
 
-      if (type === "text" && name !== "pressure_linked_device_id") {
-        if (value.trim() !== "" && !isNaN(Number(value))) {
-          finalValue = Number(value);
+      if (name === "pressure_linked_device_id") {
+        config.pressure_linked_device_id = value === "none" ? "" : value;
+      } else if (name === "unit") {
+        (config as any)[name] = value;
+      } else {
+        if (value.trim() === "") {
+          (config as any)[name] = null;
+        } else if (!isNaN(Number(value))) {
+          (config as any)[name] = Number(value);
         }
       }
-      (config as any)[name] = finalValue;
     };
 
     return (
@@ -48,17 +54,18 @@ const PressureForm: React.FC<PressureFormProps> = observer(
             <label className="block font-medium text-xs">Device</label>
             <select
               name="pressure_linked_device_id"
-              value={config.pressure_linked_device_id ?? ""}
+              value={config.pressure_linked_device_id}
               onChange={handleInputChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             >
-              {available_pressure_devices.length === 0 && (
-                <option value="">None</option>
+              {available_pressure_devices.length == 0 && (
+                <>
+                  <option value="none">None</option>
+                </>
               )}
-
               {available_pressure_devices.map((device) => (
                 <option key={device.id} value={device.id}>
-                  {`${device.id}`}
+                  {`${device.id} (${device.config.tag_name || "No Tag"})`}
                 </option>
               ))}
             </select>

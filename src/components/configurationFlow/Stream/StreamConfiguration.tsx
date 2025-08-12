@@ -169,7 +169,6 @@ const StreamConfiguration = observer(() => {
       setActiveModal(null);
     } catch (error) {
       console.error("Failed to save configuration:", error);
-      alert(`Failed to save configuration: ${error}`);
     } finally {
       setIsSaving(false);
     }
@@ -185,6 +184,7 @@ const StreamConfiguration = observer(() => {
       title: "Configure Volume",
       Component: () => (
         <VolumeForm
+          store={globalStore}
           config={currentStream.calculator.volume_configuration!}
           onSave={handleSave}
           onClose={closeModal}

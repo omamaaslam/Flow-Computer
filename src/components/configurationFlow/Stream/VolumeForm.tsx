@@ -4,6 +4,7 @@ import type {
   VolumeConfiguration,
   VolumeOperatingMode,
 } from "../../../types/streamConfig";
+import type globalStore from "../../../stores/GlobalStore";
 
 const operatingModes = [
   { value: "modbus", label: "Modbus" },
@@ -33,21 +34,27 @@ export const defaultVolumeConfig: VolumeConfiguration = {
   min_operating_volume: null,
   bidirectional: false,
 };
-
 interface VolumeFormProps {
   config: VolumeConfiguration;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;
+  store: typeof globalStore;
 }
 
 const VolumeForm: React.FC<VolumeFormProps> = observer(
-  ({ config, onSave, onClose, isSaving }) => {
-    // --- NAYA STATE LOGIC ---
-    // Track karta hai ke user ne "Next" par click kiya hai ya nahi
-    const [isModeSelected, setIsModeSelected] = useState(false);
-    // Track karta hai ke Operating Mode dropdown dikhana hai ya text
-    const [isModeLocked, setIsModeLocked] = useState(false);
+  ({ store, config, onSave, onClose, isSaving }) => {
+    // --- MOBX-FRIENDLY STATE LOGIC ---
+    // Sirf user ke direct actions ko track karein
+    const [hasProceededOnce, setHasProceededOnce] = useState(false);
+    const [isEditingMode, setIsEditingMode] = useState(false);
+
+    // --- DERIVED VALUES ---
+    // UI state ko props aur user actions se derive karein, na ke useEffect se set karein.
+    const showDetails = hasProceededOnce || !!config.operating_mode;
+    const isModeLocked = showDetails && !isEditingMode;
+
+    const diDevices = store.get_all_di_devices;
 
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -65,27 +72,21 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
       } else if (name === "operating_mode") {
         updatedValue = value as VolumeOperatingMode;
       }
-
       (config as any)[name] = updatedValue;
     };
 
-    // "Next" button click hone par form ka state update karta hai
     const handleNext = () => {
-      setIsModeSelected(true); // Form ke baaqi hissay ko dikhayein
-      setIsModeLocked(true); // Mode ko lock karke text dikhayein
+      setHasProceededOnce(true);
     };
 
-    // "Change" button click hone par mode ko unlock karta hai
     const handleUnlockMode = () => {
-      setIsModeLocked(false); // Mode ko unlock karein taake user change kar sake
+      setIsEditingMode(true);
     };
 
-    // Logic to decide if two meter dropdowns should be shown
     const showTwoMeters =
       config.operating_mode === "twoPulse1-1" ||
       config.operating_mode === "twoPulseX-Y";
 
-    // Helper to get the display label for the selected mode value
     const selectedModeLabel =
       operatingModes.find((mode) => mode.value === config.operating_mode)
         ?.label || "";
@@ -98,8 +99,6 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
             <label className="block font-medium text-xs text-gray-700">
               Operating Mode
             </label>
-
-            {/* Naya UI logic: Dropdown ya Text+Change button dikhayein */}
             {isModeLocked ? (
               <div className="flex items-center justify-between p-2 bg-gray-100 rounded-sm">
                 <span className="text-sm font-semibold text-gray-800">
@@ -131,8 +130,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
             )}
           </div>
 
-          {/* Baaqi ke form fields sirf tab dikhenge jab pehli baar mode select ho chuka ho */}
-          {isModeSelected && config.operating_mode && (
+          {showDetails && config.operating_mode && (
             <div className="animate-fade-in-up">
               {showTwoMeters ? (
                 <div className="grid grid-cols-2 gap-x-3">
@@ -146,8 +144,17 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                       onChange={handleInputChange}
                       className="w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm"
                     >
-                      <option>Meter A</option>
-                      <option>Meter B</option>
+                      {diDevices.length > 0 ? (
+                        diDevices.map((device) => (
+                          <option key={device.id} value={device.id}>
+                            {`${device.id} (${
+                              device.config.tag_name || "No Tag"
+                            })`}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">None</option>
+                      )}
                     </select>
                   </div>
                   <div className="space-y-1">
@@ -160,8 +167,17 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                       onChange={handleInputChange}
                       className="w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm"
                     >
-                      <option>Meter A</option>
-                      <option>Meter B</option>
+                      {diDevices.length > 0 ? (
+                        diDevices.map((device) => (
+                          <option key={device.id} value={device.id}>
+                            {`${device.id} (${
+                              device.config.tag_name || "No Tag"
+                            })`}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="">None</option>
+                      )}
                     </select>
                   </div>
                 </div>
@@ -176,8 +192,17 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                     onChange={handleInputChange}
                     className="w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm"
                   >
-                    <option>Meter A</option>
-                    <option>Meter B</option>
+                    {diDevices.length > 0 ? (
+                      diDevices.map((device) => (
+                        <option key={device.id} value={device.id}>
+                          {`${device.id} (${
+                            device.config.tag_name || "No Tag"
+                          })`}
+                        </option>
+                      ))
+                    ) : (
+                      <option value="">None</option>
+                    )}
                   </select>
                 </div>
               )}
@@ -186,7 +211,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
         </div>
 
         {/* === SECTION 2: VOLUME DETAILS === */}
-        {isModeSelected && config.operating_mode && (
+        {showDetails && config.operating_mode && (
           <div className="border border-gray-200 rounded-md shadow-sm p-3 space-y-2.5 animate-fade-in-up">
             <h3 className="text-sm font-semibold text-gray-800">Volume</h3>
             <div className="grid grid-cols-2 gap-x-3 gap-y-3 text-xs">
@@ -251,7 +276,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
             Cancel
           </button>
 
-          {!isModeSelected ? (
+          {!showDetails ? (
             <button
               onClick={handleNext}
               disabled={!config.operating_mode}
