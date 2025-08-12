@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { DeviceConfig } from "../../../../../../types/device";
+import BridgeComponent from "../BridgeComponent";
 // BridgeComponent is likely not needed for a simple Pulse Volume device.
 // import BridgeComponent from "../BridgeComponent";
 
@@ -117,10 +118,15 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
           })}
         </div>
 
-        <div>Value: {initialData?.data?.value ?? "N/A"}</div>
+        <div>Value: {initialData?.data?.value}</div>
       </div>
 
-      {/* BridgeComponent removed as it's not applicable for this device type */}
+      <BridgeComponent
+        interface_type={interface_type}
+        formState={formState}
+        errors={{}}
+        handleStateChange={handleStateChange}
+      />
 
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button

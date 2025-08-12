@@ -17,6 +17,7 @@ interface FlowRateDeviceFormProps {
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
   initialData?: DeviceConfig | null;
+  interface_id: string
 }
 
 const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
@@ -24,6 +25,7 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
   onSave,
   interface_type,
   initialData,
+  interface_id
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
@@ -60,7 +62,7 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
 
   const handleSubmit = () => {
     const finalConfig: DeviceConfig = {
-      device_id: interface_type,
+      device_id: interface_id,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,

@@ -6,44 +6,54 @@ import {
   List,
   Wind,
   GitCompareArrows,
+  ArrowRight,
 } from "lucide-react";
 import MuiModalWrapper from "../MuiModalWrapper";
+import VolumeForm, { defaultVolumeConfig } from "./VolumeForm";
+import TemperatureForm from "./TemperatureForm";
+import PressureForm from "./PressureForm";
+import FlowRateForm from "./FlowRateForm";
+import ConversionForm from "./ConversionForm";
 import globalStore from "../../../stores/GlobalStore";
 import { useParams } from "react-router-dom";
 import { toJS } from "mobx";
-import ConversionForm from "./ConversionForm";
-import FlowRateForm from "./FlowRateForm";
-import PressureForm from "./PressureForm";
-import VolumeForm from "./VolumeForm";
-import TemperatureForm from "./TemperatureForm";
-import { defaultVolumeConfig } from "./VolumeForm";
 import { createDefaultStreamConfig } from "../../../types/streamConfig";
-import { setTemperatureConfig, setPressureConfig, setFlowRateConfig, setVolumeConfig, setCompressibilityConfig } from "../../../utils/services";
+import {
+  setTemperatureConfig,
+  setPressureConfig,
+  setFlowRateConfig,
+  setVolumeConfig,
+  setCompressibilityConfig,
+} from "../../../utils/services";
 
-
+// UI-aware ModalType
 type ModalType =
   | "volume"
   | "temperature"
   | "pressure"
   | "flowRate"
-  | "conversion";
+  | "conversion"
+  | "pipelineProfile";
 
+// State structure from the new logic
 interface ActiveModalState {
   type: ModalType;
   snapshot: any;
 }
 
 const StreamConfiguration = observer(() => {
+  // State from the new logic, including isSaving
   const [activeModal, setActiveModal] = useState<ActiveModalState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { streamId } = useParams<{ streamId: string }>();
 
+  // streamId and currentStream retrieval from the new logic
   if (!streamId) {
     return <div>Stream ID is missing.</div>;
   }
-
   const currentStream = globalStore.streams.find((s) => s.id === streamId);
 
+  // openModal logic that correctly handles "pipelineProfile" from the UI code
   const openModal = (modalType: ModalType) => {
     if (!currentStream) return;
 
@@ -55,6 +65,7 @@ const StreamConfiguration = observer(() => {
       case "pressure":
         snapshot = toJS(currentStream.calculator.pressure_config);
         break;
+      case "pipelineProfile": // Handling pipelineProfile as a case of flowRate
       case "flowRate":
         snapshot = toJS(currentStream.calculator.flow_rate_config);
         break;
@@ -82,6 +93,7 @@ const StreamConfiguration = observer(() => {
     setActiveModal({ type: modalType, snapshot });
   };
 
+  // closeModal with the isSaving check from the new logic
   const closeModal = () => {
     if (!currentStream || !activeModal || isSaving) return;
 
@@ -92,6 +104,7 @@ const StreamConfiguration = observer(() => {
       case "pressure":
         currentStream.revertPressureChanges(activeModal.snapshot);
         break;
+      case "pipelineProfile":
       case "flowRate":
         currentStream.revertFlowRateChanges(activeModal.snapshot);
         break;
@@ -105,12 +118,11 @@ const StreamConfiguration = observer(() => {
     setActiveModal(null);
   };
 
+  // The new, async handleSave function with full error and state handling
   const handleSave = async () => {
     if (!currentStream || !activeModal) return;
 
-    // By creating this constant, TypeScript knows it's not null for the rest of the function.
     const modalType = activeModal.type;
-
     setIsSaving(true);
     try {
       switch (modalType) {
@@ -126,6 +138,7 @@ const StreamConfiguration = observer(() => {
             toJS(currentStream.calculator.pressure_config)
           );
           break;
+        case "pipelineProfile": // Saving pipelineProfile as flowRate
         case "flowRate":
           await setFlowRateConfig(
             streamId,
@@ -165,7 +178,19 @@ const StreamConfiguration = observer(() => {
     return <div>Stream with ID {streamId} not found.</div>;
   }
 
+  // Updated modalConfig to pass new props (onSave, isSaving) to forms
   const modalConfig = {
+    volume: {
+      title: "Configure Volume",
+      Component: () => (
+        <VolumeForm
+          config={currentStream.calculator.volume_configuration!}
+          onSave={handleSave}
+          onClose={closeModal}
+          isSaving={isSaving}
+        />
+      ),
+    },
     temperature: {
       title: "Configure Temperature",
       Component: () => (
@@ -188,19 +213,19 @@ const StreamConfiguration = observer(() => {
         />
       ),
     },
-    volume: {
-      title: "Configure Volume",
+    flowRate: {
+      title: "Configure Flow Rate",
       Component: () => (
-        <VolumeForm
-          config={currentStream.calculator.volume_configuration!}
+        <FlowRateForm
+          config={currentStream.calculator.flow_rate_config}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
         />
       ),
     },
-    flowRate: {
-      title: "Configure Flow Rate",
+    pipelineProfile: {
+      title: "Configure Pipeline Profile",
       Component: () => (
         <FlowRateForm
           config={currentStream.calculator.flow_rate_config}
@@ -224,12 +249,13 @@ const StreamConfiguration = observer(() => {
     },
   };
 
+  // Complete cardData from the UI code
   const cardData = [
     {
       id: "volume" as ModalType,
       label: "Volume",
       Icon: List,
-      Illustration: "/streamSVG/TemperatureSencor.svg",
+      Illustration: "/streamSVG/EncoderDevice.svg",
     },
     {
       id: "flowRate" as ModalType,
@@ -255,27 +281,34 @@ const StreamConfiguration = observer(() => {
       Icon: GitCompareArrows,
       Illustration: "/streamSVG/Conversion.svg",
     },
+    {
+      id: "pipelineProfile" as ModalType,
+      label: "Pipline Profile",
+      Icon: MoveHorizontal,
+      Illustration: "/streamSVG/Pipline.svg",
+    },
   ];
 
+  // Safer component and title retrieval from the new logic
   let modalTitle = "";
-  let ActiveModalComponent: (() => JSX.Element) | null = null;
-
+  let ModalContent: (() => JSX.Element) | null = null;
   if (activeModal) {
     const details = modalConfig[activeModal.type];
     modalTitle = details.title;
-    ActiveModalComponent = details.Component;
+    ModalContent = details.Component;
   }
 
   return (
     <>
       <div className="bg-white rounded-2xl shadow-md border border-gray-200">
-        <div className="hidden md:block bg-white rounded-2xl p-6 border border-gray-200">
+        {/* --- Large Screen UI (Preserved) --- */}
+        <div className="hidden md:block bg-white rounded-2xl p-6  border border-gray-200">
           <div className="grid grid-cols-3 gap-6">
             {cardData.map(({ id, label, Icon, Illustration }) => (
               <button
                 key={id}
                 onClick={() => openModal(id)}
-                className="bg-[#FAFAFA] border border-[#DEDEDE] rounded-2xl shadow-sm p-6 flex flex-col justify-between h-[305px] text-left transition-all duration-200 ease-in-out hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                className="bg-[#FAFAFA] border-2 border-[#9BC53F] rounded-2xl shadow-sm p-6 flex flex-col justify-between h-[305px] text-left transition-all duration-200 ease-in-out hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-yellow-500"
               >
                 <div className="flex items-center gap-3">
                   <Icon
@@ -290,7 +323,7 @@ const StreamConfiguration = observer(() => {
                     <img
                       src={Illustration}
                       alt={`${label} illustration`}
-                      className="w-[120px] h-[157.7px]"
+                      className="w-[120px] h-[157.7px] object-contain"
                     />
                   </div>
                   <div className="flex flex-col items-end space-y-4">
@@ -308,13 +341,67 @@ const StreamConfiguration = observer(() => {
             ))}
           </div>
         </div>
+
+        {/* --- Small Screen UI (Preserved) --- */}
+        <div className="block lg:hidden p-6 py-4">
+          <div className="grid grid-cols-3 gap-4">
+            {cardData.map(({ id, label, Icon, Illustration }) => (
+              <button
+                key={id}
+                onClick={() => openModal(id)}
+                className="bg-[#FAFAFA] border-2 border-[#9BC53F] rounded-lg shadow p-2 flex flex-col text-left transition-all duration-200 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+              >
+                <div className="flex items-center gap-1">
+                  <Icon className="text-yellow-500" size={14} strokeWidth={3} />
+                  <h3 className="font-bold text-gray-800 text-xs whitespace-nowrap">
+                    {label}
+                  </h3>
+                </div>
+                <div className="w-full flex flex-row items-center justify-between">
+                  <div className="flex-1 flex items-center justify-center">
+                    <img
+                      src={Illustration}
+                      alt={`${label} illustration`}
+                      className="w-[84px] h-[82.6px] object-contain"
+                    />
+                  </div>
+                  <div className="flex flex-col items-end ">
+                    <div>
+                      <span className="text-[10px] text-gray-500">min:</span>
+                      <p className="text-base font-bold text-red-600">75%</p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-gray-500">max:</span>
+                      <p className="text-base font-bold text-green-600">75%</p>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* --- Start Button (Preserved) --- */}
+        <div className="pb-6 px-6 md:pt-8">
+          <div className="flex justify-center">
+            <button
+              onClick={() => openModal("conversion")}
+              className="w-full flex justify-center items-center py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
+            >
+              <ArrowRight size={20} />
+              <span>Start</span>
+            </button>
+          </div>
+        </div>
       </div>
+
+      {/* --- Modal Wrapper with updated props --- */}
       <MuiModalWrapper
         open={activeModal !== null}
         onClose={closeModal}
         title={modalTitle}
       >
-        {ActiveModalComponent && <ActiveModalComponent />}
+        {ModalContent && <ModalContent />}
       </MuiModalWrapper>
     </>
   );

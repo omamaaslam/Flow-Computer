@@ -114,7 +114,7 @@ export const updateInterface = (
   data: any
 ) => {
   const msg = {
-    command: "update_interface_configuration",
+    scope: "update_interface",
     stream_id: stream_id,
     interface_id: interface_id,
     data: {
@@ -153,7 +153,7 @@ export const addInterfaceConfig = (
   data: any
 ) => {
   const msg = {
-    command: "set_interface_configuration",
+    scope: "add_interface",
     stream_id: stream_id,
     interface_id: interface_id,
     interface_type: interface_type,
@@ -195,7 +195,7 @@ export const addDevice = (
   device_id: string
 ) => {
   const msg = {
-    command: "set_device_configuration",
+    scope: "add_device",
     stream_id: stream_id,
     interface_id: interface_id,
     device_type: device_type,
@@ -241,7 +241,7 @@ export const updateDevice = (
   device_data: any
 ) => {
   const msg = {
-    command: "update_device_configuration",
+    scope: "update_device",
     stream_id: stream_id,
     interface_id: interface_id,
     device_id: device_id,
@@ -301,7 +301,7 @@ const createStreamConfigMatcher = (streamId: string, configKey: string) => {
 
 export const setTemperatureConfig = (streamId: string, data: any) => {
   const msg = {
-    command: "set_temperature_config",
+    scope: "set_temperature_config",
     stream_id: streamId,
     data: data,
   };
