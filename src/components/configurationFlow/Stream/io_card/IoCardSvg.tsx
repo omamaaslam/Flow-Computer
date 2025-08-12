@@ -102,75 +102,75 @@ const IoCardSvg = (props: IoCardSvgProps) => {
       {/* Step 2: Update the props and text inside the SVG */}
       <g onClick={props.onMod1Click} className="cursor-pointer group">
         <rect x="5" y="37.0715" width="158.387" height="39.1182" rx="5.39562" fill={props.mod1StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.19" y="60.5" textAnchor="middle" dy=".3em" fill={getTextColor(props.mod1StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">MODM1</text>
+        <text x="84.19" y="60.5" textAnchor="middle" dy=".3em" fill={getTextColor(props.mod1StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">modbus</text>
       </g>
       <g onClick={props.onDi2Click} className="cursor-pointer group">
         <rect x="5" y="101.819" width="158.387" height="39.1182" rx="5.39562" fill={props.di2StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.19" y="125" textAnchor="middle" dy=".3em" fill={getTextColor(props.di2StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DI2</text>
+        <text x="84.19" y="125" textAnchor="middle" dy=".3em" fill={getTextColor(props.di2StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital input 1</text>
       </g>
       <g onClick={props.onDi4LeftClick} className="cursor-pointer group">
         <rect x="5" y="163.868" width="158.387" height="39.1182" rx="5.39562" fill={props.di4LeftStatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.19" y="186.43" textAnchor="middle" dy=".3em" fill={getTextColor(props.di4LeftStatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DI4</text>
+        <text x="84.19" y="186.43" textAnchor="middle" dy=".3em" fill={getTextColor(props.di4LeftStatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital input 4</text>
       </g>
       <g onClick={props.onAi1Click} className="cursor-pointer group">
         <rect x="5" y="224.569" width="158.387" height="39.1182" rx="5.39562" fill={props.ai1StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.19" y="247.13" textAnchor="middle" dy=".3em" fill={getTextColor(props.ai1StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">AI1</text>
+        <text x="84.19" y="247.13" textAnchor="middle" dy=".3em" fill={getTextColor(props.ai1StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">Analog input 1</text>
       </g>
       <g onClick={props.onDo2Click} className="cursor-pointer group">
         <rect x="5" y="286.619" width="158.387" height="39.1182" rx="5.39562" fill={props.do2StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.19" y="309.18" textAnchor="middle" dy=".3em" fill={getTextColor(props.do2StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DO2</text>
+        <text x="84.19" y="309.18" textAnchor="middle" dy=".3em" fill={getTextColor(props.do2StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital output 2</text>
       </g>
       <g onClick={props.onDi4_2Click} className="cursor-pointer group">
         <rect x="5" y="348.668" width="158.387" height="39.1182" rx="5.39562" fill={props.di4_2StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.19" y="371.23" textAnchor="middle" dy=".3em" fill={getTextColor(props.di4_2StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DI4</text>
+        <text x="84.19" y="371.23" textAnchor="middle" dy=".3em" fill={getTextColor(props.di4_2StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital output 4</text>
       </g>
       <g onClick={props.onAi2Click} className="cursor-pointer group">
         <rect x="5" y="408.709" width="158.459" height="39.6149" rx="5.39562" fill={props.ai2StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.23" y="431.52" textAnchor="middle" dy=".3em" fill={getTextColor(props.ai2StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">AI2</text>
+        <text x="84.23" y="431.52" textAnchor="middle" dy=".3em" fill={getTextColor(props.ai2StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">analog input 2</text>
       </g>
       <g onClick={props.onHart2Click} className="cursor-pointer group">
         <rect x="5" y="472.48" width="158.459" height="38.6486" rx="5.39562" fill={props.hart2StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.23" y="494.8" textAnchor="middle" dy=".3em" fill={getTextColor(props.hart2StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">HI2</text>
+        <text x="84.23" y="494.8" textAnchor="middle" dy=".3em" fill={getTextColor(props.hart2StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">hart 2</text>
       </g>
       <g onClick={props.onAo1Click} className="cursor-pointer group">
         <rect x="5" y="565.842" width="158.387" height="39.1182" rx="5.39562" fill={props.ao1StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.19" y="588.4" textAnchor="middle" dy=".3em" fill={getTextColor(props.ao1StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">AO1</text>
+        <text x="84.19" y="588.4" textAnchor="middle" dy=".3em" fill={getTextColor(props.ao1StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">analog output 1</text>
       </g>
       <g onClick={props.onDi1Click} className="cursor-pointer group">
         <rect width="158.387" height="39.1182" rx="5.39562" transform="matrix(-1 0 0 1 575.764 69.4453)" fill={props.di1StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="496.57" y="92.00" textAnchor="middle" dy=".3em" fill={getTextColor(props.di1StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DI1</text>
+        <text x="496.57" y="92.00" textAnchor="middle" dy=".3em" fill={getTextColor(props.di1StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital input 1</text>
       </g>
       <g onClick={props.onDi3Click} className="cursor-pointer group">
         <rect width="158.387" height="39.1182" rx="5.39562" transform="matrix(-1 0 0 1 575.764 131.495)" fill={props.di3StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="496.57" y="154.05" textAnchor="middle" dy=".3em" fill={getTextColor(props.di3StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DI3</text>
+        <text x="496.57" y="154.05" textAnchor="middle" dy=".3em" fill={getTextColor(props.di3StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital input 3</text>
       </g>
       <g onClick={props.onDi5Click} className="cursor-pointer group">
         <rect x="416.607" y="193.311" width="159.426" height="39.6149" rx="5.39562" fill={props.di5StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="496.32" y="216.12" textAnchor="middle" dy=".3em" fill={getTextColor(props.di5StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DI5</text>
+        <text x="496.32" y="216.12" textAnchor="middle" dy=".3em" fill={getTextColor(props.di5StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital input 5</text>
       </g>
       <g onClick={props.onDo1Click} className="cursor-pointer group">
         <rect width="158.387" height="39.1182" rx="5.39562" transform="matrix(-1 0 0 1 575.764 255.594)" fill={props.do1StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="496.57" y="278.15" textAnchor="middle" dy=".3em" fill={getTextColor(props.do1StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DO1</text>
+        <text x="496.57" y="278.15" textAnchor="middle" dy=".3em" fill={getTextColor(props.do1StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital output 1</text>
       </g>
       <g onClick={props.onDo3Click} className="cursor-pointer group">
         <rect width="158.387" height="39.1182" rx="5.39562" transform="matrix(-1 0 0 1 575.764 317.643)" fill={props.do3StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="496.57" y="340.2" textAnchor="middle" dy=".3em" fill={getTextColor(props.do3StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DO3</text>
+        <text x="496.57" y="340.2" textAnchor="middle" dy=".3em" fill={getTextColor(props.do3StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital output 3</text>
       </g>
       <g onClick={props.onDo5Click} className="cursor-pointer group">
         <rect width="158.387" height="39.1182" rx="5.39562" transform="matrix(-1 0 0 1 575.764 379.693)" fill={props.do5StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="496.57" y="402.25" textAnchor="middle" dy=".3em" fill={getTextColor(props.do5StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">DO5</text>
+        <text x="496.57" y="402.25" textAnchor="middle" dy=".3em" fill={getTextColor(props.do5StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital output 5</text>
       </g>
       <g onClick={props.onHi1Click} className="cursor-pointer group">
         <rect width="158.387" height="39.1182" rx="5.39562" transform="matrix(-1 0 0 1 575.764 441.742)" fill={props.hi1StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="496.57" y="464.3" textAnchor="middle" dy=".3em" fill={getTextColor(props.hi1StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">HI1</text>
+        <text x="496.57" y="464.3" textAnchor="middle" dy=".3em" fill={getTextColor(props.hi1StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">hart 1</text>
       </g>
       <g onClick={props.onTi1Click} className="cursor-pointer group">
         <rect width="158.387" height="74.1897" rx="5.39562" transform="matrix(-1 0 0 1 577 503.792)" fill={props.ti1StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="497.8" y="540.89" textAnchor="middle" dy=".3em" fill={getTextColor(props.ti1StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">TI1</text>
+        <text x="497.8" y="540.89" textAnchor="middle" dy=".3em" fill={getTextColor(props.ti1StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">rtd</text>
       </g>
       <g onClick={props.onAo2Click} className="cursor-pointer group">
         <rect width="158.387" height="39.1182" rx="5.39562" transform="matrix(-1 0 0 1 575.764 596.866)" fill={props.ao2StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="496.57" y="619.42" textAnchor="middle" dy=".3em" fill={getTextColor(props.ao2StatusColor)} className="text-[19px] font-semibold uppercase pointer-events-none">AO2</text>
+        <text x="496.57" y="619.42" textAnchor="middle" dy=".3em" fill={getTextColor(props.ao2StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">analog output 2</text>
       </g>
     </svg>
   );

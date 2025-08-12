@@ -1,6 +1,4 @@
-// D:/flow-computer/src/components/configurationFlow/Stream/StreamConfiguration.tsx
-
-import { useState } from "react";
+import { useState, type JSX } from "react";
 import { observer } from "mobx-react-lite";
 import {
   Thermometer,
@@ -18,8 +16,10 @@ import FlowRateForm from "./FlowRateForm";
 import PressureForm from "./PressureForm";
 import VolumeForm from "./VolumeForm";
 import TemperatureForm from "./TemperatureForm";
-import { defaultVolumeConfig } from "./VolumeForm"; // Import default config
+import { defaultVolumeConfig } from "./VolumeForm";
 import { createDefaultStreamConfig } from "../../../types/streamConfig";
+import { setTemperatureConfig, setPressureConfig, setFlowRateConfig, setVolumeConfig, setCompressibilityConfig } from "../../../utils/services";
+
 
 type ModalType =
   | "volume"
@@ -35,17 +35,19 @@ interface ActiveModalState {
 
 const StreamConfiguration = observer(() => {
   const [activeModal, setActiveModal] = useState<ActiveModalState | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const { streamId } = useParams<{ streamId: string }>();
 
-  const currentStream = globalStore.streams.find(
-    (s) => s.id.toString() === streamId
-  );
+  if (!streamId) {
+    return <div>Stream ID is missing.</div>;
+  }
+
+  const currentStream = globalStore.streams.find((s) => s.id === streamId);
 
   const openModal = (modalType: ModalType) => {
     if (!currentStream) return;
 
     let snapshot;
-    // Create a snapshot of the current state BEFORE opening the modal
     switch (modalType) {
       case "temperature":
         snapshot = toJS(currentStream.calculator.temperature_config);
@@ -57,8 +59,6 @@ const StreamConfiguration = observer(() => {
         snapshot = toJS(currentStream.calculator.flow_rate_config);
         break;
       case "volume":
-        // --- YEH SABSE ZAROORI CHANGE HAI ---
-        // Agar volume config null hai, to use form kholne se pehle default object de do.
         if (!currentStream.calculator.volume_configuration) {
           currentStream.calculator.volume_configuration = {
             ...defaultVolumeConfig,
@@ -68,7 +68,7 @@ const StreamConfiguration = observer(() => {
         break;
       case "conversion":
         if (!currentStream.calculator.compressibility_kfactor_config) {
-          currentStream.calculator.compressibility_kfactor_config = 
+          currentStream.calculator.compressibility_kfactor_config =
             createDefaultStreamConfig().compressibility_kfactor_config!;
         }
         snapshot = toJS(
@@ -83,8 +83,8 @@ const StreamConfiguration = observer(() => {
   };
 
   const closeModal = () => {
-    if (!currentStream || !activeModal) return;
-    // On cancel, revert the changes using the saved snapshot
+    if (!currentStream || !activeModal || isSaving) return;
+
     switch (activeModal.type) {
       case "temperature":
         currentStream.revertTemperatureChanges(activeModal.snapshot);
@@ -105,10 +105,60 @@ const StreamConfiguration = observer(() => {
     setActiveModal(null);
   };
 
-  const handleSave = () => {
-    if (!currentStream) return;
-    console.log("Saving new config to server:", toJS(currentStream.calculator));
-    setActiveModal(null);
+  const handleSave = async () => {
+    if (!currentStream || !activeModal) return;
+
+    // By creating this constant, TypeScript knows it's not null for the rest of the function.
+    const modalType = activeModal.type;
+
+    setIsSaving(true);
+    try {
+      switch (modalType) {
+        case "temperature":
+          await setTemperatureConfig(
+            streamId,
+            toJS(currentStream.calculator.temperature_config)
+          );
+          break;
+        case "pressure":
+          await setPressureConfig(
+            streamId,
+            toJS(currentStream.calculator.pressure_config)
+          );
+          break;
+        case "flowRate":
+          await setFlowRateConfig(
+            streamId,
+            toJS(currentStream.calculator.flow_rate_config)
+          );
+          break;
+        case "volume":
+          const volumeConfig = toJS(
+            currentStream.calculator.volume_configuration
+          );
+          const volumeTypeMap: { [key: string]: string } = {
+            onePulse: "OnePulseVolumeConfig",
+            twoPulse1_1: "TwoPulseVolumeConfig",
+            twoPulseX_Y: "TwoPulseVolumeConfig",
+          };
+          const volumeType =
+            volumeTypeMap[volumeConfig.operating_mode] || "EncoderVolumeConfig";
+          await setVolumeConfig(streamId, volumeType, volumeConfig);
+          break;
+        case "conversion":
+          await setCompressibilityConfig(
+            streamId,
+            toJS(currentStream.calculator.compressibility_kfactor_config)
+          );
+          break;
+      }
+      setActiveModal(null);
+    } catch (error) {
+      console.error("Failed to save configuration:", error);
+      alert(`Failed to save configuration: ${error}`);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (!currentStream) {
@@ -121,8 +171,9 @@ const StreamConfiguration = observer(() => {
       Component: () => (
         <TemperatureForm
           config={currentStream.calculator.temperature_config}
-          onCommit={handleSave}
+          onSave={handleSave}
           onClose={closeModal}
+          isSaving={isSaving}
         />
       ),
     },
@@ -131,8 +182,9 @@ const StreamConfiguration = observer(() => {
       Component: () => (
         <PressureForm
           config={currentStream.calculator.pressure_config}
-          onCommit={handleSave}
+          onSave={handleSave}
           onClose={closeModal}
+          isSaving={isSaving}
         />
       ),
     },
@@ -140,10 +192,10 @@ const StreamConfiguration = observer(() => {
       title: "Configure Volume",
       Component: () => (
         <VolumeForm
-          // Ab yeh hamesha ek object hoga, kabhi null nahi.
           config={currentStream.calculator.volume_configuration!}
-          onCommit={handleSave}
+          onSave={handleSave}
           onClose={closeModal}
+          isSaving={isSaving}
         />
       ),
     },
@@ -152,19 +204,21 @@ const StreamConfiguration = observer(() => {
       Component: () => (
         <FlowRateForm
           config={currentStream.calculator.flow_rate_config}
-          onCommit={handleSave}
+          onSave={handleSave}
           onClose={closeModal}
+          isSaving={isSaving}
         />
       ),
     },
     conversion: {
-      title: "Conversion Settings",
+      title: "Compressibility & Conversion Settings",
       Component: () => (
         <ConversionForm
-        store={globalStore} 
-        config={currentStream.calculator.compressibility_kfactor_config}
-        onCommit={handleSave}
-        onClose={closeModal}
+          store={globalStore}
+          config={currentStream.calculator.compressibility_kfactor_config}
+          onSave={handleSave}
+          onClose={closeModal}
+          isSaving={isSaving}
         />
       ),
     },
@@ -203,10 +257,14 @@ const StreamConfiguration = observer(() => {
     },
   ];
 
-  const ActiveModalComponent = activeModal
-    ? modalConfig[activeModal.type].Component
-    : null;
-  const modalTitle = activeModal ? modalConfig[activeModal.type].title : "";
+  let modalTitle = "";
+  let ActiveModalComponent: (() => JSX.Element) | null = null;
+
+  if (activeModal) {
+    const details = modalConfig[activeModal.type];
+    modalTitle = details.title;
+    ActiveModalComponent = details.Component;
+  }
 
   return (
     <>

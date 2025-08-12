@@ -1,5 +1,3 @@
-// src/components/configurationFlow/Stream/PressureForm.tsx
-
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { Gauge } from "lucide-react";
@@ -7,30 +5,24 @@ import type { PressureCalculatorConfig } from "../../../types/streamConfig";
 
 interface PressureFormProps {
   config: PressureCalculatorConfig;
-  onCommit: () => void;
+  onSave: () => void;
   onClose: () => void;
+  isSaving: boolean;
 }
 
 const PressureForm: React.FC<PressureFormProps> = observer(
-  ({ config, onCommit, onClose }) => {
-
-    // The smart input handler
+  ({ config, onSave, onClose, isSaving }) => {
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
       const { name, value, type } = e.target;
-      
       let finalValue: string | number = value;
 
-      // Check if the input is a text field that should contain a number
-      if (type === 'text' && name !== 'pressure_linked_device_id') {
-        // If the value is a valid number, convert it.
-        if (value.trim() !== '' && !isNaN(Number(value))) {
+      if (type === "text" && name !== "pressure_linked_device_id") {
+        if (value.trim() !== "" && !isNaN(Number(value))) {
           finalValue = Number(value);
         }
       }
-      
-      // Directly modify the property on the observable 'config' object
       (config as any)[name] = finalValue;
     };
 
@@ -128,15 +120,17 @@ const PressureForm: React.FC<PressureFormProps> = observer(
         <div className="flex justify-end gap-2 mt-4 pt-3">
           <button
             onClick={onClose}
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300"
+            disabled={isSaving}
+            className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
-            onClick={onCommit}
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600"
+            onClick={onSave}
+            disabled={isSaving}
+            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-wait"
           >
-            Save
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </>

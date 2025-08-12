@@ -105,12 +105,11 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
       val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
 
     // Determine device_id based on interface type
-    let deviceId = `${interface_id}`;
     if (interface_type.toUpperCase().includes("HART")) {
       const { pollingAddress, variableType } = formState;
       // This check is crucial. Both values must be present.
       if (pollingAddress && variableType) {
-        deviceId = `${interface_id}T${pollingAddress}${variableType}`;
+        interface_id = `${interface_id}T${pollingAddress}${variableType}`;
       }
     }
     const finalConfig: DeviceConfig = {

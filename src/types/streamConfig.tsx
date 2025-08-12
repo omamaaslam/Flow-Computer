@@ -32,23 +32,23 @@ export interface PressureCalculatorConfig {
   substitute_pressure: number;
   min_operating_pressure: number;
   max_operating_pressure: number;
-  pressure_linked_device_id: string; // JSON se property ka naam 'pressure_linked_device_id' hai
+  pressure_linked_device_id: string;
 }
 
 export interface FlowRateCalculatorConfig {
-  software_flow_rate_enabled: boolean; // JSON me yeh boolean hai, string nahi
+  software_flow_rate_enabled: boolean;
   flow_rate_device_id: string;
   min_alarm_flow_rate: number;
   max_alarm_flow_rate: number;
   min_warning_flow_rate: number;
   max_warning_flow_rate: number;
-  creep_mode_enabled: boolean; // JSON me yeh boolean hai, string nahi
+  creep_mode_enabled: boolean;
   creep_flow_rate: number;
   creep_time_seconds: number;
 }
 
 export interface VolumeConfiguration {
-  operating_mode: VolumeOperatingMode | null;
+  operating_mode: VolumeOperatingMode | any;
   gas_meter_1: string;
   gas_meter_2: string;
   flow_rate: number | null;
@@ -57,20 +57,21 @@ export interface VolumeConfiguration {
   min_operating_volume: number | null;
   bidirectional: boolean;
 }
-export interface ConversionRow {
-  name: string;
-  liveValue: string | number;
+
+// Updated to match the new JSON payload
+export interface GasComponent {
+  key: string;
+  display_name: string;
   unit: string;
-  linkedDevice: string;
-  keyboardInput: number;
+  value: number;
+  linked_device_id: string;
 }
 
 export interface CompressibilityKFactorConfig {
-  method: string;
-  rows: ConversionRow[];
+  k_factor_method: string;
+  gas_components: GasComponent[];
 }
 
-// --- Poora Calculator Object ---
 export interface CalculatorConfig {
   temperature_config: TemperatureCalculatorConfig;
   pressure_config: PressureCalculatorConfig;
@@ -125,13 +126,79 @@ export const createDefaultStreamConfig = (): CalculatorConfig => ({
     min_operating_volume: null,
     bidirectional: false,
   },
-  compressibility_kfactor_config:  {
-    method: "GERG88_1", // Default method
-    rows: [ // Default rows, aap inko khaali bhi chor sakte hain ya default values de sakte hain
-      { name: "Methane (CH4)", liveValue: "N/A", unit: "%", linkedDevice: "", keyboardInput: 95.0 },
-      { name: "Ethane (C2H6)", liveValue: "N/A", unit: "%", linkedDevice: "", keyboardInput: 3.0 },
-      { name: "Propane (C3H8)", liveValue: "N/A", unit: "%", linkedDevice: "", keyboardInput: 0.5 },
-      // ... aur baaqi gas components
+  compressibility_kfactor_config: {
+    k_factor_method: "AGA8_DC92",
+    gas_components: [
+      {
+        key: "CH4",
+        display_name: "Methane",
+        unit: "mol%",
+        value: 95.0,
+        linked_device_id: "",
+      },
+      {
+        key: "C2H6",
+        display_name: "Ethane",
+        unit: "mol%",
+        value: 3.0,
+        linked_device_id: "",
+      },
+      {
+        key: "N2",
+        display_name: "Nitrogen",
+        unit: "mol%",
+        value: 2.0,
+        linked_device_id: "",
+      },
+      {
+        key: "CO2",
+        display_name: "Carbon Dioxide",
+        unit: "mol%",
+        value: 0.0,
+        linked_device_id: "",
+      },
+      {
+        key: "C3H8",
+        display_name: "Propane",
+        unit: "mol%",
+        value: 0.0,
+        linked_device_id: "",
+      },
+      {
+        key: "H2O",
+        display_name: "Water",
+        unit: "mol%",
+        value: 0.0,
+        linked_device_id: "",
+      },
+      {
+        key: "H2S",
+        display_name: "Hydrogen Sulfide",
+        unit: "mol%",
+        value: 0.0,
+        linked_device_id: "",
+      },
+      {
+        key: "H2",
+        display_name: "Hydrogen",
+        unit: "mol%",
+        value: 0.0,
+        linked_device_id: "",
+      },
+      {
+        key: "CO",
+        display_name: "Carbon Monoxide",
+        unit: "mol%",
+        value: 0.0,
+        linked_device_id: "",
+      },
+      {
+        key: "O2",
+        display_name: "Oxygen",
+        unit: "mol%",
+        value: 0.0,
+        linked_device_id: "",
+      },
     ],
   },
   calculation_profile: null,

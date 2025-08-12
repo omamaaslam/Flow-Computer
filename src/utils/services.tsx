@@ -88,10 +88,9 @@ export const getDeviceSnapshot = (
   return sendAndWait(msg, isMatch);
 };
 
-
 export const get_result = () => {
   const msg = {
-    command: "ram_live_data"
+    command: "ram_live_data",
   };
 
   const isMatch = (res: any) => {
@@ -164,10 +163,7 @@ export const addInterfaceConfig = (
     },
   };
 
-  // --- 👇 FIX IS HERE ---
-  // isMatch function ko update kiya gaya hai taaki woh dono tarah ke responses ko handle kar sake.
   const isMatch = (res: any) => {
-    // 1. Simple success message ko check karein.
     if (
       res?.success &&
       typeof res.success === "string" &&
@@ -177,7 +173,6 @@ export const addInterfaceConfig = (
       return true;
     }
 
-    // 2. Fallback: Agar server poora snapshot bhejta hai to use bhi handle karein.
     if (
       res?.streams?.[stream_id]?.io_card?.interfaces?.[interface_id] !==
       undefined
@@ -186,7 +181,6 @@ export const addInterfaceConfig = (
       return true;
     }
 
-    // Agar koi bhi condition match na ho to false return karein.
     return false;
   };
 
@@ -246,9 +240,6 @@ export const updateDevice = (
   device_id: string,
   device_data: any
 ) => {
-  // Construct the payload for updating a device.
-  // Note: There is no 'device_type' in the update payload,
-  // as the device type cannot be changed.
   const msg = {
     command: "update_device_configuration",
     stream_id: stream_id,
@@ -256,12 +247,11 @@ export const updateDevice = (
     device_id: device_id,
     data: {
       ...device_data,
-      device_id: device_id, // Ensure device_id is in the data object
+      device_id: device_id,
     },
   };
 
   const isMatch = (res: any) => {
-    // 1. Check for a simple success message, looking for the device ID.
     if (
       res?.success &&
       typeof res.success === "string" &&
@@ -271,8 +261,6 @@ export const updateDevice = (
       return true;
     }
 
-    // 2. Fallback: Check if the device exists in the full state snapshot.
-    // This is useful for confirmation.
     const device =
       res?.streams?.[stream_id]?.io_card?.interfaces?.[interface_id]?.devices?.[
         device_id
@@ -291,9 +279,80 @@ export const updateDevice = (
   return sendAndWait(msg, isMatch);
 };
 
+// ==============================================================================================
+//                                 STREAM CONFIGURATIONS API
+// ==============================================================================================
 
-// export const set_temperature_config = (stream_id:string) => { 
-//   const msg = {
-//     command: "set_temperature_config",
-//   };
-// }
+const createStreamConfigMatcher = (streamId: string, configKey: string) => {
+  return (res: any) => {
+    if (
+      res?.success &&
+      typeof res.success === "string" &&
+      res.success.includes(`stream '${streamId}'`)
+    ) {
+      return true;
+    }
+    if (res?.streams?.[streamId]?.calculator?.[configKey] !== undefined) {
+      return true;
+    }
+    return false;
+  };
+};
+
+export const setTemperatureConfig = (streamId: string, data: any) => {
+  const msg = {
+    command: "set_temperature_config",
+    stream_id: streamId,
+    data: data,
+  };
+  const isMatch = createStreamConfigMatcher(streamId, "temperature_config");
+  return sendAndWait(msg, isMatch);
+};
+
+export const setPressureConfig = (streamId: string, data: any) => {
+  const msg = {
+    command: "set_pressure_config",
+    stream_id: streamId,
+    data: data,
+  };
+  const isMatch = createStreamConfigMatcher(streamId, "pressure_config");
+  return sendAndWait(msg, isMatch);
+};
+
+export const setFlowRateConfig = (streamId: string, data: any) => {
+  const msg = {
+    command: "set_flow_rate_config",
+    stream_id: streamId,
+    data: data,
+  };
+  const isMatch = createStreamConfigMatcher(streamId, "flow_rate_config");
+  return sendAndWait(msg, isMatch);
+};
+
+export const setVolumeConfig = (
+  streamId: string,
+  volumeType: string,
+  data: any
+) => {
+  const msg = {
+    command: "set_volume_config",
+    stream_id: streamId,
+    volume_type: volumeType,
+    data: data,
+  };
+  const isMatch = createStreamConfigMatcher(streamId, "volume_configuration");
+  return sendAndWait(msg, isMatch);
+};
+
+export const setCompressibilityConfig = (streamId: string, data: any) => {
+  const msg = {
+    command: "set_compressibility_config",
+    stream_id: streamId,
+    data: data,
+  };
+  const isMatch = createStreamConfigMatcher(
+    streamId,
+    "compressibility_kfactor_config"
+  );
+  return sendAndWait(msg, isMatch);
+};

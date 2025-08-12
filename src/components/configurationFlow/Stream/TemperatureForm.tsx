@@ -1,44 +1,34 @@
-// src/components/configurationFlow/Stream/TemperatureForm.tsx
-
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { Thermometer } from "lucide-react";
 import type { TemperatureCalculatorConfig } from "../../../types/streamConfig";
 
-// Interface for the component's props
 interface TemperatureFormProps {
   config: TemperatureCalculatorConfig;
-  onCommit: () => void;
+  onSave: () => void;
   onClose: () => void;
+  isSaving: boolean;
 }
 
 const TemperatureForm: React.FC<TemperatureFormProps> = observer(
-  ({ config, onCommit, onClose }) => {
+  ({ config, onSave, onClose, isSaving }) => {
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
       const { name, value, type } = e.target;
-
       let finalValue: string | number = value;
 
-      // Check if the input is a text field that should contain a number
       if (type === "text" && name !== "temp_linked_device_id") {
-        // If the value is a valid number, convert it.
-        // If the user clears the input, value will be "" and isNaN(Number("")) is false, so we add a check.
         if (value.trim() !== "" && !isNaN(Number(value))) {
           finalValue = Number(value);
         }
       }
-
-      // Directly modify the property on the observable 'config' object.
-      // MobX will detect this change and automatically update the UI.
       (config as any)[name] = finalValue;
     };
 
     return (
       <>
         <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm text-gray-800">
-          {/* Live Operating Temperature (Read-only) */}
           <div className="space-y-1">
             <div className="flex items-center gap-2 p-2 border border-dashed border-yellow-400 bg-white rounded-md shadow-sm">
               <label className="block font-medium text-xs">
@@ -49,7 +39,6 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             </div>
           </div>
 
-          {/* Substitute Temperature (Input) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Substitute Temperature (T)
@@ -64,7 +53,6 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             />
           </div>
 
-          {/* Device Selection (Select) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">Device</label>
             <select
@@ -79,7 +67,6 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             </select>
           </div>
 
-          {/* Min Operating Temperature (Input) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Min Op. Temp. (Tmin)
@@ -94,7 +81,6 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             />
           </div>
 
-          {/* Base Temperature (Input) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Base Temperature (BT)
@@ -109,7 +95,6 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             />
           </div>
 
-          {/* Max Operating Temperature (Input) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Max Op. Temp. (Tmax)
@@ -124,7 +109,6 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
             />
           </div>
 
-          {/* Temperature Unit (Select) */}
           <div className="space-y-1">
             <label className="block font-medium text-xs">
               Temperature Unit
@@ -142,19 +126,20 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex justify-end gap-2 mt-4 pt-3">
           <button
             onClick={onClose}
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300"
+            disabled={isSaving}
+            className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
-            onClick={onCommit}
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600"
+            onClick={onSave}
+            disabled={isSaving}
+            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-wait"
           >
-            Save
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </>

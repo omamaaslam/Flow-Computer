@@ -1,7 +1,5 @@
-// D:/flow-computer/src/components/configurationFlow/Stream/VolumeForm.tsx
-
 import React from "react";
-import { observer } from "mobx-react-lite"; // <-- Zaroori Import
+import { observer } from "mobx-react-lite";
 import type {
   VolumeConfiguration,
   VolumeOperatingMode,
@@ -24,13 +22,11 @@ const operatingModes = [
   },
 ];
 
-// Default state for a new configuration
-// Hum isko export karenge taaki StreamConfiguration.tsx use kar sake.
 export const defaultVolumeConfig: VolumeConfiguration = {
   operating_mode: "encoderOnly",
-  gas_meter_1: "Meter A", // Ek aam default value
+  gas_meter_1: "Meter A",
   gas_meter_2: "",
-  flow_rate: null, // number fields ke liye null use karein
+  flow_rate: null,
   creep_time_seconds: null,
   max_total_volume: null,
   min_operating_volume: null,
@@ -38,23 +34,18 @@ export const defaultVolumeConfig: VolumeConfiguration = {
 };
 
 interface VolumeFormProps {
-  // config ab kabhi null nahi hoga.
   config: VolumeConfiguration;
-  // onCommit ab koi parameter nahi lega.
-  onCommit: () => void;
+  onSave: () => void;
   onClose: () => void;
+  isSaving: boolean;
 }
 
-// Component ko observer se wrap karein
 const VolumeForm: React.FC<VolumeFormProps> = observer(
-  ({ config, onCommit, onClose }) => {
-    // useState aur useEffect ki ab zaroorat nahi hai.
-
+  ({ config, onSave, onClose, isSaving }) => {
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
       const { name, value, type } = e.target;
-
       let updatedValue: any = value;
 
       if (name === "bidirectional") {
@@ -63,14 +54,11 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
         type === "number" ||
         ["flow_rate", "max_total_volume", "min_operating_volume"].includes(name)
       ) {
-        // Agar input khali hai to null, warna number
         updatedValue = value === "" ? null : Number(value);
       } else if (name === "operating_mode") {
         updatedValue = value as VolumeOperatingMode;
       }
 
-      // --- YEH SABSE ZAROORI CHANGE HAI ---
-      // Seedha MobX store ke object ko modify karein.
       (config as any)[name] = updatedValue;
     };
 
@@ -207,15 +195,17 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
         <div className="flex justify-end gap-2 pt-1">
           <button
             onClick={onClose}
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300"
+            disabled={isSaving}
+            className="px-5 py-1.5 rounded-full font-semibold text-xs text-gray-700 bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
           >
             Cancel
           </button>
           <button
-            onClick={onCommit} // Ab yeh seedha onCommit ko call karega
-            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600"
+            onClick={onSave}
+            disabled={isSaving}
+            className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-wait"
           >
-            Save
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>
