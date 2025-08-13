@@ -44,17 +44,15 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
   interface_type,
   initialData,
   deviceTypeLabel,
-  interface_id
+  interface_id,
 }) => {
   const [formState, setFormState] = useState(defaultFormState);
 
   useEffect(() => {
-    // Explicitly type `data` to let TypeScript know its shape
     const data: Partial<DeviceConfig> = initialData || {};
-    const interfaceSpecificData: any = initialData || {}; // For gas devices, bridge data is part of the main config
+    const interfaceSpecificData: any = initialData || {};
 
     setFormState({
-      // Start with default values and overwrite with any existing data
       slave_id: String(
         interfaceSpecificData.slave_id ?? defaultFormState.slave_id
       ),

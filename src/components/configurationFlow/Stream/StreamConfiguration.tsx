@@ -37,24 +37,20 @@ type ModalType =
   | "conversion"
   | "pipelineProfile";
 
-// State structure from the new logic
 interface ActiveModalState {
   type: ModalType;
   snapshot: any;
 }
 
 const StreamConfiguration = observer(() => {
-  // State from the new logic, including isSaving
   const [activeModal, setActiveModal] = useState<ActiveModalState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { streamId } = useParams<{ streamId: string }>();
 
-  // streamId and currentStream retrieval from the new logic
   if (!streamId) {
     return <div>Stream ID is missing.</div>;
   }
   const currentStream = globalStore.streams.find((s) => s.id === streamId);
-  // openModal logic that correctly handles "pipelineProfile" from the UI code
   const openModal = (modalType: ModalType) => {
     if (!currentStream) return;
 
@@ -145,12 +141,25 @@ const StreamConfiguration = observer(() => {
             toJS(currentStream.calculator.pressure_config)
           );
           break;
-        case "pipelineProfile":
-          // addProfile(
-          //   streamId,
-          //   toJS(currentStream.calculator.pipeline_profile_configuration)
-          // );
+
+        // ======================= YEH SECTION THEEK KIYA GAYA HAI =======================
+        case "pipelineProfile": {
+          // 1. Config object ko ek variable mein store karein
+          const profileConfig = toJS(
+            currentStream.calculator.pipeline_profile_configuration
+          );
+
+          // 2. Check karein ki user ne koi profile select kiya hai ya nahi
+          if (!profileConfig.profile_name) {
+            alert("Please select a pipeline profile to save.");
+            setIsSaving(false); // Saving state ko reset karein
+            return; // Function ko yahin rok dein
+          }
+          await addProfile(streamId, profileConfig.profile_name);
           break;
+        }
+        // ==============================================================================
+
         case "flowRate":
           await setFlowRateConfig(
             streamId,
@@ -158,9 +167,7 @@ const StreamConfiguration = observer(() => {
           );
           break;
 
-        // ======================= THIS IS THE CORRECTED SECTION =======================
         case "volume": {
-          // Using a block scope for clarity
           const volumeConfig = toJS(
             currentStream.calculator.volume_configuration
           );
@@ -169,28 +176,12 @@ const StreamConfiguration = observer(() => {
             encoderOnly: "EncoderOnlyVolumeConfig",
             onePulse: "OnePulseVolumeConfig",
           };
-
           const volumeType = volumeTypeMap[volumeConfig.mode_type];
-
-          // if (!volumeType) {
-          //   console.error(
-          //     "Could not find a valid volumeType for operating mode:",
-          //     volumeConfig.mode_type
-          //   );
-          //   setIsSaving(false);
-          //   return;
-          // }
-
-          const payload = {
-            ...volumeConfig,
-            type: volumeType,
-          };
-
-          console.log("Saving Volume Payload:", payload); // For debugging
+          const payload = { ...volumeConfig, type: volumeType };
+          console.log("Saving Volume Payload:", payload);
           await setVolumeConfig(streamId, volumeType, volumeConfig);
           break;
         }
-        // =========================================================================
 
         case "conversion":
           await setCompressibilityConfig(
