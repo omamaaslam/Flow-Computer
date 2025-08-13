@@ -24,6 +24,7 @@ import {
   setFlowRateConfig,
   setVolumeConfig,
   setCompressibilityConfig,
+  addProfile,
 } from "../../../utils/services";
 import PipelineProfileForm from "./PipelineProfileForm";
 
@@ -53,7 +54,6 @@ const StreamConfiguration = observer(() => {
     return <div>Stream ID is missing.</div>;
   }
   const currentStream = globalStore.streams.find((s) => s.id === streamId);
-
   // openModal logic that correctly handles "pipelineProfile" from the UI code
   const openModal = (modalType: ModalType) => {
     if (!currentStream) return;
@@ -66,7 +66,6 @@ const StreamConfiguration = observer(() => {
       case "pressure":
         snapshot = toJS(currentStream.calculator.pressure_config);
         break;
-      case "pipelineProfile": // Handling pipelineProfile as a case of flowRate
       case "flowRate":
         snapshot = toJS(currentStream.calculator.flow_rate_config);
         break;
@@ -87,6 +86,13 @@ const StreamConfiguration = observer(() => {
           currentStream.calculator.compressibility_kfactor_config
         );
         break;
+      case "pipelineProfile": {
+        snapshot = toJS(
+          currentStream.calculator.pipeline_profile_configuration
+        );
+        break;
+      }
+
       default:
         snapshot = null;
     }
@@ -139,7 +145,12 @@ const StreamConfiguration = observer(() => {
             toJS(currentStream.calculator.pressure_config)
           );
           break;
-        case "pipelineProfile": // Saving pipelineProfile as flowRate
+        case "pipelineProfile":
+          // addProfile(
+          //   streamId,
+          //   toJS(currentStream.calculator.pipeline_profile_configuration)
+          // );
+          break;
         case "flowRate":
           await setFlowRateConfig(
             streamId,
@@ -155,27 +166,21 @@ const StreamConfiguration = observer(() => {
           );
           const volumeTypeMap: { [key: string]: string } = {
             modbus: "ModbusVolumeConfig",
-            encoderOnly: "EncoderOnly",
-            OnePulse: "OnePulseVolumeConfig",
-            "twoPulse1-1": "TwoPulseVolumeConfig",
-            "twoPulseX-Y": "TwoPulseVolumeConfig",
-            encoderWithOnePulseInput: "EncoderWithOnePulseInputVolumeConfig",
-            onePulseInputWithEncoder: "OnePulseInputWithEncoderVolumeConfig",
-            encoderWithTwoPulseInputs: "EncoderWithTwoPulseInputsVolumeConfig",
-            twoPulseInputsWithEncoder: "TwoPulseInputsWithEncoderVolumeConfig",
+            encoderOnly: "EncoderOnlyVolumeConfig",
+            onePulse: "OnePulseVolumeConfig",
           };
 
-          const volumeType = volumeTypeMap[volumeConfig.operating_mode];
+          const volumeType = volumeTypeMap[volumeConfig.mode_type];
 
-          if (!volumeType) {
-            console.error(
-              "Could not find a valid volumeType for operating mode:",
-              volumeConfig.operating_mode
-            );
-            // Optional: Show an error toast to the user here
-            setIsSaving(false);
-            return;
-          }
+          // if (!volumeType) {
+          //   console.error(
+          //     "Could not find a valid volumeType for operating mode:",
+          //     volumeConfig.mode_type
+          //   );
+          //   setIsSaving(false);
+          //   return;
+          // }
+
           const payload = {
             ...volumeConfig,
             type: volumeType,

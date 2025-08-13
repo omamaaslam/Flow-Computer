@@ -9,14 +9,8 @@ export type PressureUnit = "Bar" | "Psi" | "Kpa" | "Atm";
 
 export type VolumeOperatingMode =
   | "encoderOnly"
-  | "OnePulse"
-  | "twoPulse1-1"
-  | "twoPulseX-Y"
-  | "encoderWithOnePulseInput"
-  | "onePulseInputWithEncoder"
-  | "encoderWithTwoPulseInputs"
-  | "modbus"
-  | "twoPulseInputsWithEncoder";
+  | "OnePulseVolumeConfig"
+  | "modbus";
 
 export interface TemperatureCalculatorConfig {
   unit: TemperatureUnit;
@@ -49,17 +43,14 @@ export interface FlowRateCalculatorConfig {
 }
 
 export interface VolumeConfiguration {
-  operating_mode: VolumeOperatingMode | "";
-  gas_meter_1: string;
-  gas_meter_2: string;
-  flow_rate: number | null;
-  creep_time_seconds: number | null;
-  max_total_volume: number | null;
-  min_operating_volume: number | null;
-  bidirectional: boolean;
+  mode_type: VolumeOperatingMode | "";
+  max_total_volume_limit: number | null;
+  encoder_device_id?: string;
+  pulse_input_device_id?: string;
+  min_operating_volume_limit: number | null;
+  enable_bidirectional_volume: boolean;
 }
 
-// Updated to match the new JSON payload
 export interface GasComponent {
   key: string;
   display_name: string;
@@ -74,8 +65,8 @@ export interface CompressibilityKFactorConfig {
 }
 
 export interface pipeline_profile_config {
-  name: string;
-  device_id: string;
+  profile_name: string;
+  stream_id: string;
 }
 
 export interface CalculatorConfig {
@@ -124,14 +115,11 @@ export const createDefaultStreamConfig = (): CalculatorConfig => ({
     creep_time_seconds: 60,
   },
   volume_configuration: {
-    operating_mode: "",
-    gas_meter_1: "",
-    gas_meter_2: "",
-    flow_rate: null,
-    creep_time_seconds: null,
-    max_total_volume: null,
-    min_operating_volume: null,
-    bidirectional: false,
+    mode_type: "",
+    max_total_volume_limit: null,
+    min_operating_volume_limit: null,
+    encoder_device_id: "",
+    enable_bidirectional_volume: false,
   },
   compressibility_kfactor_config: {
     k_factor_method: "AGA8_DC92",
@@ -209,8 +197,8 @@ export const createDefaultStreamConfig = (): CalculatorConfig => ({
     ],
   },
   pipeline_profile_configuration: {
-    name: "",
-    device_id: "",
+    profile_name: "",
+    stream_id: "",
   },
   calculation_profile: null,
 });

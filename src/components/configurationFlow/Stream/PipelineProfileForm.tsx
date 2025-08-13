@@ -2,42 +2,37 @@ import React from "react";
 import { observer } from "mobx-react-lite";
 import type { pipeline_profile_config } from "../../../types/streamConfig";
 
-interface PipelineProfileFormmProps {
+interface PipelineProfileFormProps {
   config: pipeline_profile_config;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;
 }
 
-const PipelineProfileForm: React.FC<PipelineProfileFormmProps> = observer(
+const PipelineProfileForm: React.FC<PipelineProfileFormProps> = observer(
   ({ config, onSave, onClose, isSaving }) => {
-    const handleInputChange = (
-      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-    ) => {
-      const { name, value, type } = e.target;
-      let finalValue: string | number = value;
+    const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      config.profile_name = e.target.value;
+    };
 
-      if (type === "text" && name !== "temp_linked_device_id") {
-        if (value.trim() !== "" && !isNaN(Number(value))) {
-          finalValue = Number(value);
-        }
-      }
-      (config as any)[name] = finalValue;
+    const handleSave = () => {
+      onSave();
     };
 
     return (
       <>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm text-gray-800">
-          <div className="space-y-1">
+        <div className="grid grid-cols-2 gap-4 text-sm text-gray-800">
+          <div>
             <label className="block font-medium text-xs">Device</label>
             <select
-              name="temp_linked_device_id"
-              value={config.name ?? ""}
-              onChange={handleInputChange}
+              name="profile_name"
+              value={config.profile_name ?? ""}
+              onChange={handleDropdownChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             >
-              <option value="pipe1">Pipe 1</option>
-              <option value="pipe2">Pipe 2</option>
+              <option value="">Select a pipeline</option>
+              <option value="pipeline1">Pipeline 1</option>
+              <option value="pipeline2">Pipeline 2</option>
             </select>
           </div>
         </div>
@@ -51,7 +46,7 @@ const PipelineProfileForm: React.FC<PipelineProfileFormmProps> = observer(
             Cancel
           </button>
           <button
-            onClick={onSave}
+            onClick={handleSave}
             disabled={isSaving}
             className="px-5 py-1.5 rounded-full font-semibold text-xs text-black bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 disabled:cursor-wait"
           >

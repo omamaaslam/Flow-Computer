@@ -1,4 +1,3 @@
-import globalStore from "../stores/GlobalStore";
 import { sendMessage, addListener, removeListener } from "./api";
 
 const sendAndWait = (
@@ -276,7 +275,6 @@ export const updateDevice = (
 
     return false;
   };
-
   return sendAndWait(msg, isMatch);
 };
 
@@ -306,7 +304,7 @@ export const setTemperatureConfig = (streamId: string, data: any) => {
     stream_id: streamId,
     data: data,
   };
-  console.log(msg)
+  console.log(msg);
   const isMatch = createStreamConfigMatcher(streamId, "temperature_config");
   return sendAndWait(msg, isMatch);
 };
@@ -317,7 +315,7 @@ export const setPressureConfig = (streamId: string, data: any) => {
     stream_id: streamId,
     data: data,
   };
-  console.log(msg)
+  console.log(msg);
   const isMatch = createStreamConfigMatcher(streamId, "pressure_config");
   return sendAndWait(msg, isMatch);
 };
@@ -328,7 +326,7 @@ export const setFlowRateConfig = (streamId: string, data: any) => {
     stream_id: streamId,
     data: data,
   };
-  console.log(msg)
+  console.log(msg);
   const isMatch = createStreamConfigMatcher(streamId, "flow_rate_config");
   return sendAndWait(msg, isMatch);
 };
@@ -344,7 +342,7 @@ export const setVolumeConfig = (
     volume_type: volumeType,
     data: data,
   };
-  console.log(msg)
+  console.log("Current Volume Config:", data);
   const isMatch = createStreamConfigMatcher(streamId, "volume_configuration");
   return sendAndWait(msg, isMatch);
 };
@@ -362,3 +360,16 @@ export const setCompressibilityConfig = (streamId: string, data: any) => {
   return sendAndWait(msg, isMatch);
 };
 
+export const addProfile = (
+  streamId: string,
+  profile_name: string,
+) => {
+  const msg = {
+    scope: "add_profile",
+    stream_id: streamId,
+    profile_name: profile_name,
+  };
+  console.log(msg);
+  const isMatch = createStreamConfigMatcher(streamId, "profile");
+  return sendAndWait(msg, isMatch);
+};

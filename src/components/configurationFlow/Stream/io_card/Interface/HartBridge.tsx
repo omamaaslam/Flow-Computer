@@ -137,7 +137,7 @@ const HartBridge: React.FC<HartBridgeProps> = ({
 }) => {
   return (
     <div className="flex flex-col space-y-4">
-      <FormField label="Polling Address" error={errors.pollingAddress}>
+      {/* <FormField label="Polling Address" error={errors.pollingAddress}>
         <CustomCombobox
           hasError={!!errors.pollingAddress}
           value={formState.pollingAddress}
@@ -147,6 +147,19 @@ const HartBridge: React.FC<HartBridgeProps> = ({
             value: i.toString(),
             label: i.toString(),
           }))}
+        />
+      </FormField> */}
+      <FormField label="Polling Address" error={errors.pollingAddress}>
+        <CustomCombobox
+          hasError={!!errors.pollingAddress}
+          value={formState.pollingAddress}
+          onChange={(val) => handleStateChange("pollingAddress", val)}
+          placeholder="Hart transducer address (0-15)"
+          options={[
+            { value: "1", label: "1" },
+            { value: "2", label: "2" },
+            { value: "3", label: "3" },
+          ]}
         />
       </FormField>
       <div className="grid grid-cols-2 gap-x-6">
