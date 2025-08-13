@@ -146,19 +146,47 @@ const StreamConfiguration = observer(() => {
             toJS(currentStream.calculator.flow_rate_config)
           );
           break;
-        case "volume":
+
+        // ======================= THIS IS THE CORRECTED SECTION =======================
+        case "volume": {
+          // Using a block scope for clarity
           const volumeConfig = toJS(
             currentStream.calculator.volume_configuration
           );
           const volumeTypeMap: { [key: string]: string } = {
-            onePulse: "OnePulseVolumeConfig",
-            twoPulse1_1: "TwoPulseVolumeConfig",
-            twoPulseX_Y: "TwoPulseVolumeConfig",
+            modbus: "ModbusVolumeConfig",
+            encoderOnly: "EncoderOnly",
+            OnePulse: "OnePulseVolumeConfig",
+            "twoPulse1-1": "TwoPulseVolumeConfig",
+            "twoPulseX-Y": "TwoPulseVolumeConfig",
+            encoderWithOnePulseInput: "EncoderWithOnePulseInputVolumeConfig",
+            onePulseInputWithEncoder: "OnePulseInputWithEncoderVolumeConfig",
+            encoderWithTwoPulseInputs: "EncoderWithTwoPulseInputsVolumeConfig",
+            twoPulseInputsWithEncoder: "TwoPulseInputsWithEncoderVolumeConfig",
           };
-          const volumeType =
-            volumeTypeMap[volumeConfig.operating_mode] || "EncoderVolumeConfig";
+
+          const volumeType = volumeTypeMap[volumeConfig.operating_mode];
+
+          if (!volumeType) {
+            console.error(
+              "Could not find a valid volumeType for operating mode:",
+              volumeConfig.operating_mode
+            );
+            // Optional: Show an error toast to the user here
+            setIsSaving(false);
+            return;
+          }
+          const payload = {
+            ...volumeConfig,
+            type: volumeType,
+          };
+
+          console.log("Saving Volume Payload:", payload); // For debugging
           await setVolumeConfig(streamId, volumeType, volumeConfig);
           break;
+        }
+        // =========================================================================
+
         case "conversion":
           await setCompressibilityConfig(
             streamId,
@@ -169,6 +197,7 @@ const StreamConfiguration = observer(() => {
       setActiveModal(null);
     } catch (error) {
       console.error("Failed to save configuration:", error);
+      // Optional: Show an error toast to the user
     } finally {
       setIsSaving(false);
     }

@@ -2,7 +2,7 @@
 
 export type VolumeOperatingMode =
   | "encoderOnly"
-  | "onePulse"
+  | "OnePulse"
   | "twoPulse1-1"
   | "twoPulseX-Y"
   | "encoderWithOnePulseInput"

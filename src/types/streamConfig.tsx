@@ -9,7 +9,7 @@ export type PressureUnit = "Bar" | "Psi" | "Kpa" | "Atm";
 
 export type VolumeOperatingMode =
   | "encoderOnly"
-  | "onePulse"
+  | "OnePulse"
   | "twoPulse1-1"
   | "twoPulseX-Y"
   | "encoderWithOnePulseInput"

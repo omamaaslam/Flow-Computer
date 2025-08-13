@@ -9,7 +9,7 @@ import type globalStore from "../../../stores/GlobalStore";
 const operatingModes = [
   { value: "modbus", label: "Modbus" },
   { value: "encoderOnly", label: "Encoder Only" },
-  { value: "onePulse", label: "One pulse input" },
+  { value: "OnePulse", label: "One pulse input" },
   { value: "twoPulse1-1", label: "Two pulse inputs (1:1)" },
   { value: "twoPulseX-Y", label: "Two pulse inputs (x:y)" },
   { value: "encoderWithOnePulseInput", label: "Encoder with One Pulse Input" },
