@@ -136,7 +136,7 @@ const MODBridge: React.FC<MODBridgeProps> = ({
         <CustomCombobox
           hasError={!!errors.slave_id}
           value={formState.slave_id}
-          onChange={(val:any) => handleStateChange("slave_id", val)}
+          onChange={(val: any) => handleStateChange("slave_id", val)}
           placeholder="Please set slave ID"
           options={[
             { value: "1", label: "1" },
@@ -148,7 +148,7 @@ const MODBridge: React.FC<MODBridgeProps> = ({
         <CustomCombobox
           hasError={!!errors.register_count}
           value={formState.register_count}
-          onChange={(val:any) => handleStateChange("register_count", val)}
+          onChange={(val: any) => handleStateChange("register_count", val)}
           placeholder="Number of registers..."
           options={[
             { value: "2", label: "2 (for 1 float32)" },
@@ -174,13 +174,7 @@ const MODBridge: React.FC<MODBridgeProps> = ({
           value={formState.data_type}
           onChange={(val) => handleStateChange("data_type", val)}
           placeholder="INT16, FLOAT..."
-          options={[
-            { value: "INT16", label: "INT16" },
-            { value: "INT32", label: "INT32" },
-            { value: "FLOAT", label: "FLOAT" },
-            { value: "DOUBLE", label: "DOUBLE" },
-            { value: "STRING", label: "STRING" },
-          ]}
+          options={[{ value: "Float32", label: "Float32" }]}
         />
       </FormField>
     </div>

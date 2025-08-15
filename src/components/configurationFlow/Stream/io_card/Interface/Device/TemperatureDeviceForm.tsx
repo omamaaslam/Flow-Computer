@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { DeviceConfig } from "../../../../../../types/device";
 import BridgeComponent from "../BridgeComponent";
-// Since this form is for a simple RTD Temperature device, the BridgeComponent is not needed.
-// If you need it for other scenarios, you would use conditional rendering.
-// import BridgeComponent from "../BridgeComponent";
-
-// Helper component for a standard text input
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
   <input
@@ -18,7 +13,7 @@ const Input = (props: InputProps) => (
 interface TemperatureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
-  interface_type: string; // Renamed from interfaceName for consistency
+  interface_type: string;
   initialData?: DeviceConfig | null;
   interface_id: string;
   bridgeData?: any | null;
@@ -41,21 +36,24 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     serial_number: "",
     model: "",
     tag_name: "",
-    build_year: "2025",
+    build_year: "",
     version: "",
     temp_min: "",
     temp_max: "",
     unit: "Celsius",
-    scaling_factor: "1.0",
-    offset: "0.0",
-    correction_c0: "0.0",
-    correction_c1: "1.0",
-    correction_c2: "0.0",
-    correction_c3: "0.0", // Bridge-related state fields
-    slave_id: "",
-    register_count: "",
-    register_address: "",
-    data_type: "",
+    scaling_factor: "",
+    offset: "",
+    correction_c0: "",
+    correction_c1: "",
+    correction_c2: "",
+    correction_c3: "",
+    modbus_settings: {
+      slave_id: "",
+      slave_address: "",
+      register_address: "",
+      register_count: "",
+      data_type: "Float32", // Set a default value here
+    },
     // HART-specific fields
     pollingAddress: "",
     commandSet: "Universal",
@@ -63,39 +61,52 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   });
 
   useEffect(() => {
-    // --- 👇 THE FIX IS HERE ---
-    // We tell TypeScript that `initialData || {}` should be treated as a Partial DeviceConfig.
     const data: Partial<DeviceConfig> = initialData || {};
     const interfaceSpecificData: any = bridgeData || {};
-    setFormState({
+    setFormState((prev) => ({ // Use previous state to avoid overwriting defaults
+      ...prev,
       manufacturer: data.manufacturer ?? "",
       serial_number: data.serial_number ?? "",
       model: data.model ?? "",
       tag_name: data.tag_name ?? "",
-      build_year: data.build_year ?? "2025", // Keep default if not present
+      build_year: data.build_year ?? "",
       version: data.version ?? "",
       temp_min: String(data.temp_min ?? ""),
       temp_max: String(data.temp_max ?? ""),
       unit: data.unit ?? "Celsius",
-      scaling_factor: String(data.scaling_factor ?? "1.0"),
-      offset: String(data.offset ?? "0.0"),
-      correction_c0: String(data.correction_c0 ?? "0.0"),
-      correction_c1: String(data.correction_c1 ?? "1.0"),
-      correction_c2: String(data.correction_c2 ?? "0.0"),
-      correction_c3: String(data.correction_c3 ?? "0.0"),
-      slave_id: String(interfaceSpecificData.slave_address ?? ""),
-      register_count: String(interfaceSpecificData.register_count ?? ""),
-      register_address: String(interfaceSpecificData.register_address ?? ""),
-      data_type: interfaceSpecificData.data_type ?? "",
-      // Load HART fields from device config (initialData)
+      scaling_factor: String(data.scaling_factor ?? ""),
+      offset: String(data.offset ?? ""),
+      correction_c0: String(data.correction_c0 ?? ""),
+      correction_c1: String(data.correction_c1 ?? ""),
+      correction_c2: String(data.correction_c2 ?? ""),
+      correction_c3: String(data.correction_c3 ?? ""),
+      modbus_settings: {
+        slave_id: String(interfaceSpecificData.slave_id ?? prev.modbus_settings.slave_id),
+        slave_address: String(interfaceSpecificData.slave_address ?? prev.modbus_settings.slave_address),
+        register_address: String(interfaceSpecificData.register_address ?? prev.modbus_settings.register_address),
+        register_count: String(interfaceSpecificData.register_count ?? prev.modbus_settings.register_count),
+        data_type: interfaceSpecificData.data_type ?? prev.modbus_settings.data_type,
+      },
       pollingAddress: String(data.pollingAddress ?? ""),
       commandSet: data.commandSet ?? "Universal",
       variableType: data.variableType ?? "",
-    });
+    }));
   }, [initialData, bridgeData]);
 
+  // This handler is for top-level fields like "manufacturer"
   const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
+  };
+  
+  // *** FIX 1: Create a dedicated handler for the nested modbus_settings object ***
+  const handleModbusChange = (field: string, value: string) => {
+    setFormState((prev) => ({
+      ...prev,
+      modbus_settings: {
+        ...prev.modbus_settings,
+        [field]: value,
+      },
+    }));
   };
 
   const validateAndSave = () => {
@@ -104,17 +115,15 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     const safeParseInt = (val: string) =>
       val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
 
-    // Determine device_id based on interface type
+    let final_interface_id = interface_id; // Use a local variable
     if (interface_type.toUpperCase().includes("HART")) {
       const { pollingAddress, variableType } = formState;
-      // This check is crucial. Both values must be present.
       if (pollingAddress && variableType) {
-        interface_id = `${interface_id}T${pollingAddress}${variableType}`;
+        final_interface_id = `${interface_id}T${pollingAddress}${variableType}`;
       }
     }
     const finalConfig: DeviceConfig = {
-      // Use existing ID if editing, otherwise generate a new one
-      device_id: interface_id,
+      device_id: final_interface_id,
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,
@@ -130,17 +139,22 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
       correction_c1: safeParseFloat(formState.correction_c1),
       correction_c2: safeParseFloat(formState.correction_c2),
       correction_c3: safeParseFloat(formState.correction_c3),
-      slave_address: safeParseInt(formState.slave_id),
-      register_address: safeParseInt(formState.register_address),
-      register_count: safeParseInt(formState.register_count),
-      data_type: formState.data_type,
+      modbus_settings: {
+        slave_id: safeParseInt(formState.modbus_settings.slave_id),
+        slave_address: safeParseInt(formState.modbus_settings.slave_address),
+        register_address: safeParseInt(
+          formState.modbus_settings.register_address
+        ),
+        register_count: safeParseInt(formState.modbus_settings.register_count),
+        data_type: formState.modbus_settings.data_type,
+      },
     };
-    // If it's a HART interface, also include the HART-specific fields in the saved config
     if (interface_type.toUpperCase().includes("HART")) {
       finalConfig.pollingAddress = formState.pollingAddress;
       finalConfig.commandSet = formState.commandSet;
       finalConfig.variableType = formState.variableType;
     }
+    console.log("ya raha payload...", {data: finalConfig});
     onSave(finalConfig);
   };
 
@@ -153,20 +167,20 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   return (
     <div className="flex flex-col space-y-6">
       <div className="flex justify-start items-center gap-6 text-slate-400">
-        <div>Timestamp: {initialData?.data.timestamp}</div>
+        <div>Timestamp: {initialData?.data?.timestamp ?? "N/A"}</div>
         <div>Status: {initialData?.data?.status ?? "N/A"}</div>
         <div>Live Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>
 
-      {/* The BridgeComponent is not rendered for a simple TemperatureDevice on an RTD interface. */}
-      {/* If you add this device to a Modbus interface, you would conditionally render it here based on `interface_type` */}
+      {/* *** FIX 2: Pass the correct nested state and the new handler to the BridgeComponent *** */}
       <BridgeComponent
         interface_type={interface_type}
-        formState={formState}
+        formState={formState.modbus_settings} // Pass the nested object
         errors={{}}
-        handleStateChange={handleStateChange}
+        handleStateChange={handleModbusChange} // Pass the new handler
       />
       <div className="flex bg-gray-200 p-1 rounded-lg">
+        {/* ... (rest of the component is unchanged) */}
         <button
           onClick={() => setActiveTab("general")}
           className={`w-1/2 py-2.5 text-sm font-semibold rounded-md transition-all duration-300 ${

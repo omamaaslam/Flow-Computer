@@ -151,6 +151,10 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({
 
   const filteredOptions = useMemo(() => {
     const id = interfaceId.toUpperCase();
+
+    if (id === "MODM1") {
+      return allDeviceOptions;
+    }
     if (id === "TI1") {
       return allDeviceOptions.filter(
         (opt) => opt.value === "TemperatureDevice"
@@ -161,6 +165,7 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({
         ["TemperatureDevice", "PressureDevice"].includes(opt.value)
       );
     }
+
     if (id.startsWith("DI")) {
       return allDeviceOptions.filter((opt) => opt.value === "VolumeDevice");
     }

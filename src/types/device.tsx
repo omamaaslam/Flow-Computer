@@ -1,40 +1,38 @@
-export interface DeviceConfig {
-  // General Info
-  device_id?: string;
-  device_type?: string;
-  manufacturer?: string;
-  model?: string;
-  serial_number?: string;
-  tag_name?: string;
-  build_year: string;
-  version?: string;
+// types/device.ts
 
-  temp_min?: number;
-  temp_max?: number;
-  unit?: string;
-  correction_c0?: number;
-  correction_c1?: number;
-  correction_c2?: number;
-  correction_c3?: number;
-
-  // Pressure Parameters
-  pressure_min?: number;
-  pressure_max?: number;
-
-  // Pulse Parameters
-  frequency_hz?: number;
-  frequency_type?: string;
-  pulse_duration_ms?: number;
-  pulse_pause_ms?: number;
-  pulse_volume?: number;
-
-  // A fallback for any other property
-  [key: string]: any;
+// A specific interface for the nested Modbus settings
+export interface ModbusSettings {
+  slave_id: number; // Changed from slave_id to slave_address for claritystring
+  slave_address: number;
+  register_address: number;
+  register_count: number;
+  data_type: string;
+  pollingAddress?: string; // Optional for HART devices
+  commandSet?: string; // Optional for HART devices
+  variableType?: string; // Optional for HART devices
 }
 
-// This remains the same, but 'config' now refers to the flat type above
-export interface Device {
-  id: string;
-  name: string;
-  config: DeviceConfig;
+// The main DeviceConfig, now including the nested object
+export interface DeviceConfig {
+  // General Info
+  device_id: string;
+  device_type?: string;
+  manufacturer: string;
+  model: string;
+  serial_number: string;
+  tag_name: string;
+  build_year: string;
+  version: string;
+  modbus_settings?: ModbusSettings;
+
+  // Gas-specific value
+  gas_value?: number;
+  data?: {
+    status?: string;
+    timestamp?: string;
+    value?: any;
+  };
+  
+  // A fallback for any other property from other device types
+  [key:string]: any;
 }
