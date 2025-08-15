@@ -35,10 +35,10 @@ const defaultFormState = {
   gas_value: "0.0",
   // Nested object for Modbus settings
   modbus_settings: {
-    slave_address: "2",
-    register_address: "4001",
-    register_count: "2",
-    data_type: "Float",
+    slave_address: "",
+    register_address: "",
+    register_count: "",
+    data_type: "",
   },
 };
 
@@ -52,10 +52,9 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
 }) => {
   const [formState, setFormState] = useState(defaultFormState);
 
-  // --- UPDATED useEffect for Data Hydration with Nested State ---
+  // --- [FIXED] UPDATED useEffect for Data Hydration with Nested State ---
   useEffect(() => {
     if (initialData) {
-      const modbusData = initialData.modbus_settings || {};
       setFormState({
         manufacturer: initialData.manufacturer ?? defaultFormState.manufacturer,
         serial_number:
@@ -67,19 +66,20 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
         gas_value: String(initialData.gas_value ?? defaultFormState.gas_value),
         modbus_settings: {
           slave_address: String(
-            modbusData.slave_address ??
+            initialData.modbus_settings?.slave_address ?? // Use optional chaining
               defaultFormState.modbus_settings.slave_address
           ),
           register_address: String(
-            modbusData.register_address ??
+            initialData.modbus_settings?.register_address ?? // Use optional chaining
               defaultFormState.modbus_settings.register_address
           ),
           register_count: String(
-            modbusData.register_count ??
+            initialData.modbus_settings?.register_count ?? // Use optional chaining
               defaultFormState.modbus_settings.register_count
           ),
           data_type:
-            modbusData.data_type ?? defaultFormState.modbus_settings.data_type,
+            initialData.modbus_settings?.data_type ?? // Use optional chaining
+            defaultFormState.modbus_settings.data_type,
         },
       });
     } else {
@@ -107,7 +107,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
     }
   };
 
-  // --- UPDATED handleSubmit to build the new payload structure ---
+  // --- [FIXED] UPDATED handleSubmit to build the new payload structure ---
   const handleSubmit = () => {
     const safeParseFloat = (val: string) =>
       val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
@@ -127,6 +127,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
       gas_value: safeParseFloat(formState.gas_value),
       // Nested modbus_settings object
       modbus_settings: {
+        slave_id: safeParseInt(formState.modbus_settings.slave_address), // Added to satisfy type
         slave_address: safeParseInt(formState.modbus_settings.slave_address),
         register_address: safeParseInt(
           formState.modbus_settings.register_address
@@ -147,20 +148,16 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
       </div>
 
       {/* --- Pass nested state and a specialized handler to BridgeComponent --- */}
-      {/* Note: The 'formState' prop now passes the nested object */}
-      {/* Note: The 'handleStateChange' prop is a new function that correctly updates the nested state */}
       <BridgeComponent
         interface_type={interface_type}
         formState={{
-          // Pass the modbus fields directly
-          slave_id: formState.modbus_settings.slave_address, // Map slave_address to slave_id if BridgeComponent expects it
+          slave_id: formState.modbus_settings.slave_address,
           register_address: formState.modbus_settings.register_address,
           register_count: formState.modbus_settings.register_count,
           data_type: formState.modbus_settings.data_type,
         }}
         errors={{}}
         handleStateChange={(field, value) => {
-          // Map 'slave_id' back to 'slave_address' for our state
           const stateField = field === "slave_id" ? "slave_address" : field;
           handleStateChange(stateField, value, "modbus_settings");
         }}

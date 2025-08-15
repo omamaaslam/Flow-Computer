@@ -127,20 +127,49 @@ const ConfigureInterface = observer(
       setIsSaving(true);
       try {
         if (isEditing && editingDevice) {
-          console.log("I am adding a existing device", config)
+          console.log("Updating an existing device with config:", config);
           await anInterface.updateDevice(editingDevice.id, config);
         } else if (!isEditing && deviceTypeToConfigure) {
-          const d = anInterface.devices.length + 1;
+          // 1. Define which interface types are single-device based on their ID prefix.
+          // 'DI' for Digital Inputs, 'TI' for RTD (since your IOCard has TI1).
+          const singleDeviceInterfacePrefixes = ["DI", "TI"];
+          const currentInterfacePrefix = anInterface.interface_id.substring(
+            0,
+            2
+          );
+
+          let newDeviceId: string;
+
+          // 2. Check if the current interface is a single-device type.
+          if (singleDeviceInterfacePrefixes.includes(currentInterfacePrefix)) {
+            // If it's a DI or RTD interface, the device ID is the same as the interface ID.
+            // This is the main fix for your problem.
+            newDeviceId = anInterface.interface_id;
+          } else {
+            // For multi-device interfaces like MODBUS, generate a numbered ID.
+            // Note: We use anInterface.interface_id instead of config.device_id to be safe.
+            const deviceCount = anInterface.devices.length;
+            newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
+          }
+
+          // 3. Create the final configuration object.
+          // We take all data from the form (`config`) but forcefully overwrite the
+          // device_id with the one we just correctly generated.
           const finalConfig = {
             ...config,
-            device_id: `${config.device_id}D${d}`,
+            device_id: newDeviceId,
           };
-          console.log("I am adding a new device", finalConfig)
+
+          console.log(
+            "Adding a new device with generated config:",
+            finalConfig
+          );
           await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
         }
+
         closeModal();
       } catch (error) {
-        console.error("Failed to save device config:", error);
+        console.error("Failed to save device configuration:", error);
       } finally {
         setIsSaving(false);
       }
