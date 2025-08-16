@@ -126,7 +126,7 @@ const ConfigureInterface = observer(
       setIsSaving(true);
       try {
         if (isEditing && editingDevice) {
-          // await anInterface.updateDevice(editingDevice.id, config);
+          await anInterface.updateDevice(editingDevice.id, config);
         }
         // else if (!isEditing && deviceTypeToConfigure) {
         //   const singleDeviceInterfacePrefixes = ["DI", "TI"];
@@ -172,9 +172,7 @@ const ConfigureInterface = observer(
             } = config;
 
             if (!pollingAddress || !variableType) {
-              console.error(
-                "Polling Address and Variable Type are required for HART device ID."
-              );
+              console.error("Polling Address and Variable Type are required for HART device ID.");
               setIsSaving(false);
               return;
             }
@@ -183,33 +181,26 @@ const ConfigureInterface = observer(
             payloadToSave = restOfConfig;
 
             // Assemble the special HART device ID
-            newDeviceId = `${anInterface.interface_id}T${
-              deviceCount + 1
-            }${variableType}${pollingAddress}`;
+            newDeviceId = `${anInterface.interface_id}T${pollingAddress}${variableType}`;
           }
           // --- CASE 2: Single-Device Interfaces (DI, RTD) ---
           else if (["DI", "TI"].includes(currentInterfacePrefix)) {
             newDeviceId = anInterface.interface_id;
           }
-          // --- CASE 3: Default Multi-Device (MODBUS, etc.) ---
           else {
             newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
           }
 
           const finalConfig = {
             ...config,
-            device_id: newDeviceId, // Overwrite with our generated ID
+            device_id: newDeviceId,
           };
 
           console.log(
             "Adding a new device with generated config:",
             finalConfig
           );
-          console.log(
-            "Adding a new device with generated config:",
-            finalConfig
-          );
-          // await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
+          await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
         }
         closeModal();
       } catch (error) {

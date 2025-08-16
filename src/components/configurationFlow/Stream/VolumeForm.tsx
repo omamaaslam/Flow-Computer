@@ -177,7 +177,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
               </div>
 
               <div className="space-y-1">
-                <label className="block font-medium">Max Total Volume</label>
+                <label className="block font-medium">Max Volume Step</label>
                 <input
                   name="max_total_volume_limit" // <-- CHANGED from "max_total_volume"
                   value={config.max_total_volume_limit ?? ""}

@@ -1,6 +1,6 @@
 import { observer } from "mobx-react-lite";
 import React from "react";
-import { Settings } from "lucide-react";
+import { Newspaper } from "lucide-react";
 import { navigationStore } from "../../../stores/NavigationStore";
 
 interface StreamCardProps {
@@ -63,8 +63,10 @@ const StreamCard: React.FC<StreamCardProps> = observer(
         }}
       >
         <div className="flex flex-col items-center gap-3 md:gap-4 w-full">
-          {/* Stream Info */}
-          <div className="flex flex-col items-start gap-1.5 w-full">
+          <div
+            className="flex flex-col items-start gap-1.5 w-full cursor-pointer"
+            onClick={() => navigationStore.gotoConfiguration(stream.id)}
+          >
             <div className="flex items-center justify-center px-2 py-1.5 md:px-4 md:py-2 gap-1 w-full border-2 border-dashed border-[#F0F0F0] rounded-[4px]">
               <div className="flex items-center gap-1 md:gap-2 flex-wrap">
                 <span className="text-[13px] sm:text-[14px] md:text-[20px] font-semibold text-white">
@@ -109,10 +111,11 @@ const StreamCard: React.FC<StreamCardProps> = observer(
               boxShadow:
                 "0px 10px 6px rgba(0, 0, 0, 0.02), 0px 4px 4px rgba(0, 0, 0, 0.04)",
             }}
+            onClick={() => navigationStore.gotoMonitor()}
           >
-            <Settings className="w-4 h-4 md:w-6 md:h-6 text-[#9BC53F]" />
-            <span className="text-[11px] sm:text-[12px] md:text-[18px] font-semibold text-black" onClick={()=> navigationStore.gotoConfiguration(stream.id)}>
-              Configuration
+            <Newspaper className="w-4 h-4 md:w-6 md:h-6 text-[#9BC53F]" />
+            <span className="text-[11px] sm:text-[12px] md:text-[18px] font-semibold text-black">
+              View Results
             </span>
           </button>
         </div>
