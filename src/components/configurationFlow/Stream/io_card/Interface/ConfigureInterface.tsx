@@ -139,22 +139,12 @@ const ConfigureInterface = observer(
           );
 
           let newDeviceId: string;
-
-          // 2. Check if the current interface is a single-device type.
           if (singleDeviceInterfacePrefixes.includes(currentInterfacePrefix)) {
-            // If it's a DI or RTD interface, the device ID is the same as the interface ID.
-            // This is the main fix for your problem.
             newDeviceId = anInterface.interface_id;
           } else {
-            // For multi-device interfaces like MODBUS, generate a numbered ID.
-            // Note: We use anInterface.interface_id instead of config.device_id to be safe.
             const deviceCount = anInterface.devices.length;
             newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
           }
-
-          // 3. Create the final configuration object.
-          // We take all data from the form (`config`) but forcefully overwrite the
-          // device_id with the one we just correctly generated.
           const finalConfig = {
             ...config,
             device_id: newDeviceId,
@@ -277,7 +267,7 @@ const ConfigureInterface = observer(
         interface_type: anInterface.name,
         interface_id: anInterface.interface_id,
       };
-
+      
       switch (modalView) {
         case "modbusSettings":
           return (
@@ -328,6 +318,7 @@ const ConfigureInterface = observer(
             deviceOptions.find((d) => d.value === deviceTypeToConfigure)
               ?.label || deviceTypeToConfigure;
           if (isGasDevice) {
+            console.log("GasDevice ko ya data bhej raha hu", deviceProps);
             return (
               <GasDeviceForm {...deviceProps} deviceTypeLabel={deviceLabel} />
             );

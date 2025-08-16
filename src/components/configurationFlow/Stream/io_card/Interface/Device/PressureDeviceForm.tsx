@@ -16,7 +16,7 @@ interface PressureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
-  initialData?: DeviceConfig | null;
+  initialData: DeviceConfig | any;
   bridgeData?: any | null;
   interface_id: string;
 }
@@ -161,7 +161,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
         <div>Status: {initialData?.data?.status ?? "N/A"}</div>
         <div>
           Timestamp:{" "}
-          {new Date(initialData?.data.timestamp * 1000).toLocaleTimeString([], {
+          {new Date(initialData.data.timestamp * 1000).toLocaleTimeString([], {
             hour12: false,
           })}
         </div>

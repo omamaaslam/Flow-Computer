@@ -4,10 +4,10 @@ import type { DeviceConfig } from "../types/device";
 
 export class Device {
   public id: string;
-  public name: string;
+  public name: any;
   public config: DeviceConfig;
 
-  constructor(deviceData: any) {
+  constructor(deviceData: DeviceConfig) {
     makeAutoObservable(this);
 
     this.id = deviceData.device_id;

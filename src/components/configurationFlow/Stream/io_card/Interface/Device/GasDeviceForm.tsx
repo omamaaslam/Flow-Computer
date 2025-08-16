@@ -17,7 +17,7 @@ interface GasDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
-  initialData?: DeviceConfig | null;
+  initialData?: DeviceConfig | any;
   deviceTypeLabel: string;
   interface_id: string;
 }
@@ -25,15 +25,13 @@ interface GasDeviceFormProps {
 // --- UPDATED DEFAULT STATE with Nested Structure ---
 const defaultFormState = {
   // General fields state
-  manufacturer: "Default Manufacturer",
-  serial_number: "SN-12345",
-  model: "Model-X",
-  tag_name: "Gas-Device-Tag",
-  build_year: "2025",
-  version: "v1.0",
-  // Gas-specific field
-  gas_value: "0.0",
-  // Nested object for Modbus settings
+  manufacturer: "",
+  serial_number: "",
+  model: "",
+  tag_name: "",
+  build_year: "",
+  version: "",
+  gas_value: "",
   modbus_settings: {
     slave_address: "",
     register_address: "",
@@ -51,7 +49,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
   interface_id,
 }) => {
   const [formState, setFormState] = useState(defaultFormState);
-
+  console.log("GasDeviceForm initialData", initialData);
   // --- [FIXED] UPDATED useEffect for Data Hydration with Nested State ---
   useEffect(() => {
     if (initialData) {
@@ -87,7 +85,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
       setFormState(defaultFormState);
     }
   }, [initialData]);
-
+  console.warn("GasDevice", formState);
   // --- UPDATED handleStateChange to manage nested state ---
   const handleStateChange = (
     field: string,
@@ -150,12 +148,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
       {/* --- Pass nested state and a specialized handler to BridgeComponent --- */}
       <BridgeComponent
         interface_type={interface_type}
-        formState={{
-          slave_id: formState.modbus_settings.slave_address,
-          register_address: formState.modbus_settings.register_address,
-          register_count: formState.modbus_settings.register_count,
-          data_type: formState.modbus_settings.data_type,
-        }}
+        formState={formState.modbus_settings}
         errors={{}}
         handleStateChange={(field, value) => {
           const stateField = field === "slave_id" ? "slave_address" : field;

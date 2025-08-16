@@ -17,7 +17,7 @@ interface PulseVolumeDeviceFormProps {
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
   interface_id: string;
-  initialData?: DeviceConfig | null;
+  initialData?: DeviceConfig | any;
 }
 
 const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({

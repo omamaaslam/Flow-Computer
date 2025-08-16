@@ -15,7 +15,7 @@ interface VolumeDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
-  initialData?: DeviceConfig | null;
+  initialData?: DeviceConfig | any;
   interface_id: string;
 }
 
@@ -26,6 +26,7 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
   initialData,
   interface_id,
 }) => {
+  console.log("incoming data", initialData);
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
@@ -43,14 +44,14 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
   useEffect(() => {
     if (initialData) {
       setFormState({
-        manufacturer: initialData.manufacturer || "",
-        serial_number: initialData.serial_number || "",
-        model: initialData.model || "",
-        tag_name: initialData.tag_name || "",
-        build_year: initialData.build_year || "",
+        manufacturer: initialData.manufacturer ?? "",
+        serial_number: initialData.serial_number ?? "",
+        model: initialData.model ?? "",
+        tag_name: initialData.tag_name ?? "",
+        build_year: initialData.build_year ?? "",
         min_volume: String(initialData.min_volume),
-        max_volume: String(initialData.max_volume || ""),
-        version: initialData.version || "v1.3",
+        max_volume: String(initialData.max_volume ?? ""),
+        version: initialData.version ?? "",
       });
     }
   }, [initialData]);

@@ -14,7 +14,7 @@ interface PulseFlowRateDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
-  initialData?: DeviceConfig | null;
+  initialData?: DeviceConfig | any;
   interface_id: string;
 }
 

@@ -30,7 +30,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
-  console.log(interface_type);
+    console.log("incoming data", initialData);
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",

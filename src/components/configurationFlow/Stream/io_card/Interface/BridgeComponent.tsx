@@ -15,6 +15,7 @@ const BridgeComponent: React.FC<InterfaceBridgeProps> = ({
   errors,
   handleStateChange,
 }) => {
+  console.warn("BridgeComponent", formState);
   if (interface_type === "ModbusInterface") {
     return (
       <MODBridge
