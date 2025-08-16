@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { DeviceConfig } from "../../../../../../types/device";
 import BridgeComponent from "../BridgeComponent";
+
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
   <input
@@ -9,14 +10,11 @@ const Input = (props: InputProps) => (
   />
 );
 
-// Main form component starts here
 interface TemperatureDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
   initialData?: DeviceConfig | null;
-  interface_id: string;
-  bridgeData?: any | null;
 }
 
 const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
@@ -24,12 +22,12 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   onSave,
   interface_type,
   initialData,
-  interface_id,
-  bridgeData,
 }) => {
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
+  
+  // A single state object that holds data for ALL possible fields.
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",
@@ -46,58 +44,68 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     correction_c1: "",
     correction_c2: "",
     correction_c3: "",
-    modbus_settings: {
-      slave_id: "",
-      slave_address: "",
-      register_address: "",
-      register_count: "",
-      data_type: "Float32", // Set a default value here
-    },
-    // HART-specific fields
+    // HART-specific fields (flat structure, live at the top level)
     pollingAddress: "",
     commandSet: "Universal",
     variableType: "",
+    // Modbus-specific fields (nested structure)
+    modbus_settings: {
+      slave_id: "",
+      register_address: "",
+      register_count: "",
+      data_type: "Float32",
+    },
   });
 
   useEffect(() => {
-    const data: Partial<DeviceConfig> = initialData || {};
-    const interfaceSpecificData: any = bridgeData || {};
-    setFormState((prev) => ({ // Use previous state to avoid overwriting defaults
-      ...prev,
-      manufacturer: data.manufacturer ?? "",
-      serial_number: data.serial_number ?? "",
-      model: data.model ?? "",
-      tag_name: data.tag_name ?? "",
-      build_year: data.build_year ?? "",
-      version: data.version ?? "",
-      temp_min: String(data.temp_min ?? ""),
-      temp_max: String(data.temp_max ?? ""),
-      unit: data.unit ?? "Celsius",
-      scaling_factor: String(data.scaling_factor ?? ""),
-      offset: String(data.offset ?? ""),
-      correction_c0: String(data.correction_c0 ?? ""),
-      correction_c1: String(data.correction_c1 ?? ""),
-      correction_c2: String(data.correction_c2 ?? ""),
-      correction_c3: String(data.correction_c3 ?? ""),
-      modbus_settings: {
-        slave_id: String(interfaceSpecificData.slave_id ?? prev.modbus_settings.slave_id),
-        slave_address: String(interfaceSpecificData.slave_address ?? prev.modbus_settings.slave_address),
-        register_address: String(interfaceSpecificData.register_address ?? prev.modbus_settings.register_address),
-        register_count: String(interfaceSpecificData.register_count ?? prev.modbus_settings.register_count),
-        data_type: interfaceSpecificData.data_type ?? prev.modbus_settings.data_type,
-      },
-      pollingAddress: String(data.pollingAddress ?? ""),
-      commandSet: data.commandSet ?? "Universal",
-      variableType: data.variableType ?? "",
-    }));
-  }, [initialData, bridgeData]);
+    let baseState = { ...formState };
 
-  // This handler is for top-level fields like "manufacturer"
+    if (initialData) {
+      // Populate all general, parameter, and potentially saved bridge fields
+      baseState = {
+        ...baseState,
+        manufacturer: initialData.manufacturer ?? "",
+        serial_number: initialData.serial_number ?? "",
+        model: initialData.model ?? "",
+        tag_name: initialData.tag_name ?? "",
+        build_year: initialData.build_year ?? "",
+        version: initialData.version ?? "",
+        temp_min: String(initialData.temp_min ?? ""),
+        temp_max: String(initialData.temp_max ?? ""),
+        unit: initialData.unit ?? "Celsius",
+        scaling_factor: String(initialData.scaling_factor ?? ""),
+        offset: String(initialData.offset ?? ""),
+        correction_c0: String(initialData.correction_c0 ?? ""),
+        correction_c1: String(initialData.correction_c1 ?? ""),
+        correction_c2: String(initialData.correction_c2 ?? ""),
+        correction_c3: String(initialData.correction_c3 ?? ""),
+        commandSet: initialData.commandSet ?? "Universal", // HART field
+        // Safely merge modbus_settings if they exist in initialData
+        modbus_settings: initialData.modbus_settings 
+          ? { ...baseState.modbus_settings, ...initialData.modbus_settings } 
+                    : baseState.modbus_settings
+      };
+
+      // Special logic for HART: parse the device_id to fill transient fields
+      if (interface_type === 'HartInterface' && initialData.device_id) {
+        const hartIdRegex = /(S|P)(\d+)$/;
+        const match = initialData.device_id.match(hartIdRegex);
+        if (match) {
+          baseState.variableType = match[1];
+          baseState.pollingAddress = match[2];
+        }
+      }
+    }
+    setFormState(baseState);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialData, interface_type]);
+
+  // General handler for top-level state properties (e.g., manufacturer, pollingAddress)
   const handleStateChange = (field: string, value: string) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
-  
-  // *** FIX 1: Create a dedicated handler for the nested modbus_settings object ***
+
+  // Specific handler for the nested `modbus_settings` object
   const handleModbusChange = (field: string, value: string) => {
     setFormState((prev) => ({
       ...prev,
@@ -109,50 +117,37 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   };
 
   const validateAndSave = () => {
-    const safeParseFloat = (val: string) =>
-      val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
-    const safeParseInt = (val: string) =>
-      val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
+    const safeParseFloat = (val: string) => (val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0);
+    // const safeParseInt = (val: string) => (val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0);
 
-    let final_interface_id = interface_id; // Use a local variable
-    if (interface_type.toUpperCase().includes("HART")) {
-      const { pollingAddress, variableType } = formState;
-      if (pollingAddress && variableType) {
-        final_interface_id = `${interface_id}T${pollingAddress}${variableType}`;
-      }
-    }
+    // Destructure to separate the modbus settings from everything else
+    const { modbus_settings, ...restOfState } = formState;
+
+    // Build the main config object with all flat properties (general, parameters, HART)
     const finalConfig: DeviceConfig = {
-      device_id: final_interface_id,
-      manufacturer: formState.manufacturer,
-      model: formState.model,
-      serial_number: formState.serial_number,
-      tag_name: formState.tag_name,
-      build_year: formState.build_year,
-      version: formState.version,
+      ...restOfState,
+      device_id: initialData?.device_id || "", // Temporary ID, parent will overwrite
       temp_min: safeParseFloat(formState.temp_min),
       temp_max: safeParseFloat(formState.temp_max),
       scaling_factor: safeParseFloat(formState.scaling_factor),
       offset: safeParseFloat(formState.offset),
-      unit: formState.unit as "Celsius" | "Fahrenheit" | "Kelvin",
       correction_c0: safeParseFloat(formState.correction_c0),
       correction_c1: safeParseFloat(formState.correction_c1),
       correction_c2: safeParseFloat(formState.correction_c2),
       correction_c3: safeParseFloat(formState.correction_c3),
-      modbus_settings: {
-        slave_id: safeParseInt(formState.modbus_settings.slave_id),
-        slave_address: safeParseInt(formState.modbus_settings.slave_address),
-        register_address: safeParseInt(
-          formState.modbus_settings.register_address
-        ),
-        register_count: safeParseInt(formState.modbus_settings.register_count),
-        data_type: formState.modbus_settings.data_type,
-      },
+      unit: formState.unit as any,
     };
-    if (interface_type.toUpperCase().includes("HART")) {
-      finalConfig.pollingAddress = formState.pollingAddress;
-      finalConfig.commandSet = formState.commandSet;
-      finalConfig.variableType = formState.variableType;
+
+    // If it's a Modbus interface, add the parsed modbus_settings object
+    if (interface_type === 'ModbusInterface') {
+      finalConfig.modbus_settings = {
+        slave_id: modbus_settings.slave_id,
+        register_address: modbus_settings.register_address,
+        register_count: modbus_settings.register_count,
+        data_type: modbus_settings.data_type,
+      };
     }
+
     onSave(finalConfig);
   };
 
@@ -169,16 +164,26 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
         <div>Status: {initialData?.data?.status ?? "N/A"}</div>
         <div>Live Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>
+      
+      {/* --- Conditional Rendering Logic for the Bridge --- */}
+      {interface_type === 'HartInterface' && (
+        <BridgeComponent
+          interface_type={interface_type}
+          formState={formState} // Pass the whole flat state object for HART
+          errors={{}}
+          handleStateChange={handleStateChange} // Use the general handler for HART
+        />
+      )}
+      {interface_type === 'ModbusInterface' && (
+        <BridgeComponent
+          interface_type={interface_type}
+          formState={formState.modbus_settings} // Pass only the nested object for Modbus
+          errors={{}}
+          handleStateChange={handleModbusChange} // Use the specific handler for Modbus
+        />
+      )}
 
-      {/* *** FIX 2: Pass the correct nested state and the new handler to the BridgeComponent *** */}
-      <BridgeComponent
-        interface_type={interface_type}
-        formState={formState.modbus_settings} // Pass the nested object
-        errors={{}}
-        handleStateChange={handleModbusChange} // Pass the new handler
-      />
       <div className="flex bg-gray-200 p-1 rounded-lg">
-        {/* ... (rest of the component is unchanged) */}
         <button
           onClick={() => setActiveTab("general")}
           className={`w-1/2 py-2.5 text-sm font-semibold rounded-md transition-all duration-300 ${
@@ -200,6 +205,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
           Parameters
         </button>
       </div>
+
       <div>
         {activeTab === "general" && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
@@ -402,4 +408,5 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     </div>
   );
 };
+
 export default TemperatureDeviceForm;

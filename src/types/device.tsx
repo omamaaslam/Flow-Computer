@@ -2,14 +2,10 @@
 
 // A specific interface for the nested Modbus settings
 export interface ModbusSettings {
-  slave_id: number; // Changed from slave_id to slave_address for claritystring
-  slave_address: number;
-  register_address: number;
-  register_count: number;
+  slave_id: string; // Changed from slave_id to slave_address for claritystring
+  register_address: string;
+  register_count: string;
   data_type: string;
-  pollingAddress?: string; // Optional for HART devices
-  commandSet?: string; // Optional for HART devices
-  variableType?: string; // Optional for HART devices
 }
 
 // The main DeviceConfig, now including the nested object
@@ -24,7 +20,9 @@ export interface DeviceConfig {
   build_year: string;
   version: string;
   modbus_settings?: ModbusSettings;
-
+  pollingAddress?: string; // Optional for HART devices
+  commandSet?: string; // Optional for HART devices
+  variableType?: string; // Optional for HART devices
   // Gas-specific value
   gas_value?: number;
   data?: {
@@ -32,7 +30,7 @@ export interface DeviceConfig {
     timestamp?: string;
     value?: any;
   };
-  
+
   // A fallback for any other property from other device types
-  [key:string]: any;
+  [key: string]: any;
 }

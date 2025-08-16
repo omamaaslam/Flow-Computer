@@ -126,33 +126,91 @@ const ConfigureInterface = observer(
       setIsSaving(true);
       try {
         if (isEditing && editingDevice) {
-          await anInterface.updateDevice(editingDevice.id, config);
-        } else if (!isEditing && deviceTypeToConfigure) {
-          const singleDeviceInterfacePrefixes = ["DI", "TI"];
+          // await anInterface.updateDevice(editingDevice.id, config);
+        }
+        // else if (!isEditing && deviceTypeToConfigure) {
+        //   const singleDeviceInterfacePrefixes = ["DI", "TI"];
+        //   const currentInterfacePrefix = anInterface.interface_id.substring(
+        //     0,
+        //     2
+        //   );
+
+        //   let newDeviceId: string;
+        //   if (singleDeviceInterfacePrefixes.includes(currentInterfacePrefix)) {
+        //     newDeviceId = anInterface.interface_id;
+        //   } else {
+        //     const deviceCount = anInterface.devices.length;
+        //     newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
+        //   }
+        //   const finalConfig = {
+        //     ...config,
+        //     device_id: newDeviceId,
+        //   };
+
+        //   console.log(
+        //     "Adding a new device with generated config:",
+        //     finalConfig
+        //   );
+        //   // await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
+        // }
+        // --- ADD a new device ---
+        else if (!isEditing && deviceTypeToConfigure) {
+          let newDeviceId: string;
           const currentInterfacePrefix = anInterface.interface_id.substring(
             0,
             2
           );
+          const deviceCount = anInterface.devices.length;
+          let payloadToSave: Partial<DeviceConfig>;
+          // --- CASE 1: HART Interface ---
+          if (currentInterfacePrefix === "HI") {
+            const {
+              pollingAddress,
+              variableType,
+              commandSet,
+              ...restOfConfig
+            } = config;
 
-          let newDeviceId: string;
-          if (singleDeviceInterfacePrefixes.includes(currentInterfacePrefix)) {
+            if (!pollingAddress || !variableType) {
+              console.error(
+                "Polling Address and Variable Type are required for HART device ID."
+              );
+              setIsSaving(false);
+              return;
+            }
+
+            // This is the clean payload without the transient fields
+            payloadToSave = restOfConfig;
+
+            // Assemble the special HART device ID
+            newDeviceId = `${anInterface.interface_id}T${
+              deviceCount + 1
+            }${variableType}${pollingAddress}`;
+          }
+          // --- CASE 2: Single-Device Interfaces (DI, RTD) ---
+          else if (["DI", "TI"].includes(currentInterfacePrefix)) {
             newDeviceId = anInterface.interface_id;
-          } else {
-            const deviceCount = anInterface.devices.length;
+          }
+          // --- CASE 3: Default Multi-Device (MODBUS, etc.) ---
+          else {
             newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
           }
+
           const finalConfig = {
             ...config,
-            device_id: newDeviceId,
+            device_id: newDeviceId, // Overwrite with our generated ID
           };
 
           console.log(
             "Adding a new device with generated config:",
             finalConfig
           );
-          await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
+          console.log(
+            "Adding a new device with generated config:",
+            finalConfig
+          );
+          // await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
         }
-
         closeModal();
       } catch (error) {
         console.error("Failed to save device configuration:", error);
