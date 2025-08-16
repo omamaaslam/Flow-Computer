@@ -30,7 +30,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
-    console.log("incoming data", initialData);
   const [formState, setFormState] = useState({
     manufacturer: "",
     serial_number: "",
@@ -154,7 +153,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
       finalConfig.commandSet = formState.commandSet;
       finalConfig.variableType = formState.variableType;
     }
-    console.log("ya raha payload...", {data: finalConfig});
     onSave(finalConfig);
   };
 

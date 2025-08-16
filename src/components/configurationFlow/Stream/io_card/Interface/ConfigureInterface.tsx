@@ -98,7 +98,6 @@ const ConfigureInterface = observer(
       useState<string>("");
     const [isEditing, setIsEditing] = useState(false);
     const [editingDevice, setEditingDevice] = useState<Device | null>(null);
-    const [bridgeData, setBridgeData] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
@@ -127,11 +126,8 @@ const ConfigureInterface = observer(
       setIsSaving(true);
       try {
         if (isEditing && editingDevice) {
-          console.log("Updating an existing device with config:", config);
           await anInterface.updateDevice(editingDevice.id, config);
         } else if (!isEditing && deviceTypeToConfigure) {
-          // 1. Define which interface types are single-device based on their ID prefix.
-          // 'DI' for Digital Inputs, 'TI' for RTD (since your IOCard has TI1).
           const singleDeviceInterfacePrefixes = ["DI", "TI"];
           const currentInterfacePrefix = anInterface.interface_id.substring(
             0,
@@ -186,7 +182,6 @@ const ConfigureInterface = observer(
     const handleAddNewDeviceClick = () => {
       setIsEditing(false);
       setEditingDevice(null);
-      setBridgeData(null);
       setModalView("addDevice_selectType");
     };
 
@@ -199,19 +194,29 @@ const ConfigureInterface = observer(
 
     const handleDeviceClick = (device: Device) => {
       setSelectedDeviceId(device.id);
-      setEditingDevice(device);
       setDeviceTypeToConfigure(device.name);
       setIsEditing(true);
+
+      let completeInitialData = { ...device.config };
+
       if (
         anInterface.config.interface_type === "ModbusInterface" &&
-        (anInterface.config as any).device_congif
+        (anInterface.config as any).modbus_settings
       ) {
-        setBridgeData(
-          (anInterface.config as any).device_congif[device.id] || null
-        );
-      } else {
-        setBridgeData(null);
+        const deviceModbusSettings = (anInterface.config as any)
+          .modbus_settings[device.id];
+
+        if (deviceModbusSettings) {
+          completeInitialData.modbus_settings = deviceModbusSettings;
+        }
       }
+
+      // Create a NEW INSTANCE of the Device class with the complete data
+      const updatedDeviceInstance = new Device(completeInitialData);
+
+      // Set this new, valid instance into the state
+      setEditingDevice(updatedDeviceInstance);
+
       setModalView("addDevice_configure");
     };
 
@@ -226,7 +231,6 @@ const ConfigureInterface = observer(
       setIsEditing(false);
       setEditingDevice(null);
       setSelectedDeviceId(null);
-      setBridgeData(null);
     };
 
     const getModalTitle = () => {
@@ -261,13 +265,12 @@ const ConfigureInterface = observer(
 
       const deviceProps = {
         initialData: isEditing ? editingDevice?.config : null,
-        bridgeData: isEditing ? bridgeData : null,
         onSave: handleSaveDeviceConfiguration,
         onBack: closeModal,
-        interface_type: anInterface.name,
+        interface_type: anInterface.config.interface_type,
         interface_id: anInterface.interface_id,
       };
-      
+
       switch (modalView) {
         case "modbusSettings":
           return (
@@ -318,7 +321,6 @@ const ConfigureInterface = observer(
             deviceOptions.find((d) => d.value === deviceTypeToConfigure)
               ?.label || deviceTypeToConfigure;
           if (isGasDevice) {
-            console.log("GasDevice ko ya data bhej raha hu", deviceProps);
             return (
               <GasDeviceForm {...deviceProps} deviceTypeLabel={deviceLabel} />
             );

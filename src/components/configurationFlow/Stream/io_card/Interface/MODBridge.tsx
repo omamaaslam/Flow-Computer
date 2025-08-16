@@ -134,8 +134,8 @@ const MODBridge: React.FC<MODBridgeProps> = ({
     <div className="grid grid-cols-2 gap-x-6 gap-y-4">
       <FormField label="Slave ID" error={errors.slave_id}>
         <CustomCombobox
-          hasError={!!errors.slave_id}
-          value={formState.slave_id}
+         hasError={!!errors.slave_address}
+          value={formState.slave_address}
           onChange={(val: any) => handleStateChange("slave_id", val)}
           placeholder="Please set slave ID"
           options={[
