@@ -33,10 +33,9 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
   const lfOptions = [2, 5];
   const hfOptions = [5, 20, 50, 100, 250, 500, 1000, 1500, 2000, 3000, 4000];
   console.log(interface_type);
-  // --- FIX #1: Ensure state includes all required string fields from DeviceConfig ---
   const [formState, setFormState] = useState({
     manufacturer: "",
-    build_year: "2025",
+    build_year: "",
     serial_number: "",
     model: "",
     tag_name: "",
@@ -56,8 +55,8 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
       serial_number: data.serial_number ?? "",
       model: data.model ?? "",
       tag_name: data.tag_name ?? "",
-      build_year: data.build_year ?? "2025",
-      version: data.version ?? "v1.0",
+      build_year: data.build_year ?? "",
+      version: data.version ?? "",
       frequency_type: data.frequency_type ?? "LF",
       frequency_hz: String(
         data.frequency_hz ??
@@ -89,6 +88,7 @@ const PulseVolumeDeviceForm: React.FC<PulseVolumeDeviceFormProps> = ({
     // --- FIX #3: Ensure final config matches DeviceConfig type exactly ---
     const finalConfig: DeviceConfig = {
       device_id: interface_id,
+      device_type: "PulseVolumeDevice",
       manufacturer: formState.manufacturer,
       model: formState.model,
       build_year: formState.build_year,

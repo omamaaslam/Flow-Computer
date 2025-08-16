@@ -12,7 +12,7 @@ export interface ModbusSettings {
 export interface DeviceConfig {
   // General Info
   device_id: string;
-  device_type?: string;
+  device_type: string;
   manufacturer: string;
   model: string;
   serial_number: string;

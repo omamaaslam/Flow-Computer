@@ -172,7 +172,9 @@ const ConfigureInterface = observer(
             } = config;
 
             if (!pollingAddress || !variableType) {
-              console.error("Polling Address and Variable Type are required for HART device ID.");
+              console.error(
+                "Polling Address and Variable Type are required for HART device ID."
+              );
               setIsSaving(false);
               return;
             }
@@ -186,8 +188,7 @@ const ConfigureInterface = observer(
           // --- CASE 2: Single-Device Interfaces (DI, RTD) ---
           else if (["DI", "TI"].includes(currentInterfacePrefix)) {
             newDeviceId = anInterface.interface_id;
-          }
-          else {
+          } else {
             newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
           }
 
@@ -234,6 +235,21 @@ const ConfigureInterface = observer(
       setModalView("addDevice_selectType");
     };
 
+    // const handleAddNewDeviceClick = () => {
+    //   setIsEditing(false);
+    //   setEditingDevice(null);
+
+    //   const currentInterfacePrefix = anInterface.interface_id.substring(0, 2);
+
+    //   if (currentInterfacePrefix === 'DI') {
+    //     console.log("DI interface detected. Forcing device type to PulseVolumeDevice.");
+    //     setDeviceTypeToConfigure("PulseVolumeDevice");
+    //     setModalView("addDevice_configure");
+    //   } else {
+    //     setModalView("addDevice_selectType");
+    //   }
+    // };
+
     const handleDeleteDevice = () => {
       if (selectedDeviceId !== null) {
         anInterface.removeDevice(selectedDeviceId);
@@ -271,6 +287,7 @@ const ConfigureInterface = observer(
 
     const handleDeviceTypeSelection = (deviceType: string) => {
       setDeviceTypeToConfigure(deviceType);
+      alert(deviceType)
       setModalView("addDevice_configure");
     };
 

@@ -97,8 +97,8 @@ export class Interface {
 
       runInAction(() => {
         const newDevice = new Device({
-          device_type: deviceType,
           ...deviceConfig,
+          device_type: deviceType,
         });
         this.devices.push(newDevice);
       });

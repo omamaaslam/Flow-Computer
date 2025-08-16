@@ -51,21 +51,23 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     correction_c2: "",
     correction_c3: "",
     // Bridge-related state fields
-    slave_id: "",
-    register_count: "",
-    register_address: "",
-    data_type: "",
+    modbus_settings: {
+      slave_id: "",
+      register_address: "",
+      register_count: "",
+      data_type: "Float32",
+    },
     // HART-specific fields
     pollingAddress: "",
     commandSet: "Universal",
     variableType: "",
   });
-
+  console.log("jb b component initialize hoga", initialData)
   useEffect(() => {
     // Explicitly type `data` to let TypeScript know its shape and allow extra props
     const data: Partial<DeviceConfig> & { [key: string]: any } =
       initialData || {};
-    const interfaceSpecificData: any = bridgeData || {};
+    // const interfaceSpecificData: any = bridgeData || {};
 
     setFormState({
       manufacturer: data.manufacturer ?? "",
@@ -83,11 +85,13 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       correction_c1: String(data.correction_c1 ?? ""),
       correction_c2: String(data.correction_c2 ?? ""),
       correction_c3: String(data.correction_c3 ?? ""),
-      slave_id: String(interfaceSpecificData.slave_address ?? ""),
-      register_count: String(interfaceSpecificData.register_count ?? ""),
-      register_address: String(interfaceSpecificData.register_address ?? ""),
-      data_type: interfaceSpecificData.data_type ?? "",
-      // Load HART fields from device config (initialData)
+      modbus_settings: data.modbus_settings ?? {
+        slave_id: "",
+        register_address: "",
+        register_count: "",
+        data_type: "Float32",
+      },
+
       pollingAddress: String(data.pollingAddress ?? ""),
       commandSet: data.commandSet ?? "Universal",
       variableType: data.variableType ?? "",
@@ -132,10 +136,12 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       correction_c1: safeParseFloat(formState.correction_c1),
       correction_c2: safeParseFloat(formState.correction_c2),
       correction_c3: safeParseFloat(formState.correction_c3),
-      slave_address: safeParseInt(formState.slave_id),
-      register_address: safeParseInt(formState.register_address),
-      register_count: safeParseInt(formState.register_count),
-      data_type: formState.data_type,
+      slave_address: safeParseInt(formState.modbus_settings.register_address),
+      register_address: safeParseInt(
+        formState.modbus_settings.register_address
+      ),
+      register_count: safeParseInt(formState.modbus_settings.register_count),
+      data_type: safeParseInt(formState.modbus_settings.data_type),
     };
 
     // If it's a HART interface, also include the HART-specific fields in the saved config
@@ -161,9 +167,14 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
         <div>Status: {initialData?.data?.status ?? "N/A"}</div>
         <div>
           Timestamp:{" "}
-          {new Date(initialData.data.timestamp * 1000).toLocaleTimeString([], {
-            hour12: false,
-          })}
+          {initialData?.data?.timestamp
+            ? new Date(initialData.data.timestamp * 1000).toLocaleTimeString(
+                [],
+                {
+                  hour12: false,
+                }
+              )
+            : "N/A"}
         </div>
 
         <div>Value: {initialData?.data?.value ?? "N/A"}</div>

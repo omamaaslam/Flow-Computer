@@ -126,7 +126,8 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     // Build the main config object with all flat properties (general, parameters, HART)
     const finalConfig: DeviceConfig = {
       ...restOfState,
-      device_id: initialData?.device_id || "", // Temporary ID, parent will overwrite
+      device_id: initialData?.device_id || "",
+      device_type: "TemperatureDevice",
       temp_min: safeParseFloat(formState.temp_min),
       temp_max: safeParseFloat(formState.temp_max),
       scaling_factor: safeParseFloat(formState.scaling_factor),

@@ -167,7 +167,7 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({
     }
 
     if (id.startsWith("DI")) {
-      return allDeviceOptions.filter((opt) => opt.value === "VolumeDevice");
+      return allDeviceOptions.filter((opt) => opt.value === "PulseVolumeDevice");
     }
     const specialDevices = [
       "TemperatureDevice",
