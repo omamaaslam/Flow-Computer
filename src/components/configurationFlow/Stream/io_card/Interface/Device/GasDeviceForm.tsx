@@ -109,11 +109,12 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
   const handleSubmit = () => {
     const safeParseFloat = (val: string) =>
       val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
-    const safeParseInt = (val: string) =>
-      val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
+    // const safeParseInt = (val: string) =>
+    //   val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
 
     const finalConfig: DeviceConfig = {
       device_id: interface_id,
+      device_type: deviceTypeLabel,
       // General fields
       manufacturer: formState.manufacturer,
       model: formState.model,
@@ -121,16 +122,13 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
       tag_name: formState.tag_name,
       build_year: formState.build_year,
       version: formState.version,
-      // Gas-specific field
       gas_value: safeParseFloat(formState.gas_value),
       // Nested modbus_settings object
       modbus_settings: {
-        slave_id: safeParseInt(formState.modbus_settings.slave_address), // Added to satisfy type
-        slave_address: safeParseInt(formState.modbus_settings.slave_address),
-        register_address: safeParseInt(
-          formState.modbus_settings.register_address
-        ),
-        register_count: safeParseInt(formState.modbus_settings.register_count),
+        slave_id: formState.modbus_settings.slave_address,
+        // slave_address: formState.modbus_settings.slave_address,
+        register_address: formState.modbus_settings.register_address,
+        register_count: formState.modbus_settings.register_count,
         data_type: formState.modbus_settings.data_type,
       },
     };
