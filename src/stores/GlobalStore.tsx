@@ -1,16 +1,15 @@
 // src/stores/GlobalStore.ts
 
 import { makeAutoObservable, runInAction } from "mobx";
-import { Stream } from "./Stream";
-import type { Device } from "./Device";
-import { addListener } from "../utils/api";
-import { Results } from "./Results";
+import { Stream } from "./Stream"; // Assuming this file exists
+import type { Device } from "./Device"; // Assuming this file exists
+import { addListener } from "../utils/api"; // Assuming this file exists
 
 class GlobalStore {
   public globalSnapshot: any = null;
   public streams: Stream[] = [];
   public isLoading: boolean = true;
-  public resultsStore = new Results();
+  public results: any[] = [];
   constructor() {
     makeAutoObservable(this);
   }
@@ -34,22 +33,47 @@ class GlobalStore {
     const incomingStreamIds = Object.keys(rawStreams);
 
     Object.values<any>(rawStreams).forEach((streamData) => {
+      try {
+        const calcProfile = streamData.stream_config?.calculation_profile;
+        if (
+          calcProfile &&
+          calcProfile.active_profile_id &&
+          calcProfile.profiles
+        ) {
+          const activeProfileId = calcProfile.active_profile_id;
+          const activeProfile = calcProfile.profiles[activeProfileId];
+          console.warn({
+            activeProfileId,
+            activeProfile,
+            streamId: streamData.stream_id,
+          });
+
+          if (activeProfile && activeProfile.result) {
+            const resultWithStreamId = {
+              ...activeProfile.result,
+              stream_id: streamData.stream_id,
+            };
+            this.results.push(resultWithStreamId);
+          }
+        }
+      } catch (e) {
+        console.error(
+          `Error extracting result for stream ${streamData.stream_id}:`,
+          e
+        );
+      }
+
       const existingStream = this.streams.find(
         (s) => s.id === streamData.stream_id
       );
 
       if (existingStream) {
-        // Agar stream pehle se hai, to use naye data se UPDATE karo
-        // Is se MobX sirf is object se juray components ko re-render karega
         existingStream.update(streamData);
       } else {
-        // Agar stream naya hai, to usay list mein ADD karo
         this.streams.push(new Stream(streamData));
       }
     });
 
-    // Step 2 (Zaroori): Un streams ko hata do jo ab server se nahi aa rahe
-    // Taake UI mein purane (deleted) streams na dikhein.
     this.streams = this.streams.filter((s) => incomingStreamIds.includes(s.id));
   }
 
@@ -63,22 +87,6 @@ class GlobalStore {
           runInAction(() => {
             console.log("Received globalState data:", data);
             this.setGlobalSnapshot(data);
-          });
-        }
-        // Handle result messages
-        else if (data && data.result) {
-          runInAction(() => {
-            // ===================================================================
-            // ▼▼▼ CHOOSE THE METHOD THAT MATCHES YOUR SCENARIO ▼▼▼
-            // ===================================================================
-
-            // **Use this for Scenario 1 (Log of Events):**
-            // this.resultsStore.addResult(data.result);
-
-            // **Use this for Scenario 2 (Updating/Overwriting existing items):**
-            this.resultsStore.updateOrAddResult(data.result);
-
-            // ===================================================================
           });
         } else {
           console.log("Ignoring non-snapshot message at global level:", data);
@@ -94,6 +102,7 @@ class GlobalStore {
     addListener(handleMessage);
   }
 
+  // --- Getters remain unchanged ---
   get allDevices(): Device[] {
     return this.streams.flatMap((stream) =>
       stream.ioCards.flatMap((card) =>

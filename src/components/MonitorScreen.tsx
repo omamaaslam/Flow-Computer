@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from "react";
-
-// --- Reusable SVG Icons ---
+import globalStore from "../stores/GlobalStore";
 const GaugeIcon = ({ size = 100 }: { size?: number }) => (
   <img
     src="/MonitorSvg/Meter.svg"
@@ -10,7 +8,6 @@ const GaugeIcon = ({ size = 100 }: { size?: number }) => (
     className="mx-auto"
   />
 );
-
 const ThermometerIcon = ({ size = 100 }: { size?: number }) => (
   <img
     src="/MonitorSvg/Thermometer.svg"
@@ -20,6 +17,10 @@ const ThermometerIcon = ({ size = 100 }: { size?: number }) => (
     className="mx-auto"
   />
 );
+globalStore.results.map((result)=> {
+  console.log("Result:", result.pressure_interference_flag);
+})
+
 
 const InfoCard = ({
   title,
@@ -49,28 +50,7 @@ const InfoCard = ({
 );
 
 // --- Main Screen Component ---
-const MonitorScreen: React.FC = () => {
-  const [currentTime, setCurrentTime] = useState(
-    new Date().toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    })
-  );
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(
-        new Date().toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        })
-      );
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
+const MonitorScreen = () => {
   const tableData = [
     { name: "Operating Volume Forward", value: "125.67", unit: "m³" },
     { name: "Operating Volume Reverse", value: "12.34", unit: "m³" },
@@ -112,22 +92,8 @@ const MonitorScreen: React.FC = () => {
     { name: "Software Flow Rate", value: "53.32", unit: "m³/hr" },
     { name: "Device Flow Rate", value: "53.31", unit: "m³/hr" },
   ];
-
   return (
     <div className="w-full font-sans text-gray-800">
-      {/* Header */}
-      <div className="flex justify-end items-center mt-2 md:mb-6 mb-2">
-        <div className="flex items-center gap-2 lg:gap-3 bg-white border border-gray-200 rounded-full py-1.5 px-3 lg:py-2 lg:px-4 shadow-sm">
-          <div className="relative flex items-center justify-center w-4 h-4 lg:w-5 lg:h-5">
-            <div className="absolute w-full h-full bg-green-500 rounded-full animate-ping opacity-75"></div>
-            <div className="w-2.5 h-2.5 lg:w-3 lg:h-3 bg-green-500 rounded-full"></div>
-          </div>
-          <span className="text-[11px] lg:text-xs font-semibold text-gray-700">
-            Live / Time: {currentTime}
-          </span>
-        </div>
-      </div>
-
       <div className="space-y-6">
         {/* ======================================= */}
         {/*         LARGE SCREEN LAYOUT             */}
@@ -136,7 +102,7 @@ const MonitorScreen: React.FC = () => {
           {/* *** NEW: Operating Volume Section for large screens *** */}
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <h3 className="font-semibold text-gray-700 text-lg mb-4">
-              Operating Volume
+              Current Volume:
             </h3>
             <div className="grid grid-cols-3 gap-6">
               {/* Card 1: Positive */}
