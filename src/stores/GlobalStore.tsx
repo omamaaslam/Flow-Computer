@@ -4,26 +4,26 @@ import { makeAutoObservable, runInAction } from "mobx";
 import { Stream } from "./Stream";
 import type { Device } from "./Device";
 import { addListener } from "../utils/api";
+import { Results } from "./Results";
 
 class GlobalStore {
   public globalSnapshot: any = null;
   public streams: Stream[] = [];
   public isLoading: boolean = true;
-
+  public resultsStore = new Results();
   constructor() {
     makeAutoObservable(this);
   }
 
   public setGlobalSnapshot(data: any) {
     this.globalSnapshot = data;
-    this._updateStreams(data); // Purane function ki jagah naya function
+    this._updateStreams(data);
 
     if (this.isLoading) {
       this.isLoading = false;
     }
   }
 
-  // --- YEH FUNCTION AB "UPDATE, DON'T REPLACE" USOOL PAR CHALEGA ---
   private _updateStreams(snapshotData: any) {
     const rawStreams = snapshotData?.streams;
     if (!rawStreams || typeof rawStreams !== "object") {
@@ -33,7 +33,6 @@ class GlobalStore {
 
     const incomingStreamIds = Object.keys(rawStreams);
 
-    // Step 1: Maujooda streams ko update karo ya naye add karo
     Object.values<any>(rawStreams).forEach((streamData) => {
       const existingStream = this.streams.find(
         (s) => s.id === streamData.stream_id
@@ -55,22 +54,33 @@ class GlobalStore {
   }
 
   public listenForUpdates() {
-    console.log("GlobalStore ab WebSocket updates ko sun raha hai...");
+    console.log("Listening for updates from the websocket server...");
 
     const handleMessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("⬇️ WebSocket se naya data mila:", data);
-
-        // --- 👇 FIX IS HERE: Sirf snapshot messages ko process karein ---
-        // Agar message me 'streams' property hai, tabhi state update karein.
         if (data && data.streams) {
-          // runInAction se MobX saari tabdeeliyon ko ek batch mein process karta hai
           runInAction(() => {
+            console.log("Received globalState data:", data);
             this.setGlobalSnapshot(data);
           });
+        }
+        // Handle result messages
+        else if (data && data.result) {
+          runInAction(() => {
+            // ===================================================================
+            // ▼▼▼ CHOOSE THE METHOD THAT MATCHES YOUR SCENARIO ▼▼▼
+            // ===================================================================
+
+            // **Use this for Scenario 1 (Log of Events):**
+            // this.resultsStore.addResult(data.result);
+
+            // **Use this for Scenario 2 (Updating/Overwriting existing items):**
+            this.resultsStore.updateOrAddResult(data.result);
+
+            // ===================================================================
+          });
         } else {
-          // Doosre messages (jaise {success: "..."}) ko global level par ignore karein.
           console.log("Ignoring non-snapshot message at global level:", data);
         }
       } catch (error) {
@@ -104,12 +114,12 @@ class GlobalStore {
     );
   }
 
- get get_all_di_devices(): Device[] {
-    return this.streams.flatMap(stream =>
-      stream.ioCards.flatMap(card =>
+  get get_all_di_devices(): Device[] {
+    return this.streams.flatMap((stream) =>
+      stream.ioCards.flatMap((card) =>
         card.interfaces
-          .filter(iface => iface.interface_id.startsWith('DI'))
-          .flatMap(iface => iface.devices)
+          .filter((iface) => iface.interface_id.startsWith("DI"))
+          .flatMap((iface) => iface.devices)
       )
     );
   }

@@ -14,7 +14,7 @@ export type TemperatureUnit = "C" | "F" | "K";
 export type PressureUnit = "bar" | "psi" | "kPa" | "atm";
 
 // Note: Interfaces ka naam aapke store ke import ke mutabiq rakha gaya hai
-export interface volumeConfiguration {
+export interface volume_configuration {
   operating_mode: VolumeOperatingMode | null;
   gas_meter_1: string;
   gas_meter_2: string;
@@ -62,7 +62,7 @@ export interface compressibilityKFactorConfig {
 }
 
 export interface calculator {
-  volumeConfiguration: volumeConfiguration;
+  volume_configuration: volume_configuration;
   temperatureConfig: temperatureConfig;
   pressureConfig: pressureConfig;
   flowRateConfig: flowRateConfig;
@@ -87,7 +87,7 @@ export const createDefaultStreamConfig = (): calculator => ({
     base_pressure: null,
     unit: "bar",
   },
-  volumeConfiguration: {
+  volume_configuration: {
     operating_mode: null,
     gas_meter_1: "Meter A",
     gas_meter_2: "Meter A",

@@ -4,7 +4,6 @@ import globalStore from "../stores/GlobalStore";
 
 const Home = observer(() => {
   const streams = globalStore.streams;
-
   const colorSchemes: Array<"yellow" | "red" | "green" | "gray"> = [
     "yellow",
     "red",

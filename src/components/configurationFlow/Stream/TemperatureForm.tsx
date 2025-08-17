@@ -1,10 +1,10 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
-import type { TemperatureCalculatorConfig } from "../../../types/streamConfig";
+import type { temperature_config } from "../../../types/streamConfig";
 import type globalStore from "../../../stores/GlobalStore";
 
 interface TemperatureFormProps {
-  config: TemperatureCalculatorConfig;
+  config: temperature_config;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;

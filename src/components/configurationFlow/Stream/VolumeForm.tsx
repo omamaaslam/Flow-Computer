@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
 import type {
-  VolumeConfiguration,
+  volume_configuration,
   VolumeOperatingMode,
 } from "../../../types/streamConfig";
 import type globalStore from "../../../stores/GlobalStore";
@@ -12,7 +12,7 @@ const operatingModes = [
   { value: "OnePulseVolumeConfig", label: "One pulse input" },
 ];
 
-export const defaultVolumeConfig: VolumeConfiguration = {
+export const defaultVolumeConfig: volume_configuration = {
   mode_type: "",
   encoder_device_id: "",
   max_total_volume_limit: null,
@@ -20,7 +20,7 @@ export const defaultVolumeConfig: VolumeConfiguration = {
   enable_bidirectional_volume: false,
 };
 interface VolumeFormProps {
-  config: VolumeConfiguration;
+  config: volume_configuration;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;

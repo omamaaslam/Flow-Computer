@@ -13,7 +13,7 @@ export type VolumeOperatingMode =
   | "OnePulseVolumeConfig"
   | "modbus";
 
-export interface TemperatureCalculatorConfig {
+export interface temperature_config {
   unit: TemperatureUnit;
   base_temperature: number | null;
   substitute_temperature: number | null;
@@ -22,7 +22,7 @@ export interface TemperatureCalculatorConfig {
   temp_linked_device_id: string;
 }
 
-export interface PressureCalculatorConfig {
+export interface pressure_config {
   unit: PressureUnit;
   base_pressure: number | null;
   substitute_pressure: number;
@@ -31,7 +31,7 @@ export interface PressureCalculatorConfig {
   pressure_linked_device_id: string;
 }
 
-export interface FlowRateCalculatorConfig {
+export interface flow_rate_config {
   software_flow_rate_enabled: boolean;
   flow_rate_device_id: string;
   min_alarm_flow_rate: number;
@@ -43,7 +43,7 @@ export interface FlowRateCalculatorConfig {
   creep_time_seconds: number;
 }
 
-export interface VolumeConfiguration {
+export interface volume_configuration {
   mode_type: VolumeOperatingMode | "";
   max_total_volume_limit: number | null;
   encoder_device_id?: string;
@@ -298,27 +298,26 @@ export interface Streams {
   [streamId: string]: StreamProfiles;
 }
 
-/* ----------------------------- */
 
-export interface CalculatorConfig {
-  temperature_config: TemperatureCalculatorConfig;
-  pressure_config: PressureCalculatorConfig;
-  flow_rate_config: FlowRateCalculatorConfig;
-  volume_configuration: VolumeConfiguration;
+export interface stream_config {
+  temperature_config: temperature_config;
+  pressure_config: pressure_config;
+  flow_rate_config: flow_rate_config;
+  volume_configuration: volume_configuration;
   compressibility_kfactor_config: CompressibilityKFactorConfig;
   pipeline_profile_configuration: pipeline_profile_config;
-  calculation_profile: any | null;
+  calculation_profile: any;
   result?: Streams;
 }
 
 export interface StreamData {
   stream_id: string;
   stream_name: string;
-  calculator: CalculatorConfig;
+  calculator: stream_config;
   io_card: IOCardConfig;
 }
 
-export const createDefaultStreamConfig = (): CalculatorConfig => ({
+export const createDefaultStreamConfig = (): stream_config => ({
   temperature_config: {
     unit: "Celsius",
     base_temperature: null,

@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
-import type { PressureCalculatorConfig } from "../../../types/streamConfig";
+import type { pressure_config } from "../../../types/streamConfig";
 import type globalStore from "../../../stores/GlobalStore";
 
 interface PressureFormProps {
-  config: PressureCalculatorConfig;
+  config: pressure_config;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;
@@ -14,7 +14,7 @@ interface PressureFormProps {
 const PressureForm: React.FC<PressureFormProps> = observer(
   ({ store, config, onSave, onClose, isSaving }) => {
     // STEP 1: Form ke liye local state banayein aur usko initial value `config` prop se dein.
-    const [formData, setFormData] = useState<PressureCalculatorConfig>(config);
+    const [formData, setFormData] = useState<pressure_config>(config);
 
     const available_pressure_devices = store.pressureDevices;
 

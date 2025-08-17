@@ -1,9 +1,9 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
-import type { FlowRateCalculatorConfig } from "../../../types/streamConfig";
+import type { flow_rate_config } from "../../../types/streamConfig";
 
 interface FlowRateFormProps {
-  config: FlowRateCalculatorConfig;
+  config: flow_rate_config;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;

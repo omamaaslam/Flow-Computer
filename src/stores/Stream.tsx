@@ -4,15 +4,15 @@ import { makeAutoObservable } from "mobx";
 import { IOCard } from "./IOCard";
 import {
   createDefaultStreamConfig,
-  type CalculatorConfig,
-  type TemperatureCalculatorConfig,
+  type stream_config,
+  type temperature_config,
   // ... other imports
 } from "../types/streamConfig";
 
 export class Stream {
   public id: string;
   public name: string;
-  public calculator: CalculatorConfig;
+  public calculator: stream_config;
   public ioCards: IOCard[] = [];
 
   // The 'editing...' properties are no longer needed here.
@@ -34,45 +34,45 @@ export class Stream {
       this.ioCards = [];
     }
 
-    const incomingCalculatorConfig = streamData.calculator || {};
+    const incomingstream_config = streamData.calculator || {};
 
-    if (incomingCalculatorConfig.temperature_config) {
+    if (incomingstream_config.temperature_config) {
       Object.assign(
         this.calculator.temperature_config,
-        incomingCalculatorConfig.temperature_config
+        incomingstream_config.temperature_config
       );
     }
-    if (incomingCalculatorConfig.pressure_config) {
+    if (incomingstream_config.pressure_config) {
       Object.assign(
         this.calculator.pressure_config,
-        incomingCalculatorConfig.pressure_config
+        incomingstream_config.pressure_config
       );
     }
-    if (incomingCalculatorConfig.flow_rate_config) {
+    if (incomingstream_config.flow_rate_config) {
       Object.assign(
         this.calculator.flow_rate_config,
-        incomingCalculatorConfig.flow_rate_config
+        incomingstream_config.flow_rate_config
       );
     }
 
     // For nullable properties, we can still replace them
-    if ("volume_configuration" in incomingCalculatorConfig) {
+    if ("volume_configuration" in incomingstream_config) {
       this.calculator.volume_configuration =
-        incomingCalculatorConfig.volume_configuration;
+        incomingstream_config.volume_configuration;
     }
-    if ("compressibility_kfactor_config" in incomingCalculatorConfig) {
+    if ("compressibility_kfactor_config" in incomingstream_config) {
       this.calculator.compressibility_kfactor_config =
-        incomingCalculatorConfig.compressibility_kfactor_config;
+        incomingstream_config.compressibility_kfactor_config;
     }
-    if ("calculation_profile" in incomingCalculatorConfig) {
+    if ("calculation_profile" in incomingstream_config) {
       this.calculator.calculation_profile =
-        incomingCalculatorConfig.calculation_profile;
+        incomingstream_config.calculation_profile;
     }
   }
 
   // --- NEW, SIMPLER WAY TO HANDLE CANCEL ---
   // This method will revert the changes using a snapshot taken before editing began.
-  public revertTemperatureChanges(snapshot: TemperatureCalculatorConfig) {
+  public revertTemperatureChanges(snapshot: temperature_config) {
     Object.assign(this.calculator.temperature_config, snapshot);
   }
 
