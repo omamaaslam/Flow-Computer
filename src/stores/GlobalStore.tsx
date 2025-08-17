@@ -42,18 +42,30 @@ class GlobalStore {
         ) {
           const activeProfileId = calcProfile.active_profile_id;
           const activeProfile = calcProfile.profiles[activeProfileId];
-          console.warn({
-            activeProfileId,
-            activeProfile,
-            streamId: streamData.stream_id,
-          });
 
           if (activeProfile && activeProfile.result) {
             const resultWithStreamId = {
               ...activeProfile.result,
               stream_id: streamData.stream_id,
             };
-            this.results.push(resultWithStreamId);
+
+            // 🔑 Check if result already exists
+            const existingIndex = this.results.findIndex(
+              (r) => r.stream_id === streamData.stream_id
+            );
+
+            if (existingIndex !== -1) {
+              // Merge changes instead of replacing
+              Object.keys(resultWithStreamId).forEach((key) => {
+                if (
+                  this.results[existingIndex][key] !== resultWithStreamId[key]
+                ) {
+                  this.results[existingIndex][key] = resultWithStreamId[key];
+                }
+              });
+            } else {
+              this.results.push(resultWithStreamId);
+            }
           }
         }
       } catch (e) {
@@ -77,9 +89,41 @@ class GlobalStore {
     this.streams = this.streams.filter((s) => incomingStreamIds.includes(s.id));
   }
 
-  public listenForUpdates() {
-    console.log("Listening for updates from the websocket server...");
+  // Add this method inside the GlobalStore class
 
+  public updateResults(incomingData: any) {
+    // MobX state should be modified within an action
+    runInAction(() => {
+      // The incoming data is structured like: { "7": { "test_profile4": {...} } }
+      Object.keys(incomingData).forEach((streamId) => {
+        const profilesForStream = incomingData[streamId];
+
+        // In your case, there's only one profile ("test_profile4")
+        Object.keys(profilesForStream).forEach((profileId) => {
+          const newResultData = profilesForStream[profileId];
+
+          // Find the existing result object for this stream in our store's array
+          const existingResult = this.results.find(
+            (r) => r.stream_id === streamId
+          );
+
+          if (existingResult) {
+            // Merge the new data into the existing object.
+            // Object.assign updates the properties of the existing object,
+            // which is crucial for MobX to detect the change and re-render the UI.
+            Object.assign(existingResult, newResultData);
+            console.log(`Successfully updated results for stream ${streamId}`);
+          } else {
+            // This case is unlikely if the initial snapshot was loaded, but it's good practice
+            console.warn(
+              `Received a result update for stream ${streamId}, but it doesn't exist in the store yet.`
+            );
+          }
+        });
+      });
+    });
+  }
+  public listenForUpdates() {
     const handleMessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
@@ -88,6 +132,9 @@ class GlobalStore {
             console.log("Received globalState data:", data);
             this.setGlobalSnapshot(data);
           });
+        } else if (data && data.result) {
+          console.log("Received live result update:", data.result);
+          this.updateResults(data.result);
         } else {
           console.log("Ignoring non-snapshot message at global level:", data);
         }
