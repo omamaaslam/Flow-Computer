@@ -63,6 +63,7 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = ({
   const handleSubmit = () => {
     const finalConfig: DeviceConfig = {
       device_id: interface_id,
+      device_type: "VolumeDevice",
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,

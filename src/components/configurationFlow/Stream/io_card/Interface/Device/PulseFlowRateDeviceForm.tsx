@@ -94,6 +94,7 @@ const PulseFlowRateDeviceForm: React.FC<PulseFlowRateDeviceFormProps> = ({
     // --- 👇 FIX #3: Include all required fields in the final object ---
     const finalConfig: DeviceConfig = {
       device_id: interface_id,
+      device_type: "PulseFlowRateDevice",
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,

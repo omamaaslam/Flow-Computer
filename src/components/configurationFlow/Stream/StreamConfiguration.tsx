@@ -17,7 +17,10 @@ import ConversionForm from "./ConversionForm";
 import globalStore from "../../../stores/GlobalStore";
 import { useParams } from "react-router-dom";
 import { toJS } from "mobx";
-import { createDefaultStreamConfig } from "../../../types/streamConfig";
+import {
+  createDefaultStreamConfig,
+  type GasComponent,
+} from "../../../types/streamConfig";
 import {
   setTemperatureConfig,
   setPressureConfig,
@@ -141,10 +144,7 @@ const StreamConfiguration = observer(() => {
             toJS(currentStream.calculator.pressure_config)
           );
           break;
-
-        // ======================= YEH SECTION THEEK KIYA GAYA HAI =======================
         case "pipelineProfile": {
-          // 1. Config object ko ek variable mein store karein
           const profileConfig = toJS(
             currentStream.calculator.pipeline_profile_configuration
           );
@@ -158,8 +158,6 @@ const StreamConfiguration = observer(() => {
           await addProfile(streamId, profileConfig.profile_name);
           break;
         }
-        // ==============================================================================
-
         case "flowRate":
           await setFlowRateConfig(
             streamId,
@@ -183,12 +181,37 @@ const StreamConfiguration = observer(() => {
           break;
         }
 
-        case "conversion":
-          await setCompressibilityConfig(
-            streamId,
-            toJS(currentStream.calculator.compressibility_kfactor_config)
+        case "conversion": {
+          const rawConfig = toJS(
+            currentStream.calculator.compressibility_kfactor_config
           );
+
+          // 1. Transform the gas_components array into an object keyed by component.key
+          const gasComponentsObject = rawConfig.gas_components.reduce(
+            (acc: { [key: string]: GasComponent }, component) => {
+              acc[component.key] = {
+                key: component.key,
+                display_name: component.display_name,
+                unit: component.unit,
+                value: component.value,
+                linked_device_id: component.linked_device_id || "", // Ensure it's a string
+              };
+              return acc;
+            },
+            {}
+          );
+          const data = {
+            data: {
+              active_method: rawConfig.k_factor_method,
+              constant_k_value: 1.0,
+              methods: {
+                [rawConfig.k_factor_method]: gasComponentsObject,
+              },
+            },
+          };
+          await setCompressibilityConfig(streamId, data.data);
           break;
+        }
       }
       setActiveModal(null);
     } catch (error) {

@@ -63,6 +63,7 @@ const FlowRateDeviceForm: React.FC<FlowRateDeviceFormProps> = ({
   const handleSubmit = () => {
     const finalConfig: DeviceConfig = {
       device_id: interface_id,
+      device_type: "FlowRateDevice",
       manufacturer: formState.manufacturer,
       model: formState.model,
       serial_number: formState.serial_number,

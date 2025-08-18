@@ -128,7 +128,6 @@ const MonitorScreen = observer(() => {
                     </div>
                   </div>
 
-                  {/* *** NEW: Grid for Conditions, System, and Alerts with custom widths *** */}
                   <div className="grid grid-cols-5 gap-6">
                     <InfoCard title="Conditions" className="col-span-2">
                       <div className="text-sm divide-y divide-gray-200">
@@ -293,21 +292,21 @@ const MonitorScreen = observer(() => {
                     </h3>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
+                        <p className="font-bold text-sm">Current Volume</p>
+                        <p className="font-semibold text-cyan-600 text-lg">
+                          {res.current_volume_original}
+                        </p>
+                      </div>
+                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
                         <p className="font-bold text-sm">Operating Volume:</p>
                         <p className="font-semibold text-cyan-600 text-lg">
-                          555555555.000<span className="text-xs"> m³</span>
+                          {res.operating_volume_net}
                         </p>
                       </div>
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
-                        <p className="font-bold text-sm">Normalized Volume</p>
+                        <p className="font-bold text-sm">Standard Volume</p>
                         <p className="font-semibold text-cyan-600 text-lg">
-                          555555555.000<span className="text-xs"> m³</span>
-                        </p>
-                      </div>
-                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
-                        <p className="font-bold text-sm">Original Volume</p>
-                        <p className="font-semibold text-cyan-600 text-lg">
-                          555555555.000<span className="text-xs"> m³</span>
+                          {res.standard_volume_net}
                         </p>
                       </div>
                     </div>
@@ -323,25 +322,25 @@ const MonitorScreen = observer(() => {
                           <p className="flex justify-between py-1.5">
                             <span className="text-cyan-600">Pressure:</span>
                             <span className="font-medium text-gray-700">
-                              4.2 bar
+                              {res.operating_pressure}
                             </span>
                           </p>
                           <p className="flex justify-between py-1.5">
                             <span className="text-cyan-600">Temp:</span>
                             <span className="font-medium text-gray-700">
-                              18.5c
+                              {res.operating_temperature}
                             </span>
                           </p>
                           <p className="flex justify-between py-1.5">
-                            <span className="text-cyan-600">Z-Factor:</span>
+                            <span className="text-cyan-600">K-Factor:</span>
                             <span className="font-medium text-gray-700">
-                              0.9982
+                              {res.compressibility_k_factor}
                             </span>
                           </p>
                           <p className="flex justify-between py-1.5">
-                            <span className="text-cyan-600">K-Number:</span>
+                            <span className="text-cyan-600">Z-Number:</span>
                             <span className="font-medium text-gray-700">
-                              1.0012
+                              {res.correction_z_factor}
                             </span>
                           </p>
                         </div>
@@ -418,7 +417,7 @@ const MonitorScreen = observer(() => {
                         <div className="my-2">
                           <GaugeIcon size={150} />
                           <p className="text-[20px] text-gray-500 mt-3">
-                            0.00 m³/hr
+                            {res.operating_flow_rate}
                           </p>
                         </div>
                       </div>
@@ -427,7 +426,7 @@ const MonitorScreen = observer(() => {
                         <div className="my-2">
                           <GaugeIcon size={150} />
                           <p className="text-[20px] text-gray-500 mt-3">
-                            4.2 bar
+                            {res.operating_pressure}
                           </p>
                         </div>
                       </div>
@@ -436,7 +435,7 @@ const MonitorScreen = observer(() => {
                         <div className="text-center pt-3    ">
                           <ThermometerIcon size={150} />
                           <p className="text-[20px] text-gray-500 mt-1">
-                            42°C (Hot)
+                            {res.operating_temperature}
                           </p>
                         </div>
                       </div>

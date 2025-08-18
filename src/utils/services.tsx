@@ -340,7 +340,7 @@ export const setVolumeConfig = (
     scope: "set_volume_config",
     stream_id: streamId,
     volume_type: volumeType,
-    data: data,
+    data: { data },
   };
   console.log("Current Volume Config:", data);
   const isMatch = createStreamConfigMatcher(streamId, "volume_configuration");
@@ -349,7 +349,7 @@ export const setVolumeConfig = (
 
 export const setCompressibilityConfig = (streamId: string, data: any) => {
   const msg = {
-    command: "set_compressibility_config",
+    scope: "set_compressibility_k_factor_config",
     stream_id: streamId,
     data: data,
   };
@@ -360,10 +360,7 @@ export const setCompressibilityConfig = (streamId: string, data: any) => {
   return sendAndWait(msg, isMatch);
 };
 
-export const addProfile = (
-  streamId: string,
-  profile_name: string,
-) => {
+export const addProfile = (streamId: string, profile_name: string) => {
   const msg = {
     scope: "add_profile",
     stream_id: streamId,
