@@ -9,7 +9,7 @@ export type TemperatureUnit = "Celsius" | "Fahrenheit" | "Kelvin";
 export type PressureUnit = "Bar" | "Psi" | "Kpa" | "Atm";
 
 export type VolumeOperatingMode =
-  | "encoderOnly"
+  | "EncoderOnlyVolumeConfig"
   | "OnePulseVolumeConfig"
   | "modbus";
 

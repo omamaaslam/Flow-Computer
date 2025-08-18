@@ -164,6 +164,11 @@ class GlobalStore {
     );
   }
 
+  get volumeDevices(): Device[] {
+    return this.allDevices.filter(
+      (device) => device.config.device_type === "VolumeDevice"
+    );
+  }
   get pressureDevices(): Device[] {
     return this.allDevices.filter(
       (device) => device.config.device_type === "PressureDevice"

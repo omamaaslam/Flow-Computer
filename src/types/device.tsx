@@ -2,7 +2,7 @@
 
 // A specific interface for the nested Modbus settings
 export interface ModbusSettings {
-  slave_id: string; // Changed from slave_id to slave_address for claritystring
+  slave_address: string; // Changed from slave_id to slave_address for claritystring
   register_address: string;
   register_count: string;
   data_type: string;

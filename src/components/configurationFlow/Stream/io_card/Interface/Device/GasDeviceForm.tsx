@@ -125,7 +125,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
       gas_value: safeParseFloat(formState.gas_value),
       // Nested modbus_settings object
       modbus_settings: {
-        slave_id: formState.modbus_settings.slave_address,
+        slave_address: formState.modbus_settings.slave_address,
         // slave_address: formState.modbus_settings.slave_address,
         register_address: formState.modbus_settings.register_address,
         register_count: formState.modbus_settings.register_count,

@@ -52,7 +52,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     correction_c3: "",
     // Bridge-related state fields
     modbus_settings: {
-      slave_id: "",
+      slave_address: "",
       register_address: "",
       register_count: "",
       data_type: "Float32",
@@ -62,7 +62,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     commandSet: "Universal",
     variableType: "",
   });
-  console.log("jb b component initialize hoga", initialData)
+  console.log("initialData", initialData)
   useEffect(() => {
     // Explicitly type `data` to let TypeScript know its shape and allow extra props
     const data: Partial<DeviceConfig> & { [key: string]: any } =
@@ -86,7 +86,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       correction_c2: String(data.correction_c2 ?? ""),
       correction_c3: String(data.correction_c3 ?? ""),
       modbus_settings: data.modbus_settings ?? {
-        slave_id: "",
+        slave_address: "",
         register_address: "",
         register_count: "",
         data_type: "Float32",

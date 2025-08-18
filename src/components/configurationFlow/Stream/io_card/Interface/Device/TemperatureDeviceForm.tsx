@@ -142,7 +142,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     // If it's a Modbus interface, add the parsed modbus_settings object
     if (interface_type === 'ModbusInterface') {
       finalConfig.modbus_settings = {
-        slave_id: modbus_settings.slave_id,
+        slave_address: modbus_settings.slave_id,
         register_address: modbus_settings.register_address,
         register_count: modbus_settings.register_count,
         data_type: modbus_settings.data_type,

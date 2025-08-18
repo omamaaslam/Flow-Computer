@@ -36,14 +36,13 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
     const isModeLocked = showDetails && !isEditingMode;
 
     const diDevices = store.get_all_di_devices;
-
+    const volume_devices = store.volumeDevices;
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
       const { name, value, type } = e.target;
       let updatedValue: any = value;
 
-      // --- vvv CHANGED LOGIC vvv ---
       if (name === "enable_bidirectional_volume") {
         updatedValue = value === "true";
       } else if (
