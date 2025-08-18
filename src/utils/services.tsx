@@ -340,7 +340,7 @@ export const setVolumeConfig = (
     scope: "set_volume_config",
     stream_id: streamId,
     volume_type: volumeType,
-    data: { data },
+    data:  data,
   };
   console.log("Current Volume Config:", data);
   const isMatch = createStreamConfigMatcher(streamId, "volume_configuration");

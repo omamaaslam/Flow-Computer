@@ -7,7 +7,7 @@ import type {
 import type globalStore from "../../../stores/GlobalStore";
 
 const operatingModes = [
-  { value: "modbus", label: "Modbus" },
+  { value: "ModbusVolumeConfig", label: "Modbus" },
   { value: "EncoderOnlyVolumeConfig", label: "Encoder Only" },
   { value: "OnePulseVolumeConfig", label: "One pulse input" },
 ];
@@ -15,7 +15,7 @@ const operatingModes = [
 export const defaultVolumeConfig: volume_configuration = {
   mode_type: "",
   encoder_device_id: "",
-  max_total_volume_limit: null,
+  max_volume_step_limit: null,
   min_operating_volume_limit: null,
   enable_bidirectional_volume: false,
 };
@@ -36,7 +36,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
     const isModeLocked = showDetails && !isEditingMode;
 
     const diDevices = store.get_all_di_devices;
-    const volume_devices = store.volumeDevices;
+    const volume_devices = store.volumeDevices; // This list will be used
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
@@ -47,13 +47,12 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
         updatedValue = value === "true";
       } else if (
         type === "number" ||
-        ["max_total_volume_limit", "min_operating_volume_limit"].includes(name)
+        ["max_volume_step_limit", "min_operating_volume_limit"].includes(name)
       ) {
         updatedValue = value === "" ? null : Number(value);
       } else if (name === "mode_type") {
         updatedValue = value as VolumeOperatingMode;
       }
-      // --- ^^^ CHANGED LOGIC ^^^ ---
       (config as any)[name] = updatedValue;
     };
 
@@ -91,7 +90,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
               </div>
             ) : (
               <select
-                name="mode_type" // <-- CHANGED from "operating_mode"
+                name="mode_type"
                 value={config.mode_type ?? ""}
                 onChange={handleInputChange}
                 className="w-full border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500 text-gray-800"
@@ -118,7 +117,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                 <div className="space-y-1">
                   <label className="block font-medium">Link Device</label>
                   <select
-                    name="encoder_device_id" // <-- CHANGED from "linked_device_id"
+                    name="encoder_device_id"
                     value={config.encoder_device_id ?? ""}
                     onChange={handleInputChange}
                     className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
@@ -161,12 +160,37 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                 </div>
               )}
 
+              {/* --- ADDED SECTION START --- */}
+              {(config.mode_type === "EncoderOnlyVolumeConfig" || "ModbusVolumeConfig") && (
+                <div className="space-y-1">
+                  <label className="block font-medium">Encoder Device</label>
+                  <select
+                    name="encoder_device_id"
+                    value={config.encoder_device_id ?? ""}
+                    onChange={handleInputChange}
+                    className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
+                  >
+                    <option value="">
+                      {volume_devices.length > 0
+                        ? "Select an encoder device..."
+                        : "No encoders available"}
+                    </option>
+                    {volume_devices.map((device) => (
+                      <option key={device.id} value={device.id}>
+                        {`${device.id} (${device.config.tag_name || "No Tag"})`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {/* --- ADDED SECTION END --- */}
+
               <div className="space-y-1">
                 <label className="block font-medium">
                   Min Operational Volume
                 </label>
                 <input
-                  name="min_operating_volume_limit" // <-- CHANGED from "min_operating_volume"
+                  name="min_operating_volume_limit"
                   value={config.min_operating_volume_limit ?? ""}
                   onChange={handleInputChange}
                   type="number"
@@ -178,8 +202,8 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
               <div className="space-y-1">
                 <label className="block font-medium">Max Volume Step</label>
                 <input
-                  name="max_total_volume_limit" // <-- CHANGED from "max_total_volume"
-                  value={config.max_total_volume_limit ?? ""}
+                  name="max_volume_step_limit"
+                  value={config.max_volume_step_limit ?? ""}
                   onChange={handleInputChange}
                   type="number"
                   placeholder="Please add Value"
@@ -190,7 +214,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
               <div className="space-y-1">
                 <label className="block font-medium">Bi-Directional</label>
                 <select
-                  name="enable_bidirectional_volume" // <-- CHANGED from "bidirectional"
+                  name="enable_bidirectional_volume"
                   value={String(config.enable_bidirectional_volume)}
                   onChange={handleInputChange}
                   className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"

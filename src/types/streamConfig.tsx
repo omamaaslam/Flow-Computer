@@ -45,7 +45,7 @@ export interface flow_rate_config {
 
 export interface volume_configuration {
   mode_type: VolumeOperatingMode | "";
-  max_total_volume_limit: number | null;
+  max_volume_step_limit: number | null;
   encoder_device_id?: string;
   pulse_input_device_id?: string;
   min_operating_volume_limit: number | null;
@@ -347,7 +347,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
   },
   volume_configuration: {
     mode_type: "",
-    max_total_volume_limit: null,
+    max_volume_step_limit: null,
     min_operating_volume_limit: null,
     encoder_device_id: "",
     enable_bidirectional_volume: false,
