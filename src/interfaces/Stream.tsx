@@ -56,12 +56,10 @@ export interface flowRateConfig {
 }
 
 export interface compressibilityKFactorConfig {
-  // Yahan iski properties daalein, agar hain to
-  // Example:
   calculation_method: string;
 }
 
-export interface calculator {
+export interface stream_config {
   volume_configuration: volume_configuration;
   temperatureConfig: temperatureConfig;
   pressureConfig: pressureConfig;
@@ -70,7 +68,7 @@ export interface calculator {
 }
 
 // Yeh function sabse zaroori hai. Yeh har config ke liye default values deta hai.
-export const createDefaultStreamConfig = (): calculator => ({
+export const createDefaultStreamConfig = (): stream_config => ({
   temperatureConfig: {
     substitute_temperature: null,
     device_id: "",

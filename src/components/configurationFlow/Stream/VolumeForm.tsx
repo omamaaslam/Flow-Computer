@@ -134,7 +134,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                     </option>
                     {diDevices.map((device) => (
                       <option key={device.id} value={device.id}>
-                        {`${device.id} (${device.config.tag_name || "No Tag"})`}
+                        {`${device.id}`}
                       </option>
                     ))}
                   </select>

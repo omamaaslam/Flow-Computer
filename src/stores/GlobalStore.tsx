@@ -1,6 +1,6 @@
 // src/stores/GlobalStore.ts
 
-import { makeAutoObservable, runInAction } from "mobx";
+import { makeAutoObservable, runInAction, toJS } from "mobx";
 import { Stream } from "./Stream"; // Assuming this file exists
 import type { Device } from "./Device"; // Assuming this file exists
 import { addListener } from "../utils/api"; // Assuming this file exists
@@ -129,7 +129,7 @@ class GlobalStore {
         const data = JSON.parse(event.data);
         if (data && data.streams) {
           runInAction(() => {
-            console.log("Received globalState data:", data);
+            console.log("Received globalState data:", toJS(data));
             this.setGlobalSnapshot(data);
           });
         } else if (data && data.result) {

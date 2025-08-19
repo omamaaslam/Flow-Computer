@@ -82,7 +82,6 @@ const ConfigurationPage = observer(() => {
                 onConfigure={handleSelectInterfaceToConfigure}
               />
             ) : foundInterface ? (
-              // This will now work for both configured and unconfigured interfaces
               <ConfigureInterface
                 anInterface={foundInterface}
                 onBack={handleBackToInterfacesList}

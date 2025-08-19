@@ -46,6 +46,7 @@ export interface flow_rate_config {
 export interface volume_configuration {
   mode_type: VolumeOperatingMode | "";
   max_volume_step_limit: number | null;
+  max_total_volume_limit?: number | null;
   encoder_device_id?: string;
   pulse_input_device_id?: string;
   min_operating_volume_limit: number | null;
@@ -68,6 +69,11 @@ export interface CompressibilityKFactorConfig {
 export interface pipeline_profile_config {
   profile_name: string;
   stream_id: string;
+}
+
+export interface calculation_profile {
+  active_profile_id: string;
+  profiles: Record<string, pipeline_profile_config>;
 }
 
 /* ----------------------------- */
@@ -297,7 +303,6 @@ export interface StreamProfiles {
 export interface Streams {
   [streamId: string]: StreamProfiles;
 }
-
 
 export interface stream_config {
   temperature_config: temperature_config;

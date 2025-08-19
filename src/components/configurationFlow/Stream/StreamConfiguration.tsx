@@ -54,40 +54,52 @@ const StreamConfiguration = observer(() => {
     return <div>Stream ID is missing.</div>;
   }
   const currentStream = globalStore.streams.find((s) => s.id === streamId);
+  console.log("currentStream", toJS(currentStream));
   const openModal = (modalType: ModalType) => {
     if (!currentStream) return;
 
     let snapshot;
     switch (modalType) {
       case "temperature":
-        snapshot = toJS(currentStream.calculator.temperature_config);
+        snapshot = toJS(currentStream.stream_config.temperature_config);
         break;
       case "pressure":
-        snapshot = toJS(currentStream.calculator.pressure_config);
+        snapshot = toJS(currentStream.stream_config.pressure_config);
         break;
       case "flowRate":
-        snapshot = toJS(currentStream.calculator.flow_rate_config);
+        snapshot = toJS(currentStream.stream_config.flow_rate_config);
         break;
       case "volume":
-        if (!currentStream.calculator.volume_configuration) {
-          currentStream.calculator.volume_configuration = {
+        if (!currentStream.stream_config.volume_configuration) {
+          currentStream.stream_config.volume_configuration = {
             ...defaultVolumeConfig,
           };
+        } else {
+          const configFromServer =
+            currentStream.stream_config.volume_configuration;
+
+          if (
+            configFromServer.max_total_volume_limit !== undefined &&
+            configFromServer.max_volume_step_limit === undefined
+          ) {
+            configFromServer.max_volume_step_limit =
+              configFromServer.max_total_volume_limit;
+          }
         }
-        snapshot = toJS(currentStream.calculator.volume_configuration);
+        snapshot = toJS(currentStream.stream_config.volume_configuration);
         break;
       case "conversion":
-        if (!currentStream.calculator.compressibility_kfactor_config) {
-          currentStream.calculator.compressibility_kfactor_config =
+        if (!currentStream.stream_config.compressibility_kfactor_config) {
+          currentStream.stream_config.compressibility_kfactor_config =
             createDefaultStreamConfig().compressibility_kfactor_config!;
         }
         snapshot = toJS(
-          currentStream.calculator.compressibility_kfactor_config
+          currentStream.stream_config.compressibility_kfactor_config
         );
         break;
       case "pipelineProfile": {
         snapshot = toJS(
-          currentStream.calculator.pipeline_profile_configuration
+          currentStream.stream_config.pipeline_profile_configuration
         );
         break;
       }
@@ -135,18 +147,18 @@ const StreamConfiguration = observer(() => {
         case "temperature":
           await setTemperatureConfig(
             streamId,
-            toJS(currentStream.calculator.temperature_config)
+            toJS(currentStream.stream_config.temperature_config)
           );
           break;
         case "pressure":
           await setPressureConfig(
             streamId,
-            toJS(currentStream.calculator.pressure_config)
+            toJS(currentStream.stream_config.pressure_config)
           );
           break;
         case "pipelineProfile": {
           const profileConfig = toJS(
-            currentStream.calculator.pipeline_profile_configuration
+            currentStream.stream_config.pipeline_profile_configuration
           );
 
           // 2. Check karein ki user ne koi profile select kiya hai ya nahi
@@ -161,12 +173,12 @@ const StreamConfiguration = observer(() => {
         case "flowRate":
           await setFlowRateConfig(
             streamId,
-            toJS(currentStream.calculator.flow_rate_config)
+            toJS(currentStream.stream_config.flow_rate_config)
           );
           break;
 
         case "volume": {
-          const rawConfig = toJS(currentStream.calculator.volume_configuration);
+          const rawConfig = toJS(currentStream.stream_config.volume_configuration);
           let payloadToSend: any = { ...rawConfig };
           if (payloadToSend.mode_type === "OnePulseVolumeConfig") {
             const { max_volume_step_limit, ...rest } = payloadToSend;
@@ -192,7 +204,7 @@ const StreamConfiguration = observer(() => {
 
         case "conversion": {
           const rawConfig = toJS(
-            currentStream.calculator.compressibility_kfactor_config
+            currentStream.stream_config.compressibility_kfactor_config
           );
 
           // 1. Transform the gas_components array into an object keyed by component.key
@@ -242,7 +254,7 @@ const StreamConfiguration = observer(() => {
       Component: () => (
         <VolumeForm
           store={globalStore}
-          config={currentStream.calculator.volume_configuration}
+          config={currentStream.stream_config.volume_configuration}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
@@ -254,7 +266,7 @@ const StreamConfiguration = observer(() => {
       Component: () => (
         <TemperatureForm
           store={globalStore}
-          config={currentStream.calculator.temperature_config}
+          config={currentStream.stream_config.temperature_config}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
@@ -265,7 +277,7 @@ const StreamConfiguration = observer(() => {
       title: "Configure Pressure",
       Component: () => (
         <PressureForm
-          config={currentStream.calculator.pressure_config}
+          config={currentStream.stream_config.pressure_config}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
@@ -277,7 +289,7 @@ const StreamConfiguration = observer(() => {
       title: "Configure Flow Rate",
       Component: () => (
         <FlowRateForm
-          config={currentStream.calculator.flow_rate_config}
+          config={currentStream.stream_config.flow_rate_config}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
@@ -288,7 +300,7 @@ const StreamConfiguration = observer(() => {
       title: "Configure Pipeline Profile",
       Component: () => (
         <PipelineProfileForm
-          config={currentStream.calculator.pipeline_profile_configuration}
+          config={currentStream.stream_config.pipeline_profile_configuration}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
@@ -300,7 +312,7 @@ const StreamConfiguration = observer(() => {
       Component: () => (
         <ConversionForm
           store={globalStore}
-          config={currentStream.calculator.compressibility_kfactor_config}
+          config={currentStream.stream_config.compressibility_kfactor_config}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
