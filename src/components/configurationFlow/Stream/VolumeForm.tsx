@@ -20,15 +20,15 @@ export const defaultVolumeConfig: volume_configuration = {
   enable_bidirectional_volume: false,
 };
 interface VolumeFormProps {
-  config: volume_configuration;
+  config: any;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;
   store: typeof globalStore;
 }
-
 const VolumeForm: React.FC<VolumeFormProps> = observer(
   ({ store, config, onSave, onClose, isSaving }) => {
+    console.log("VolumeConfiguration", config);
     const [hasProceededOnce, setHasProceededOnce] = useState(false);
     const [isEditingMode, setIsEditingMode] = useState(false);
 

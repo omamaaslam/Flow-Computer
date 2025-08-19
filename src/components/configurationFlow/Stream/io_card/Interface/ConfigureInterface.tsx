@@ -287,7 +287,6 @@ const ConfigureInterface = observer(
 
     const handleDeviceTypeSelection = (deviceType: string) => {
       setDeviceTypeToConfigure(deviceType);
-      alert(deviceType)
       setModalView("addDevice_configure");
     };
 

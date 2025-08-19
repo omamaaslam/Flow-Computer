@@ -93,7 +93,7 @@ const MonitorScreen = observer(() => {
                       <div className="border border-gray-200 rounded-lg p-6">
                         <p className="text-xl">
                           <span className="font-bold text-gray-800">
-                            Current Volume:
+                            Original Volume:
                           </span>{" "}
                           <span className="font-semibold text-cyan-600 pl-2">
                             {res.current_volume_original}
@@ -118,10 +118,48 @@ const MonitorScreen = observer(() => {
                       <div className="border border-gray-200 rounded-lg p-6">
                         <p className="text-xl">
                           <span className="font-bold text-gray-800">
-                            Standard Volume:
+                            Std Volume:
                           </span>{" "}
                           <span className="font-semibold text-cyan-600 pl-2">
-                            {res.standard_volume_net}
+                            {res.standard_volume_forward}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                                        <div className="grid grid-cols-3 gap-6">
+                      {/* Card 1: Positive */}
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <p className="text-xl">
+                          <span className="font-bold text-gray-800">
+                            Current Flow Rate:
+                          </span>{" "}
+                          <span className="font-semibold text-cyan-600 pl-2">
+                            {res.device_flow_rate}
+                          </span>
+                        </p>
+                      </div>
+
+                      {/* Card 2: Reverse */}
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <p className="text-xl">
+                          <span className="font-bold text-gray-800 ">
+                            Interference Volume:
+                          </span>
+
+                          <span className="font-semibold text-cyan-600 pl-2">
+                            {res.interference_volume_forward}
+                          </span>
+                        </p>
+                      </div>
+
+                      {/* Card 3: Net */}
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <p className="text-xl">
+                          <span className="font-bold text-gray-800">
+                            Std. Interference Volume:
+                          </span>{" "}
+                          <span className="font-semibold text-cyan-600 pl-2">
+                            {res.standard_interference_volume_forward}
                           </span>
                         </p>
                       </div>
@@ -348,7 +386,7 @@ const MonitorScreen = observer(() => {
 
                       <div className="flex flex-col bg-white border rounded-lg shadow-sm p-3">
                         <h3 className="font-semibold text-gray-800 text-sm border-b pb-1 mb-2">
-                          System
+                          System Status
                         </h3>
                         <div className="space-y-1.5 text-xs pt-1">
                           <div className="flex items-center gap-1.5">
@@ -356,19 +394,20 @@ const MonitorScreen = observer(() => {
                             <span>System OK</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <div className="w-2.5 h-2.5 bg-green-500 rounded-full flex-shrink-0"></div>
+                            <div className={`w-2.5 h-2.5 rounded-full ${res.flow_rate_interference_flag ? "bg-red-600" : "bg-green-500"} flex-shrink-0`}></div>
                             <span>Flow Normal</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <div className="w-2.5 h-2.5 bg-red-500 rounded-full flex-shrink-0"></div>
+                            <div className={`w-2.5 h-2.5 rounded-full ${res.temperature_interference_flag ? "bg-red-600" : "bg-green-500"} flex-shrink-0`}
+                            ></div>
                             <span className="font-bold">Temperature</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <div className="w-2.5 h-2.5 bg-green-500 rounded-full flex-shrink-0"></div>
+                            <div className={`w-2.5 h-2.5 rounded-full ${res.pressure_interference_flag ? "bg-red-600" : "bg-green-500"} flex-shrink-0`}></div>
                             <span>Pressure</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <div className="w-2.5 h-2.5 bg-green-500 rounded-full flex-shrink-0"></div>
+                            <div className={`w-2.5 h-2.5 rounded-full ${res.volume_interference_flag ? "bg-red-600" : "bg-green-500"} flex-shrink-0`}></div>
                             <span>Volume</span>
                           </div>
                         </div>

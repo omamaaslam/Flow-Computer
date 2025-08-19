@@ -242,7 +242,7 @@ const StreamConfiguration = observer(() => {
       Component: () => (
         <VolumeForm
           store={globalStore}
-          config={currentStream.calculator.volume_configuration!}
+          config={currentStream.calculator.volume_configuration}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
