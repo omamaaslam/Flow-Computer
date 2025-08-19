@@ -48,6 +48,7 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
             <option value="AGA8_DC92">AGA8_DC92</option>
             <option value="GERG88_1">GERG88_1</option>
             <option value="ISO6976_2">ISO6976_2</option>
+            <option value="Constant">Constant</option>
           </select>
         </div>
         <div className="border border-gray-200 rounded-md overflow-hidden shadow-sm">

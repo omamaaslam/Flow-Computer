@@ -176,17 +176,17 @@ const StreamConfiguration = observer(() => {
               max_total_volume_limit: max_volume_step_limit,
             };
           }
-          const volumeTypeMap: { [key: string]: string } = {
-            modbus: "ModbusVolumeConfig",
-            EncoderOnlyVolumeConfig: "EncoderOnlyVolumeConfig",
-            OnePulseVolumeConfig: "OnePulseVolumeConfig",
-          };
-          const volumeType = volumeTypeMap[payloadToSend.mode_type];
+          // const volumeTypeMap: { [key: string]: string } = {
+          //   modbus: "ModbusVolumeConfig",
+          //   EncoderOnlyVolumeConfig: "EncoderOnlyVolumeConfig",
+          //   OnePulseVolumeConfig: "OnePulseVolumeConfig",
+          // };
+          // const volumeType = volumeTypeMap[payloadToSend.mode_type];
 
           console.log("Saving Volume Payload:", payloadToSend);
 
           // 5. Send the final, potentially transformed payload to the API
-          await setVolumeConfig(streamId, volumeType, payloadToSend);
+          await setVolumeConfig(streamId, payloadToSend);
           break;
         }
 

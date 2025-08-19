@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React,{ useState } from "react";
 import { observer } from "mobx-react-lite";
 import type {
   volume_configuration,
@@ -7,7 +7,7 @@ import type {
 import type globalStore from "../../../stores/GlobalStore";
 
 const operatingModes = [
-  { value: "ModbusVolumeConfig", label: "Modbus" },
+  { value: "OnePulseVolumeConfig", label: "Modbus" },
   { value: "EncoderOnlyVolumeConfig", label: "Encoder Only" },
   { value: "OnePulseVolumeConfig", label: "One pulse input" },
 ];
@@ -36,7 +36,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
     const isModeLocked = showDetails && !isEditingMode;
 
     const diDevices = store.get_all_di_devices;
-    const volume_devices = store.volumeDevices; // This list will be used
+    const volume_devices = store.volumeDevices;
     const handleInputChange = (
       e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
     ) => {
@@ -51,6 +51,9 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
       ) {
         updatedValue = value === "" ? null : Number(value);
       } else if (name === "mode_type") {
+        // When changing the mode, reset the specific device IDs to avoid carrying over old values
+        config.pulse_input_device_id = "";
+        config.encoder_device_id = "";
         updatedValue = value as VolumeOperatingMode;
       }
       (config as any)[name] = updatedValue;
@@ -113,6 +116,8 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
           <div className="border border-gray-200 rounded-md shadow-sm p-3 space-y-2.5 animate-fade-in-up">
             <h3 className="text-sm font-semibold text-gray-800">Volume</h3>
             <div className="grid grid-cols-2 gap-x-3 gap-y-3 text-xs">
+              {/* --- START OF CORRECTED LOGIC --- */}
+              {/* This block shows ONLY for the 'modbus' mode */}
               {config.mode_type === "modbus" && (
                 <div className="space-y-1">
                   <label className="block font-medium">Link Device</label>
@@ -135,6 +140,8 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                   </select>
                 </div>
               )}
+
+              {/* This block shows ONLY for the 'OnePulseVolumeConfig' mode */}
               {config.mode_type === "OnePulseVolumeConfig" && (
                 <div className="space-y-1">
                   <label className="block font-medium">
@@ -160,8 +167,8 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                 </div>
               )}
 
-              {/* --- ADDED SECTION START --- */}
-              {(config.mode_type === "EncoderOnlyVolumeConfig" || "ModbusVolumeConfig") && (
+              {/* This block shows ONLY for the 'EncoderOnlyVolumeConfig' mode */}
+              {config.mode_type === "EncoderOnlyVolumeConfig" && (
                 <div className="space-y-1">
                   <label className="block font-medium">Encoder Device</label>
                   <select
@@ -183,8 +190,10 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                   </select>
                 </div>
               )}
-              {/* --- ADDED SECTION END --- */}
+              {/* --- END OF CORRECTED LOGIC --- */}
 
+
+              {/* These fields are common and will always show */}
               <div className="space-y-1">
                 <label className="block font-medium">
                   Min Operational Volume

@@ -333,13 +333,11 @@ export const setFlowRateConfig = (streamId: string, data: any) => {
 
 export const setVolumeConfig = (
   streamId: string,
-  volumeType: string,
   data: any
 ) => {
   const msg = {
     scope: "set_volume_config",
     stream_id: streamId,
-    volume_type: volumeType,
     data:  data,
   };
   console.log("Current Volume Config:", data);
