@@ -31,7 +31,6 @@ const defaultFormState = {
   tag_name: "",
   build_year: "",
   version: "",
-  gas_value: "",
   modbus_settings: {
     slave_address: "",
     register_address: "",
@@ -61,7 +60,6 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
         tag_name: initialData.tag_name ?? defaultFormState.tag_name,
         build_year: initialData.build_year ?? defaultFormState.build_year,
         version: initialData.version ?? defaultFormState.version,
-        gas_value: String(initialData.gas_value ?? defaultFormState.gas_value),
         modbus_settings: {
           slave_address: String(
             initialData.modbus_settings?.slave_address ?? // Use optional chaining
@@ -107,8 +105,8 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
 
   // --- [FIXED] UPDATED handleSubmit to build the new payload structure ---
   const handleSubmit = () => {
-    const safeParseFloat = (val: string) =>
-      val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
+    // const safeParseFloat = (val: string) =>
+    //   val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
     // const safeParseInt = (val: string) =>
     //   val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
 
@@ -122,7 +120,6 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
       tag_name: formState.tag_name,
       build_year: formState.build_year,
       version: formState.version,
-      gas_value: safeParseFloat(formState.gas_value),
       // Nested modbus_settings object
       modbus_settings: {
         slave_address: formState.modbus_settings.slave_address,
@@ -157,7 +154,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
       <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn border-t pt-6">
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600">
-            Device Manufacturer
+            device manufacturer
           </label>
           <Input
             value={formState.manufacturer}
@@ -167,7 +164,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
         </div>
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600">
-            Serial Number
+            serial number
           </label>
           <Input
             value={formState.serial_number}
@@ -177,7 +174,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
         </div>
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600">
-            Model
+            model
           </label>
           <Input
             value={formState.model}
@@ -187,7 +184,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
         </div>
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600">
-            Tag Name
+            tag name
           </label>
           <Input
             value={formState.tag_name}
@@ -197,7 +194,7 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
         </div>
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600">
-            Build Year
+            build year
           </label>
           <Input
             value={formState.build_year}
@@ -207,30 +204,13 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = ({
         </div>
         <div className="space-y-1">
           <label className="block text-xs font-medium text-gray-600">
-            Version
+            version
           </label>
           <Input
             value={formState.version}
             onChange={(e) => handleStateChange("version", e.target.value)}
             placeholder="e.g., v1.0"
           />
-        </div>
-
-        <div className="space-y-1 col-span-2">
-          <label className="block text-xs font-medium text-gray-600">
-            {deviceTypeLabel}
-          </label>
-          <div className="relative">
-            <Input
-              value={formState.gas_value}
-              onChange={(e) => handleStateChange("gas_value", e.target.value)}
-              placeholder="Set value"
-              type="number"
-            />
-            <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 text-sm pointer-events-none">
-              %mol
-            </span>
-          </div>
         </div>
       </div>
 

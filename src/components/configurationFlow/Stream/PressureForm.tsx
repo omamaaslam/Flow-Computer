@@ -93,7 +93,7 @@ const PressureForm: React.FC<PressureFormProps> = observer(
             </label>
             <input
               name="min_operating_pressure"
-              type="text"
+              type="number"
               value={formData.min_operating_pressure ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
@@ -106,7 +106,7 @@ const PressureForm: React.FC<PressureFormProps> = observer(
             </label>
             <input
               name="base_pressure"
-              type="text"
+              type="number"
               value={formData.base_pressure ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"
@@ -119,7 +119,7 @@ const PressureForm: React.FC<PressureFormProps> = observer(
             </label>
             <input
               name="max_operating_pressure"
-              type="text"
+              type="number"
               value={formData.max_operating_pressure ?? ""}
               onChange={handleInputChange}
               placeholder="Please add Value"

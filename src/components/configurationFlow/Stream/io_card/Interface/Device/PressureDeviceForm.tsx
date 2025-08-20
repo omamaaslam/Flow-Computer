@@ -305,7 +305,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
             <div className="grid grid-cols-2 gap-x-6">
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Pmin
+                  minimum pressure
                 </label>
                 <Input
                   value={formState.pressure_min}
@@ -318,7 +318,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
               </div>
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Pmax
+                  max pressure
                 </label>
                 <Input
                   value={formState.pressure_max}
@@ -332,7 +332,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Pressure Unit
+                pressure unit
               </label>
               <select
                 value={formState.unit}
@@ -340,16 +340,19 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                 className="w-full border rounded-md py-1.5 px-3 text-sm border-gray-300"
               >
                 {pressureUnitOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
+                  <>
+                  <option value="">select unit</option>
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  </>
                 ))}
               </select>
             </div>
             <div className="grid grid-cols-2 gap-x-6">
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Scaling Factor
+                  scaling factor
                 </label>
                 <Input
                   value={formState.scaling_factor}
@@ -362,7 +365,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
               </div>
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Offset
+                  offset
                 </label>
                 <Input
                   value={formState.offset}

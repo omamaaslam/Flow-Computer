@@ -355,13 +355,13 @@ const StreamConfiguration = observer(() => {
     },
     {
       id: "conversion" as ModalType,
-      label: "Conversion",
+      label: "Compressibility",
       Icon: GitCompareArrows,
       Illustration: "/streamSVG/Conversion.svg",
     },
     {
       id: "pipelineProfile" as ModalType,
-      label: "Pipline Profile",
+      label: "Profile",
       Icon: MoveHorizontal,
       Illustration: "/streamSVG/Pipline.svg",
     },

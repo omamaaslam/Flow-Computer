@@ -26,7 +26,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   const [activeTab, setActiveTab] = useState<"general" | "parameters">(
     "general"
   );
-  
+
   // A single state object that holds data for ALL possible fields.
   const [formState, setFormState] = useState({
     manufacturer: "",
@@ -81,13 +81,13 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
         correction_c3: String(initialData.correction_c3 ?? ""),
         commandSet: initialData.commandSet ?? "Universal", // HART field
         // Safely merge modbus_settings if they exist in initialData
-        modbus_settings: initialData.modbus_settings 
-          ? { ...baseState.modbus_settings, ...initialData.modbus_settings } 
-                    : baseState.modbus_settings
+        modbus_settings: initialData.modbus_settings
+          ? { ...baseState.modbus_settings, ...initialData.modbus_settings }
+          : baseState.modbus_settings,
       };
 
       // Special logic for HART: parse the device_id to fill transient fields
-      if (interface_type === 'HartInterface' && initialData.device_id) {
+      if (interface_type === "HartInterface" && initialData.device_id) {
         const hartIdRegex = /(S|P)(\d+)$/;
         const match = initialData.device_id.match(hartIdRegex);
         if (match) {
@@ -117,7 +117,8 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
   };
 
   const validateAndSave = () => {
-    const safeParseFloat = (val: string) => (val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0);
+    const safeParseFloat = (val: string) =>
+      val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
     // const safeParseInt = (val: string) => (val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0);
 
     // Destructure to separate the modbus settings from everything else
@@ -140,7 +141,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
     };
 
     // If it's a Modbus interface, add the parsed modbus_settings object
-    if (interface_type === 'ModbusInterface') {
+    if (interface_type === "ModbusInterface") {
       finalConfig.modbus_settings = {
         slave_address: modbus_settings.slave_id,
         register_address: modbus_settings.register_address,
@@ -165,9 +166,9 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
         <div>Status: {initialData?.data?.status ?? "N/A"}</div>
         <div>Live Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>
-      
+
       {/* --- Conditional Rendering Logic for the Bridge --- */}
-      {interface_type === 'HartInterface' && (
+      {interface_type === "HartInterface" && (
         <BridgeComponent
           interface_type={interface_type}
           formState={formState} // Pass the whole flat state object for HART
@@ -175,7 +176,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
           handleStateChange={handleStateChange} // Use the general handler for HART
         />
       )}
-      {interface_type === 'ModbusInterface' && (
+      {interface_type === "ModbusInterface" && (
         <BridgeComponent
           interface_type={interface_type}
           formState={formState.modbus_settings} // Pass only the nested object for Modbus
@@ -212,7 +213,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
           <div className="grid grid-cols-2 gap-x-6 gap-y-4 animate-fadeIn">
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Device Manufacturer
+                device manufacturer
               </label>
               <Input
                 value={formState.manufacturer}
@@ -224,7 +225,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Serial Number
+                serial number
               </label>
               <Input
                 value={formState.serial_number}
@@ -236,7 +237,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Model
+                model
               </label>
               <Input
                 value={formState.model}
@@ -246,7 +247,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Tag Name
+                tag name
               </label>
               <Input
                 value={formState.tag_name}
@@ -256,7 +257,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Build Year
+                build year
               </label>
               <Input
                 value={formState.build_year}
@@ -268,7 +269,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Version
+                version
               </label>
               <Input
                 value={formState.version}
@@ -283,7 +284,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             <div className="grid grid-cols-2 gap-x-6">
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Tmin
+                  minimum temperature
                 </label>
                 <Input
                   value={formState.temp_min}
@@ -296,7 +297,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
               </div>
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Tmax
+                  maxium temperature
                 </label>
                 <Input
                   value={formState.temp_max}
@@ -310,7 +311,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Temperature Unit
+                temperature unit
               </label>
               <select
                 value={formState.unit}
@@ -327,7 +328,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             <div className="grid grid-cols-2 gap-x-6">
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Scaling Factor
+                  scaling factor
                 </label>
                 <Input
                   value={formState.scaling_factor}
@@ -340,7 +341,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
               </div>
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-gray-600">
-                  Offset
+                  offset
                 </label>
                 <Input
                   value={formState.offset}
@@ -352,7 +353,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
             </div>
             <div className="space-y-1">
               <label className="block text-xs font-medium text-gray-600">
-                Correction Coefficients
+                correction coefficients
               </label>
               <div className="grid grid-cols-4 gap-x-3">
                 <Input
