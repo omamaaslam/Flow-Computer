@@ -1,9 +1,10 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
-import type { pipeline_profile_config } from "../../../types/streamConfig";
+import type { calculation_profile } from "../../../types/streamConfig";
+import { toJS } from "mobx";
 
 interface PipelineProfileFormProps {
-  config: pipeline_profile_config;
+  config: calculation_profile;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;
@@ -12,9 +13,9 @@ interface PipelineProfileFormProps {
 const PipelineProfileForm: React.FC<PipelineProfileFormProps> = observer(
   ({ config, onSave, onClose, isSaving }) => {
     const handleDropdownChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      config.profile_name = e.target.value;
+      config.active_profile_id = e.target.value;
     };
-
+    console.log("incoming confguration", toJS(config));
     const handleSave = () => {
       onSave();
     };
@@ -26,7 +27,7 @@ const PipelineProfileForm: React.FC<PipelineProfileFormProps> = observer(
             <label className="block font-medium text-xs">Device</label>
             <select
               name="profile_name"
-              value={config.profile_name ?? ""}
+              value={config.active_profile_id ?? ""}
               onChange={handleDropdownChange}
               className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
             >

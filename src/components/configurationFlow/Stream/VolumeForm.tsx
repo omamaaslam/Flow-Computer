@@ -1,4 +1,4 @@
-import React,{ useState } from "react";
+import React, { useState } from "react";
 import { observer } from "mobx-react-lite";
 import type {
   volume_configuration,
@@ -159,9 +159,12 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                         : "None available"}
                     </option>
                     {diDevices.map((device) => (
-                      <option key={device.id} value={device.id}>
-                        {`${device.id} (${device.config.tag_name || "No Tag"})`}
-                      </option>
+                      <>
+                      <option value="none">None</option>
+                        <option key={device.id} value={device.id}>
+                          {`${device.id}`}
+                        </option>
+                      </>
                     ))}
                   </select>
                 </div>
@@ -191,7 +194,6 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                 </div>
               )}
               {/* --- END OF CORRECTED LOGIC --- */}
-
 
               {/* These fields are common and will always show */}
               <div className="space-y-1">

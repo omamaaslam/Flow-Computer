@@ -158,16 +158,16 @@ const StreamConfiguration = observer(() => {
           break;
         case "pipelineProfile": {
           const profileConfig = toJS(
-            currentStream.stream_config.pipeline_profile_configuration
+            currentStream.stream_config.calculation_profile
           );
 
           // 2. Check karein ki user ne koi profile select kiya hai ya nahi
-          if (!profileConfig.profile_name) {
+          if (!profileConfig.active_profile_id) {
             alert("Please select a pipeline profile to save.");
-            setIsSaving(false); // Saving state ko reset karein
-            return; // Function ko yahin rok dein
+            setIsSaving(false);
+            return;
           }
-          await addProfile(streamId, profileConfig.profile_name);
+          await addProfile(streamId, profileConfig.active_profile_id);
           break;
         }
         case "flowRate":
@@ -300,7 +300,7 @@ const StreamConfiguration = observer(() => {
       title: "Configure Pipeline Profile",
       Component: () => (
         <PipelineProfileForm
-          config={currentStream.stream_config.pipeline_profile_configuration}
+          config={currentStream.stream_config.calculation_profile}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}

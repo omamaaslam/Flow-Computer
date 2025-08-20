@@ -58,7 +58,7 @@ export interface GasComponent {
   display_name: string;
   unit: string;
   value: number;
-  linked_device_id: string;
+  linked_device_id?: string;
 }
 
 export interface CompressibilityKFactorConfig {

@@ -62,7 +62,7 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     commandSet: "Universal",
     variableType: "",
   });
-  console.log("initialData", initialData)
+  console.log("initialData", initialData);
   useEffect(() => {
     // Explicitly type `data` to let TypeScript know its shape and allow extra props
     const data: Partial<DeviceConfig> & { [key: string]: any } =
@@ -102,11 +102,21 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleModbusChange = (field: string, value: string) => {
+    setFormState((prev) => ({
+      ...prev,
+      modbus_settings: {
+        ...prev.modbus_settings,
+        [field]: value,
+      },
+    }));
+  };
+
   const validateAndSave = () => {
     const safeParseFloat = (val: string) =>
       val && !isNaN(parseFloat(val)) ? parseFloat(val) : 0;
-    const safeParseInt = (val: string) =>
-      val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
+    // const safeParseInt = (val: string) =>
+    //   val && !isNaN(parseInt(val, 10)) ? parseInt(val, 10) : 0;
 
     // Determine device_id based on interface type
     let deviceId = `${interface_id}`;
@@ -136,12 +146,12 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       correction_c1: safeParseFloat(formState.correction_c1),
       correction_c2: safeParseFloat(formState.correction_c2),
       correction_c3: safeParseFloat(formState.correction_c3),
-      slave_address: safeParseInt(formState.modbus_settings.register_address),
-      register_address: safeParseInt(
-        formState.modbus_settings.register_address
-      ),
-      register_count: safeParseInt(formState.modbus_settings.register_count),
-      data_type: safeParseInt(formState.modbus_settings.data_type),
+      modbus_settings: {
+        slave_address: formState.modbus_settings.slave_address,
+        register_address: formState.modbus_settings.register_address,
+        register_count: formState.modbus_settings.register_count,
+        data_type: formState.modbus_settings.data_type,
+      },
     };
 
     // If it's a HART interface, also include the HART-specific fields in the saved config
@@ -150,11 +160,12 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
       finalConfig.commandSet = formState.commandSet;
       finalConfig.variableType = formState.variableType;
     }
-    console.log(finalConfig);
+    console.log("pressure device setting", finalConfig);
     onSave(finalConfig);
   };
 
   const pressureUnitOptions = [
+    { value: "", label: "None" },
     { value: "Bar", label: "Bar" },
     { value: "Pascal", label: "Pascal" },
     { value: "Pa", label: "Pa" },
@@ -165,28 +176,33 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
     <div className="flex flex-col space-y-6">
       <div className="flex justify-start items-center gap-6 text-slate-400">
         <div>Status: {initialData?.data?.status ?? "N/A"}</div>
-        <div>
-          Timestamp:{" "}
-          {initialData?.data?.timestamp
-            ? new Date(initialData.data.timestamp * 1000).toLocaleTimeString(
-                [],
-                {
-                  hour12: false,
-                }
-              )
-            : "N/A"}
-        </div>
+        <div>Timestamp: {initialData?.data?.timestamp}</div>
 
         <div>Value: {initialData?.data?.value ?? "N/A"}</div>
       </div>
-
-      <BridgeComponent
-        interface_type={interface_type}
-        formState={formState}
-        errors={{}}
-        handleStateChange={handleStateChange}
-      />
-
+      {/* --- Conditional Rendering Logic for the Bridge --- */}
+      {interface_type.toUpperCase().includes("HART") && (
+        <BridgeComponent
+          interface_type={interface_type}
+          formState={formState} // Pass the whole flat state object for HART
+          errors={{}}
+          handleStateChange={handleStateChange} // Use the general handler for HART
+        />
+      )}
+      {interface_type.toUpperCase().includes("MODBUS") && (
+        <BridgeComponent
+          interface_type={interface_type}
+          formState={formState.modbus_settings}
+          errors={{}}
+          // Add the inline adapter/translator function here
+          handleStateChange={(field, value) => {
+            // If BridgeComponent sends "slave_id", we change it to "slave_address"
+            const stateField = field === "slave_id" ? "slave_address" : field;
+            // Then we call the real handler with the corrected field name
+            handleModbusChange(stateField, value);
+          }}
+        />
+      )}
       <div className="flex bg-gray-200 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab("general")}

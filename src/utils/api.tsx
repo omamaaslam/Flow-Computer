@@ -1,6 +1,6 @@
-// const WEBSOCKET_API_URL = "ws://192.168.1.110:8881";
+const WEBSOCKET_API_URL = "ws://192.168.1.254:8881";
 // const WEBSOCKET_API_URL = "ws://192.168.1.110:8887";
-const WEBSOCKET_API_URL = "ws://192.168.1.222:7000";
+// const WEBSOCKET_API_URL = "ws://192.168.1.98:7000";
 const RECONNECT_DELAY = 1000;
 
 let socket: WebSocket | null = null;
