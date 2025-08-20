@@ -1,0 +1,9 @@
+Constant = {}
+GERG88_1 = {"Calorific Value", "Standard Density", "Carbon Dioxide", "Hydrogen"}
+GERG88_2 = {"Calorific Value", "Standard Density", "Nitrogen", "Hydrogen"}
+GERG88_3 = {"Standard Density", "Carbon Dioxide", "Nitrogen", "Hydrogen"}
+AGA8_GCM_1 = {"Calorific Value", "Standard Density", "Carbon Dioxide"}
+AGA8_GCM_2 = {"Nitrogen", "Standard Density", "Carbon Dioxide"}
+SGERG_H2 = {"Hydrogen","Nitrogen","Carbon Dioxide","Methane","Helium","Water"}
+AGA_NX19_H = {"Hydrogen", "Standard Density", Carbon Dioxide, "N2"}
+AGA8_DC92 = { "Methane", "Nitrogen", "Carbon D "Ethane", "Propane", "Iso-B "n-B "Iso-P "n-P "Hexane", "Heptane", "Octane", "Nonane", "Decane", "Hydrogen", "Hydrogen S "Carbon M "Oxygen", "Water V "Helium", "Argon"}

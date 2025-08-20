@@ -4,16 +4,23 @@ import { makeAutoObservable } from "mobx";
 import { IOCard } from "./IOCard";
 import {
   createDefaultStreamConfig,
+  type GasComponent,
   type stream_config,
   type temperature_config,
   // ... other imports
 } from "../types/streamConfig";
 
 const ALL_KFACTOR_METHODS = [
-  "AGA8_DC92",
-  "GERG88_1",
-  "ISO6976_2",
   "Constant",
+  "GERG88_1",
+  "GERG88_2",
+  "GERG88_3",
+  "AGA8_GCM_1 ",
+  "AGA8_GCM_2",
+  "AGA_NX19_L",
+  "AGA_NX19_H",
+  "AGA8_DC92",
+  "SGERG_H2",
 ];
 export class Stream {
   public id: string;
@@ -72,25 +79,43 @@ export class Stream {
     ) {
       const incomingConfig =
         incomingstream_config.compressibility_kfactor_config;
-        const targetConfig = this.stream_config.compressibility_kfactor_config;
+
+      const targetConfig = this.stream_config.compressibility_kfactor_config;
 
       // Update simple properties directly
       targetConfig.active_method = incomingConfig.active_method;
       targetConfig.constant_k_value = incomingConfig.constant_k_value;
 
-      // Deep merge the 'methods' object
-      // This ensures we add/update methods without destroying the whole object
-      if (incomingConfig.methods) {
-        Object.assign(
-          this.stream_config.compressibility_kfactor_config.methods,
-          incomingConfig.methods
-        );
-      }
-      // --- END OF FIX ---
+      // --- START OF NEW LOGIC ---
+      // Ensure all possible methods exist in our store's state.
+      ALL_KFACTOR_METHODS.forEach((methodName) => {
+        // If the server sent data for this method, use it.
+        if (incomingConfig.methods && incomingConfig.methods[methodName]) {
+          // To be safe, ensure the object exists before assigning to it
+          if (!targetConfig.methods[methodName]) {
+            targetConfig.methods[methodName] = {};
+          }
+          Object.assign(
+            targetConfig.methods[methodName],
+            incomingConfig.methods[methodName]
+          );
+        }
+        // If the server did NOT send data, but the method doesn't exist in our store yet, create it.
+        else if (!targetConfig.methods[methodName]) {
+          // Create a default structure for this method.
+          // We'll populate it with keys from the base gas_components list, but with default values.
+          const defaultMethodData: { [key: string]: GasComponent } = {};
+          targetConfig.gas_components.forEach((component) => {
+            defaultMethodData[component.key] = {
+              ...component, // copy key, display_name, unit
+              value: 0, // set default value to 0
+              linked_device_id: "", // set default device to empty
+            };
+          });
+          targetConfig.methods[methodName] = defaultMethodData;
+        }
+      });
     }
-    // ▲▲▲ THE FIX IS HERE ▲▲▲
-    //
-
     if ("calculation_profile" in incomingstream_config) {
       this.stream_config.calculation_profile =
         incomingstream_config.calculation_profile;
