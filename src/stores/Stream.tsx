@@ -1,6 +1,6 @@
 // D:/flow-computer/src/stores/Stream.ts
 
-import { makeAutoObservable } from "mobx";
+import { computed, makeAutoObservable } from "mobx";
 import { IOCard } from "./IOCard";
 import {
   createDefaultStreamConfig,
@@ -10,18 +10,41 @@ import {
   // ... other imports
 } from "../types/streamConfig";
 
-const ALL_KFACTOR_METHODS = [
-  "Constant",
-  "GERG88_1",
-  "GERG88_2",
-  "GERG88_3",
-  "AGA8_GCM_1 ",
-  "AGA8_GCM_2",
-  "AGA_NX19_L",
-  "AGA_NX19_H",
-  "AGA8_DC92",
-  "SGERG_H2",
-];
+const SUPPORTED_COMPONENTS_BY_METHOD: Record<string, string[]> = {
+  Constant: [],
+  GERG88_1: ["Calorific Value", "Standard Density", "CO2", "H2"],
+  GERG88_2: ["Calorific Value", "Standard Density", "N2", "H2"],
+  GERG88_3: ["Standard Density", "CO2", "N2", "H2"],
+  AGA8_GCM_1: ["Calorific Value", "Standard Density", "CO2"],
+  AGA8_GCM_2: ["N2", "Standard Density", "CO2"],
+  SGERG_H2: ["H2", "N2", "CO2", "CH4", "HE", "H2O"],
+  AGA_NX19_H: ["H2", "Standard Density", "CO2", "N2"],
+  AGA8_DC92: [
+    "CH4",
+    "N2",
+    "CO2",
+    "C2H6",
+    "C3H8",
+    "I_C4H10",
+    "N_C4H10",
+    "I_C5H12",
+    "N_C5H12",
+    "C6H14",
+    "C7H16",
+    "C8H18",
+    "C9H20",
+    "C10H22",
+    "H2",
+    "H2S",
+    "CO",
+    "O2",
+    "H2O",
+    "HE",
+    "AR",
+  ],
+};
+const ALL_KFACTOR_METHODS = Object.keys(SUPPORTED_COMPONENTS_BY_METHOD);
+
 export class Stream {
   public id: string;
   public name: string;
@@ -31,12 +54,49 @@ export class Stream {
   // The 'editing...' properties are no longer needed here.
 
   constructor(streamData: any) {
-    makeAutoObservable(this, { id: false });
+    makeAutoObservable(this, {
+      id: false,
+      componentsForActiveMethod: computed,
+      showComponentTable: computed,
+    });
     this.id = streamData.stream_id;
     this.name = "";
     this.stream_config = createDefaultStreamConfig();
     this.update(streamData);
   }
+
+  // --- START: NEW COMPUTED VALUES ---
+
+  get componentsForActiveMethod(): GasComponent[] {
+    const config = this.stream_config.compressibility_kfactor_config;
+    const activeMethod = config.active_method;
+    const activeMethodComponents = config.methods[activeMethod];
+
+    const supportedKeys = SUPPORTED_COMPONENTS_BY_METHOD[activeMethod] || [];
+
+    if (supportedKeys.length === 0 || !activeMethodComponents) {
+      return [];
+    }
+
+    return config.gas_components
+      .filter((baseComponent) => supportedKeys.includes(baseComponent.key))
+      .map((baseComponent) => {
+        const activeData = activeMethodComponents[baseComponent.key];
+        return {
+          ...baseComponent,
+          ...(activeData || {}),
+        };
+      });
+  }
+
+  get showComponentTable(): boolean {
+    return (
+      this.stream_config.compressibility_kfactor_config.active_method !==
+      "Constant"
+    );
+  }
+
+  // --- END: NEW COMPUTED VALUES ---
 
   public update(streamData: any) {
     this.name = streamData.stream_name || this.name;

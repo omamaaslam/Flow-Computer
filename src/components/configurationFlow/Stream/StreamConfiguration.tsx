@@ -54,7 +54,7 @@ const StreamConfiguration = observer(() => {
     return <div>Stream ID is missing.</div>;
   }
   const currentStream = globalStore.streams.find((s) => s.id === streamId);
-  console.log("currentStream", toJS(currentStream));
+
   const openModal = (modalType: ModalType) => {
     if (!currentStream) return;
 
@@ -314,11 +314,11 @@ const StreamConfiguration = observer(() => {
       ),
     },
     conversion: {
-      title: "Compressibility & Conversion Settings",
+      title: "Compressibility Settings",
       Component: () => (
         <ConversionForm
           store={globalStore}
-          config={currentStream.stream_config.compressibility_kfactor_config}
+          stream={currentStream}
           onSave={handleSave}
           onClose={closeModal}
           isSaving={isSaving}
