@@ -98,9 +98,13 @@ const StreamConfiguration = observer(() => {
         );
         break;
       case "pipelineProfile": {
-        snapshot = toJS(
-          currentStream.stream_config.pipeline_profile_configuration
-        );
+        if (!currentStream.stream_config.calculation_profile) {
+          currentStream.stream_config.calculation_profile = {
+            active_profile_id: "",
+            profiles: [],
+          };
+        }
+        snapshot = toJS(currentStream.stream_config.calculation_profile);
         break;
       }
 
@@ -178,7 +182,9 @@ const StreamConfiguration = observer(() => {
           break;
 
         case "volume": {
-          const rawConfig = toJS(currentStream.stream_config.volume_configuration);
+          const rawConfig = toJS(
+            currentStream.stream_config.volume_configuration
+          );
           let payloadToSend: any = { ...rawConfig };
           if (payloadToSend.mode_type === "OnePulseVolumeConfig") {
             const { max_volume_step_limit, ...rest } = payloadToSend;
@@ -223,10 +229,10 @@ const StreamConfiguration = observer(() => {
           );
           const data = {
             data: {
-              active_method: rawConfig.k_factor_method,
+              active_method: rawConfig.active_method,
               constant_k_value: 1.0,
               methods: {
-                [rawConfig.k_factor_method]: gasComponentsObject,
+                [rawConfig.active_method]: gasComponentsObject,
               },
             },
           };

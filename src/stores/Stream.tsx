@@ -9,6 +9,12 @@ import {
   // ... other imports
 } from "../types/streamConfig";
 
+const ALL_KFACTOR_METHODS = [
+  "AGA8_DC92",
+  "GERG88_1",
+  "ISO6976_2",
+  "Constant",
+];
 export class Stream {
   public id: string;
   public name: string;
@@ -64,12 +70,23 @@ export class Stream {
       "compressibility_kfactor_config" in incomingstream_config &&
       incomingstream_config.compressibility_kfactor_config
     ) {
-      // Use Object.assign to MERGE, not replace.
-      // This preserves the default gas_components array if the incoming data doesn't have one.
-      Object.assign(
-        this.stream_config.compressibility_kfactor_config,
-        incomingstream_config.compressibility_kfactor_config
-      );
+      const incomingConfig =
+        incomingstream_config.compressibility_kfactor_config;
+        const targetConfig = this.stream_config.compressibility_kfactor_config;
+
+      // Update simple properties directly
+      targetConfig.active_method = incomingConfig.active_method;
+      targetConfig.constant_k_value = incomingConfig.constant_k_value;
+
+      // Deep merge the 'methods' object
+      // This ensures we add/update methods without destroying the whole object
+      if (incomingConfig.methods) {
+        Object.assign(
+          this.stream_config.compressibility_kfactor_config.methods,
+          incomingConfig.methods
+        );
+      }
+      // --- END OF FIX ---
     }
     // ▲▲▲ THE FIX IS HERE ▲▲▲
     //

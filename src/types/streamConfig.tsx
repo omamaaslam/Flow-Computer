@@ -62,8 +62,14 @@ export interface GasComponent {
 }
 
 export interface CompressibilityKFactorConfig {
-  k_factor_method: string;
+  active_method: string;
   gas_components: GasComponent[];
+  methods: {
+    [methodName: string]: {
+      [componentKey: string]: GasComponent;
+    };
+  };
+  constant_k_value: number;
 }
 
 export interface pipeline_profile_config {
@@ -358,7 +364,9 @@ export const createDefaultStreamConfig = (): stream_config => ({
     enable_bidirectional_volume: false,
   },
   compressibility_kfactor_config: {
-    k_factor_method: "AGA8_DC92",
+    active_method: "Constant",
+    constant_k_value: 1, // Add default value
+    methods: {}, // Add empty methods object
     gas_components: [
       {
         key: "CH4",
@@ -433,7 +441,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
     ],
   },
   pipeline_profile_configuration: {
-    profile_name: "",
+    profile_name: "pipeline1",
     stream_id: "",
   },
   calculation_profile: null,

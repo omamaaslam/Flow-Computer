@@ -1,3 +1,5 @@
+// File: ConversionForm.tsx
+
 import React from "react";
 import { observer } from "mobx-react-lite";
 import type globalStore from "../../../stores/GlobalStore";
@@ -5,6 +7,7 @@ import type {
   CompressibilityKFactorConfig,
   GasComponent,
 } from "../../../types/streamConfig";
+import { toJS } from "mobx";
 
 interface ConversionFormProps {
   store: typeof globalStore;
@@ -16,23 +19,52 @@ interface ConversionFormProps {
 
 const ConversionForm: React.FC<ConversionFormProps> = observer(
   ({ store, config, onSave, onClose, isSaving }) => {
+    console.log("Config in Form:", toJS(config));
     const availableDevices = store.allDevices;
+
     const handleMethodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-      config.k_factor_method = e.target.value;
+      config.active_method = e.target.value;
     };
 
+    // UPDATED HANDLER: It now uses the component's key to modify the nested methods object
     const handleComponentInputChange = (
-      index: number,
+      componentKey: string,
       field: keyof GasComponent,
-      value: string
+      value: string | number
     ) => {
-      const component = config.gas_components[index];
-      if (field === "value") {
-        component[field] = parseFloat(value) || 0;
-      } else {
-        (component[field] as string) = value;
+      const activeMethodData = config.methods[config.active_method];
+      if (!activeMethodData) return; // Safety check
+
+      const component = activeMethodData[componentKey];
+      if (component) {
+        if (field === "value") {
+          component[field] = parseFloat(value as string) || 0;
+        } else {
+          // This covers linked_device_id
+          (component[field] as string) = value as string;
+        }
       }
     };
+
+    // NEW LOGIC: This creates the list for the UI by combining the base structure
+    // with the actual data from the active method.
+    const componentsToDisplay = React.useMemo(() => {
+      const activeMethodComponents = config.methods[config.active_method];
+
+      // If there's no data for the active method, return the base list with its default values.
+      if (!activeMethodComponents) {
+        return config.gas_components;
+      }
+
+      // Map over the base list to maintain order, but merge in values from the active method.
+      return config.gas_components.map((baseComponent) => {
+        const activeData = activeMethodComponents[baseComponent.key];
+        return {
+          ...baseComponent, // Takes key, display_name, unit from the base structure
+          ...(activeData || {}), // Overwrites with value and linked_device_id from the live data
+        };
+      });
+    }, [config.active_method, config.gas_components, config.methods]);
 
     return (
       <div className="flex flex-col gap-4">
@@ -41,14 +73,16 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
             K-Factor Method
           </label>
           <select
-            value={config.k_factor_method}
+            value={config.active_method}
             onChange={handleMethodChange}
             className="w-full max-w-xs border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
-            <option value="AGA8_DC92">AGA8_DC92</option>
-            <option value="GERG88_1">GERG88_1</option>
-            <option value="ISO6976_2">ISO6976_2</option>
-            <option value="Constant">Constant</option>
+            {/* Dynamically generate options from the data */}
+            {Object.keys(config.methods).map((methodName) => (
+              <option key={methodName} value={methodName}>
+                {methodName}
+              </option>
+            ))}
           </select>
         </div>
         <div className="border border-gray-200 rounded-md overflow-hidden shadow-sm">
@@ -59,12 +93,11 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
             <div className="px-3 py-2">Value</div>
           </div>
           <div>
-            {config.gas_components?.map(
-              (component: GasComponent, index: number) => (
-                <div
-                  key={component.key}
-                  className="grid grid-cols-[3fr_1.5fr_2.5fr_2.5fr] items-center text-xs border-b last:border-b-0"
-                >
+            {/* We now map over our new derived list */}
+            {componentsToDisplay.map((component: GasComponent) => {
+              // (Includes previous focus fix by creating an anonymous observer)
+              const Row = observer(() => (
+                <div className="grid grid-cols-[3fr_1.5fr_2.5fr_2.5fr] items-center text-xs border-b last:border-b-0">
                   <div className="font-medium text-gray-800 px-3 py-1.5">
                     {component.display_name} ({component.key})
                   </div>
@@ -73,10 +106,10 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
                   </div>
                   <div className="px-2 py-1.5">
                     <select
-                      value={component.linked_device_id}
+                      value={component.linked_device_id || ""} // Use empty string as fallback
                       onChange={(e) =>
                         handleComponentInputChange(
-                          index,
+                          component.key, // Pass component key, not index
                           "linked_device_id",
                           e.target.value
                         )
@@ -97,7 +130,7 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
                       value={component.value}
                       onChange={(e) =>
                         handleComponentInputChange(
-                          index,
+                          component.key, // Pass component key, not index
                           "value",
                           e.target.value
                         )
@@ -107,8 +140,9 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
                     />
                   </div>
                 </div>
-              )
-            )}
+              ));
+              return <Row key={component.key} />;
+            })}
           </div>
         </div>
         <div className="flex justify-end gap-2 pt-2">
