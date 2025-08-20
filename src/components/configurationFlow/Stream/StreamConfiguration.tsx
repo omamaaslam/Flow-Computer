@@ -215,7 +215,7 @@ const StreamConfiguration = observer(() => {
                 display_name: component.display_name,
                 unit: component.unit,
                 value: component.value,
-                linked_device_id: component.linked_device_id || "", // Ensure it's a string
+                linked_device_id: component.linked_device_id || "",
               };
               return acc;
             },

@@ -59,7 +59,7 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
             <div className="px-3 py-2">Value</div>
           </div>
           <div>
-            {config.gas_components.map(
+            {config.gas_components?.map(
               (component: GasComponent, index: number) => (
                 <div
                   key={component.key}
@@ -95,7 +95,6 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
                     <input
                       type="number"
                       value={component.value}
-                      disabled={!!component.linked_device_id}
                       onChange={(e) =>
                         handleComponentInputChange(
                           index,

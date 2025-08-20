@@ -60,10 +60,20 @@ export class Stream {
       this.stream_config.volume_configuration =
         incomingstream_config.volume_configuration;
     }
-    if ("compressibility_kfactor_config" in incomingstream_config) {
-      this.stream_config.compressibility_kfactor_config =
-        incomingstream_config.compressibility_kfactor_config;
+    if (
+      "compressibility_kfactor_config" in incomingstream_config &&
+      incomingstream_config.compressibility_kfactor_config
+    ) {
+      // Use Object.assign to MERGE, not replace.
+      // This preserves the default gas_components array if the incoming data doesn't have one.
+      Object.assign(
+        this.stream_config.compressibility_kfactor_config,
+        incomingstream_config.compressibility_kfactor_config
+      );
     }
+    // ▲▲▲ THE FIX IS HERE ▲▲▲
+    //
+
     if ("calculation_profile" in incomingstream_config) {
       this.stream_config.calculation_profile =
         incomingstream_config.calculation_profile;
