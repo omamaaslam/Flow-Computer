@@ -214,29 +214,25 @@ const StreamConfiguration = observer(() => {
           );
 
           // 1. Transform the gas_components array into an object keyed by component.key
-          const gasComponentsObject = rawConfig.gas_components.reduce(
-            (acc: { [key: string]: GasComponent }, component) => {
-              acc[component.key] = {
-                key: component.key,
-                display_name: component.display_name,
-                unit: component.unit,
-                value: component.value,
-                linked_device_id: component.linked_device_id || "",
-              };
-              return acc;
-            },
-            {}
-          );
-          const data = {
-            data: {
-              active_method: rawConfig.active_method,
-              constant_k_value: 1.0,
-              methods: {
-                [rawConfig.active_method]: gasComponentsObject,
-              },
-            },
+          // const gasComponentsObject = rawConfig.gas_components.reduce(
+          //   (acc: { [key: string]: GasComponent }, component) => {
+          //     acc[component.key] = {
+          //       key: component.key,
+          //       display_name: component.display_name,
+          //       unit: component.unit,
+          //       value: component.value,
+          //       linked_device_id: component.linked_device_id || "",
+          //     };
+          //     return acc;
+          //   },
+          //   {}
+          // );
+          const payload = {
+            active_method: rawConfig.active_method,
+            constant_k_value: rawConfig.constant_k_value,
+            methods: rawConfig.methods,
           };
-          await setCompressibilityConfig(streamId, data.data);
+          await setCompressibilityConfig(streamId, payload);
           break;
         }
       }
