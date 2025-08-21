@@ -21,11 +21,18 @@ import GasDeviceForm from "./Device/GasDeviceForm.tsx";
 import DeviceIcon from "../../../../DeviceIcon.tsx";
 import Legend from "../../../../Legend.tsx";
 import DO_InterfaceSettingsForm from "./DO_InterfaceSettingsForm.tsx";
+import AlertBox from "../../../../AlertBox.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
   onBack: () => void;
 }
+
+type AlertState = {
+  isOpen: boolean;
+  type: "success" | "error";
+  message: string;
+};
 
 type DeviceStatus = "ok" | "warning" | "error";
 type ModalView =
@@ -99,6 +106,15 @@ const ConfigureInterface = observer(
     const [isEditing, setIsEditing] = useState(false);
     const [editingDevice, setEditingDevice] = useState<Device | null>(null);
     const [isSaving, setIsSaving] = useState(false);
+    const [alertState, setAlertState] = useState<AlertState>({
+      isOpen: false,
+      type: "success",
+      message: "",
+    });
+
+    const handleCloseAlert = () => {
+      setAlertState({ ...alertState, isOpen: false });
+    };
 
     useEffect(() => {
       if (!anInterface.isConfigured) {
@@ -115,7 +131,17 @@ const ConfigureInterface = observer(
           await anInterface.addConfig(config);
         }
         closeModal();
+        setAlertState({
+          isOpen: true,
+          type: "success",
+          message: "Configuration saved successfully!",
+        });
       } catch (error) {
+        setAlertState({
+          isOpen: true,
+          type: "error",
+          message: `Failed to save configuration. Please try again.`, 
+        })
         console.error("Failed to save interface config:", error);
       } finally {
         setIsSaving(false);
@@ -204,8 +230,20 @@ const ConfigureInterface = observer(
           await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
         }
         closeModal();
+        setAlertState({
+          isOpen: true,
+          type: "success",
+          message: isEditing
+            ? "Device updated successfully!"
+            : "Device added successfully!",
+        });
       } catch (error) {
         console.error("Failed to save device configuration:", error);
+        setAlertState({
+          isOpen: true,
+          type: "error",
+          message: `Failed to save configuration. Please try again.`,
+        });
       } finally {
         setIsSaving(false);
       }
@@ -413,6 +451,12 @@ const ConfigureInterface = observer(
 
     return (
       <>
+        <AlertBox
+          isOpen={alertState.isOpen}
+          type={alertState.type}
+          message={alertState.message}
+          onClose={handleCloseAlert}
+        />
         <Legend />
         <div className="w-full bg-white p-4 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8 border border-gray-200">
           <div className="flex items-center gap-4 border-b pb-4 mb-4">

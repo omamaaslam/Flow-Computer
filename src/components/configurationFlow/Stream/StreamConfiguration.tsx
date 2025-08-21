@@ -30,7 +30,12 @@ import {
   addProfile,
 } from "../../../utils/services";
 import PipelineProfileForm from "./PipelineProfileForm";
-
+import AlertBox from "../../AlertBox";
+type AlertState = {
+  isOpen: boolean;
+  type: "success" | "error" | "warning";
+  message: string;
+};
 // UI-aware ModalType
 type ModalType =
   | "volume"
@@ -54,6 +59,16 @@ const StreamConfiguration = observer(() => {
     return <div>Stream ID is missing.</div>;
   }
   const currentStream = globalStore.streams.find((s) => s.id === streamId);
+  const [alertState, setAlertState] = useState<AlertState>({
+    isOpen: false,
+    type: "success",
+    message: "",
+  });
+
+  // Inside the StreamConfiguration component, before the return statement
+  const handleCloseAlert = () => {
+    setAlertState({ ...alertState, isOpen: false });
+  };
 
   const formatValue = (value: any) => {
     if (typeof value === "number") {
@@ -174,7 +189,11 @@ const StreamConfiguration = observer(() => {
 
           // 2. Check karein ki user ne koi profile select kiya hai ya nahi
           if (!profileConfig.active_profile_id) {
-            alert("Please select a pipeline profile to save.");
+            setAlertState({
+              isOpen: true,
+              type: "warning",
+              message: "Please select a pipeline profile before saving.",
+            });
             setIsSaving(false);
             return;
           }
@@ -242,9 +261,18 @@ const StreamConfiguration = observer(() => {
         }
       }
       setActiveModal(null);
+      setAlertState({
+        isOpen: true,
+        type: "success",
+        message: "Configuration saved successfully!",
+      });
     } catch (error) {
       console.error("Failed to save configuration:", error);
-      // Optional: Show an error toast to the user
+      setAlertState({
+        isOpen: true,
+        type: "error",
+        message: "Failed to save configuration. Please try again.",
+      });
     } finally {
       setIsSaving(false);
     }
@@ -377,6 +405,13 @@ const StreamConfiguration = observer(() => {
 
   return (
     <>
+      <AlertBox
+        isOpen={alertState.isOpen}
+        type={alertState.type}
+        message={alertState.message}
+        onClose={handleCloseAlert}
+      />
+
       <div className="bg-white rounded-2xl shadow-md border border-gray-200">
         {/* --- Large Screen UI --- */}
         <div className="hidden md:block bg-white rounded-2xl p-6  border border-gray-200">
@@ -466,7 +501,7 @@ const StreamConfiguration = observer(() => {
                       </div>
                     </div> */}
                     <div className="flex flex-col items-end space-y-4 justify-center h-full">
-                      {id === "pipelineProfile"  || id === "conversion" ? (
+                      {id === "pipelineProfile" || id === "conversion" ? (
                         <p className="text-4xl font-bold text-green-600">
                           {formatValue(minDisplay)}
                         </p>
@@ -603,7 +638,6 @@ const StreamConfiguration = observer(() => {
         </div>
       </div>
 
-      {/* --- Modal Wrapper with updated props --- */}
       <MuiModalWrapper
         open={activeModal !== null}
         onClose={closeModal}

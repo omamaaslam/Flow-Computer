@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Source Sans Pro";
-  src: url("public/fonts/SourceSansPro-Regular.otf") format("truetype");
+  src: url("/fonts/SourceSansPro-Regular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -8,13 +8,13 @@
 
 @font-face {
   font-family: "Source Sans Pro";
-  src: url("public/fonts/SourceSansPro-Bold.otf") format("truetype");
+  src: url("/fonts/SourceSansPro-Bold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
 
-/* src/index.css (or your main CSS file) */
+/* Tailwind setup */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -22,6 +22,7 @@
 body {
   @apply font-sans;
 }
+
 @layer utilities {
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(5px); }
