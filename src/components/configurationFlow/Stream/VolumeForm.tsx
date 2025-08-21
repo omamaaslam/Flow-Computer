@@ -20,7 +20,7 @@ export const defaultVolumeConfig: volume_configuration = {
   enable_bidirectional_volume: false,
 };
 interface VolumeFormProps {
-  config: any;
+  config: volume_configuration;
   onSave: () => void;
   onClose: () => void;
   isSaving: boolean;
@@ -198,7 +198,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
               {/* These fields are common and will always show */}
               <div className="space-y-1">
                 <label className="block font-medium">
-                  Min Operational Volume
+                  min operational volume
                 </label>
                 <input
                   name="min_operating_volume_limit"
@@ -211,7 +211,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
               </div>
 
               <div className="space-y-1">
-                <label className="block font-medium">Max Volume Step</label>
+                <label className="block font-medium">max volume step</label>
                 <input
                   name="max_volume_step_limit"
                   value={config.max_volume_step_limit ?? ""}
@@ -223,7 +223,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
               </div>
 
               <div className="space-y-1">
-                <label className="block font-medium">Bi-Directional</label>
+                <label className="block font-medium">bi-directional</label>
                 <select
                   name="enable_bidirectional_volume"
                   value={String(config.enable_bidirectional_volume)}

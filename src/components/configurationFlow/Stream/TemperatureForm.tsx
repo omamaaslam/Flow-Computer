@@ -47,7 +47,6 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
           </div>
 
           <div className="space-y-1">
-            <label className="block font-medium text-xs">Device</label>
             <div className="space-y-1">
               <label className="block font-medium text-xs">Device</label>
               <select
@@ -56,14 +55,14 @@ const TemperatureForm: React.FC<TemperatureFormProps> = observer(
                 onChange={handleInputChange}
                 className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
               >
-                {available_temperature_devices.length === 0 && (
-                  <option value="">None</option>
-                )}
-
+                <option value="">None</option>
                 {available_temperature_devices.map((device) => (
-                  <option key={device.id} value={device.id}>
-                    {`${device.id}`}
-                  </option>
+                  <>
+                    
+                    <option key={device.id} value={device.id}>
+                      {`${device.id}`}
+                    </option>
+                  </>
                 ))}
               </select>
             </div>

@@ -55,6 +55,15 @@ const StreamConfiguration = observer(() => {
   }
   const currentStream = globalStore.streams.find((s) => s.id === streamId);
 
+  const formatValue = (value: any) => {
+    if (typeof value === "number") {
+      // Use toLocaleString for better formatting and handling of large numbers
+      return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+    // Return non-number values (like 'N/A' or '-') as is
+    return value;
+  };
+
   const openModal = (modalType: ModalType) => {
     if (!currentStream) return;
 
@@ -115,7 +124,6 @@ const StreamConfiguration = observer(() => {
     setActiveModal({ type: modalType, snapshot });
   };
 
-  // closeModal with the isSaving check from the new logic
   const closeModal = () => {
     if (!currentStream || !activeModal || isSaving) return;
 
@@ -128,7 +136,7 @@ const StreamConfiguration = observer(() => {
         break;
       case "pipelineProfile":
       case "flowRate":
-        currentStream.revertFlowRateChanges(activeModal.snapshot);
+        currentStream.revertPipelineProfileChanges(activeModal.snapshot);
         break;
       case "volume":
         currentStream.revertVolumeChanges(activeModal.snapshot);
@@ -140,7 +148,6 @@ const StreamConfiguration = observer(() => {
     setActiveModal(null);
   };
 
-  // The new, async handleSave function with full error and state handling
   const handleSave = async () => {
     if (!currentStream || !activeModal) return;
 
@@ -201,8 +208,6 @@ const StreamConfiguration = observer(() => {
           // };
           // const volumeType = volumeTypeMap[payloadToSend.mode_type];
 
-          console.log("Saving Volume Payload:", payloadToSend);
-
           // 5. Send the final, potentially transformed payload to the API
           await setVolumeConfig(streamId, payloadToSend);
           break;
@@ -249,7 +254,6 @@ const StreamConfiguration = observer(() => {
     return <div>Stream with ID {streamId} not found.</div>;
   }
 
-  // Updated modalConfig to pass new props (onSave, isSaving) to forms
   const modalConfig = {
     volume: {
       title: "Configure Volume",
@@ -363,7 +367,6 @@ const StreamConfiguration = observer(() => {
     },
   ];
 
-  // Safer component and title retrieval from the new logic
   let modalTitle = "";
   let ModalContent: (() => JSX.Element) | null = null;
   if (activeModal) {
@@ -375,93 +378,224 @@ const StreamConfiguration = observer(() => {
   return (
     <>
       <div className="bg-white rounded-2xl shadow-md border border-gray-200">
-        {/* --- Large Screen UI (Preserved) --- */}
+        {/* --- Large Screen UI --- */}
         <div className="hidden md:block bg-white rounded-2xl p-6  border border-gray-200">
           <div className="grid grid-cols-3 gap-6">
-            {cardData.map(({ id, label, Icon, Illustration }) => (
-              <button
-                key={id}
-                onClick={() => openModal(id)}
-                className="bg-[#FAFAFA] border-2 border-[#9BC53F] rounded-2xl shadow-sm p-6 flex flex-col justify-between h-[305px] text-left transition-all duration-200 ease-in-out hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              >
-                <div className="flex items-center gap-3">
-                  <Icon
-                    className="text-yellow-500"
-                    size={24}
-                    strokeWidth={2.5}
-                  />
-                  <h3 className="font-bold text-gray-800 text-xl">{label}</h3>
-                </div>
-                <div className="w-full flex flex-row items-center justify-between">
-                  <div className="flex-1">
-                    <img
-                      src={Illustration}
-                      alt={`${label} illustration`}
-                      className="w-[120px] h-[157.7px] object-contain"
+            {cardData.map(({ id, label, Icon, Illustration }) => {
+              let minDisplay: string | number = "N/A";
+              let maxDisplay: string | number = "N/A";
+
+              if (currentStream?.stream_config) {
+                const config = currentStream.stream_config;
+                switch (id) {
+                  case "pressure":
+                    minDisplay =
+                      config.pressure_config?.min_operating_pressure ?? "N/A";
+                    maxDisplay =
+                      config.pressure_config?.max_operating_pressure ?? "N/A";
+                    break;
+                  case "temperature":
+                    minDisplay =
+                      config.temperature_config?.min_operating_temperature ??
+                      "N/A";
+                    maxDisplay =
+                      config.temperature_config?.max_operating_temperature ??
+                      "N/A";
+                    break;
+                  case "volume":
+                    minDisplay =
+                      config.volume_configuration?.min_operating_volume_limit ??
+                      "N/A";
+                    maxDisplay =
+                      config.volume_configuration?.max_total_volume_limit ??
+                      "N/A";
+                    break;
+                  case "flowRate":
+                    minDisplay = config.flow_rate_config?.min_warning_flow_rate;
+                    maxDisplay =
+                      config.flow_rate_config?.max_warning_flow_rate ?? "N/A";
+                    break;
+                  case "conversion":
+                    minDisplay =
+                      config.compressibility_kfactor_config?.active_method ??
+                      "N/A";
+                    maxDisplay = "-"; // Not a range
+                    break;
+                  case "pipelineProfile":
+                    minDisplay =
+                      config.calculation_profile?.active_profile_id || "N/A";
+                    maxDisplay = "";
+                    break;
+                }
+              }
+
+              return (
+                <button
+                  key={id}
+                  onClick={() => openModal(id)}
+                  className="bg-[#FAFAFA] border-2 border-[#9BC53F] rounded-2xl shadow-sm p-6 flex flex-col justify-between h-[305px] text-left transition-all duration-200 ease-in-out hover:shadow-xl hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                >
+                  <div className="flex items-center gap-3">
+                    <Icon
+                      className="text-yellow-500"
+                      size={24}
+                      strokeWidth={2.5}
                     />
+                    <h3 className="font-bold text-gray-800 text-xl">{label}</h3>
                   </div>
-                  <div className="flex flex-col items-end space-y-4">
-                    <div>
-                      <span className="text-lg text-gray-500">Min:</span>
-                      <p className="text-4xl font-bold text-red-600">75%</p>
+                  <div className="w-full flex flex-row items-center justify-between">
+                    <div className="flex-1">
+                      <img
+                        src={Illustration}
+                        alt={`${label} illustration`}
+                        className="w-[120px] h-[157.7px] object-contain"
+                      />
                     </div>
-                    <div>
-                      <span className="text-lg text-gray-500">Max:</span>
-                      <p className="text-4xl font-bold text-green-600">75%</p>
+                    {/* <div className="flex flex-col items-end space-y-4">
+                      <div>
+                        <span className="text-lg text-gray-500">Min:</span>
+                        <p className="text-4xl font-bold text-red-600">
+                          {formatValue(minDisplay)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-lg text-gray-500">Max:</span>
+                        <p className="text-4xl font-bold text-green-600">
+                          {formatValue(maxDisplay)}
+                        </p>
+                      </div>
+                    </div> */}
+                    <div className="flex flex-col items-end space-y-4 justify-center h-full">
+                      {id === "pipelineProfile"  || id === "conversion" ? (
+                        <p className="text-4xl font-bold text-green-600">
+                          {formatValue(minDisplay)}
+                        </p>
+                      ) : (
+                        <>
+                          <div>
+                            <span className="text-lg text-gray-500">Min:</span>
+                            <p className="text-4xl font-bold text-red-600">
+                              {formatValue(minDisplay)}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="text-lg text-gray-500">Max:</span>
+                            <p className="text-4xl font-bold text-red-600">
+                              {formatValue(maxDisplay)}
+                            </p>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* --- Small Screen UI (Preserved) --- */}
+        {/* --- Small Screen UI --- */}
         <div className="block lg:hidden p-6 py-4">
           <div className="grid grid-cols-3 gap-4">
-            {cardData.map(({ id, label, Icon, Illustration }) => (
-              <button
-                key={id}
-                onClick={() => openModal(id)}
-                className="bg-[#FAFAFA] border-2 border-[#9BC53F] rounded-lg shadow p-2 flex flex-col text-left transition-all duration-200 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-              >
-                <div className="flex items-center gap-1">
-                  <Icon className="text-yellow-500" size={14} strokeWidth={3} />
-                  <h3 className="font-bold text-gray-800 text-xs whitespace-nowrap">
-                    {label}
-                  </h3>
-                </div>
-                <div className="w-full flex flex-row items-center justify-between">
-                  <div className="flex-1 flex items-center justify-center">
-                    <img
-                      src={Illustration}
-                      alt={`${label} illustration`}
-                      className="w-[84px] h-[82.6px] object-contain"
+            {cardData.map(({ id, label, Icon, Illustration }) => {
+              let minDisplay: string | number = "N/A";
+              let maxDisplay: string | number = "N/A";
+
+              if (currentStream?.stream_config) {
+                const config = currentStream.stream_config;
+                switch (id) {
+                  case "pressure":
+                    minDisplay =
+                      config.pressure_config?.min_operating_pressure ?? "N/A";
+                    maxDisplay =
+                      config.pressure_config?.max_operating_pressure ?? "N/A";
+                    break;
+                  case "temperature":
+                    minDisplay =
+                      config.temperature_config?.min_operating_temperature ??
+                      "N/A";
+                    maxDisplay =
+                      config.temperature_config?.max_operating_temperature ??
+                      "N/A";
+                    break;
+                  case "volume":
+                    minDisplay =
+                      config.volume_configuration?.min_operating_volume_limit ??
+                      "N/A";
+                    maxDisplay =
+                      config.volume_configuration?.max_total_volume_limit ??
+                      "N/A";
+                    break;
+                  case "flowRate":
+                    minDisplay =
+                      config.flow_rate_config?.min_warning_flow_rate ?? "N/A";
+                    maxDisplay =
+                      config.flow_rate_config?.max_warning_flow_rate ?? "N/A";
+                    break;
+                  case "conversion":
+                    minDisplay =
+                      config.compressibility_kfactor_config?.active_method ??
+                      "N/A";
+                    maxDisplay = "";
+                    break;
+                  case "pipelineProfile":
+                    minDisplay = `${
+                      config.calculation_profile?.profiles?.length ?? 0
+                    }`;
+                    maxDisplay = "-";
+                    break;
+                }
+              }
+
+              return (
+                <button
+                  key={id}
+                  onClick={() => openModal(id)}
+                  className="bg-[#FAFAFA] border-2 border-[#9BC53F] rounded-lg shadow p-2 flex flex-col text-left transition-all duration-200 ease-in-out hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                >
+                  <div className="flex items-center gap-1">
+                    <Icon
+                      className="text-yellow-500"
+                      size={14}
+                      strokeWidth={3}
                     />
+                    <h3 className="font-bold text-gray-800 text-xs whitespace-nowrap">
+                      {label}
+                    </h3>
                   </div>
-                  <div className="flex flex-col items-end ">
-                    <div>
-                      <span className="text-[10px] text-gray-500">min:</span>
-                      <p className="text-base font-bold text-red-600">75%</p>
+                  <div className="w-full flex flex-row items-center justify-between">
+                    <div className="flex-1 flex items-center justify-center">
+                      <img
+                        src={Illustration}
+                        alt={`${label} illustration`}
+                        className="w-[84px] h-[82.6px] object-contain"
+                      />
                     </div>
-                    <div>
-                      <span className="text-[10px] text-gray-500">max:</span>
-                      <p className="text-base font-bold text-green-600">75%</p>
+                    <div className="flex flex-col items-end ">
+                      <div>
+                        <span className="text-[10px] text-gray-500">min:</span>
+                        <p className="text-base font-bold text-red-600">
+                          {formatValue(minDisplay)}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-gray-500">max:</span>
+                        <p className="text-base font-bold text-red-600">
+                          {formatValue(maxDisplay)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* --- Start Button (Preserved) --- */}
         <div className="pb-6 px-6 md:pt-8">
           <div className="flex justify-center">
-            <button
-              onClick={() => openModal("conversion")}
-              className="w-full flex justify-center items-center py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all"
-            >
+            <button className="w-full flex justify-center items-center py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all">
               <ArrowRight size={20} />
               <span>Start</span>
             </button>

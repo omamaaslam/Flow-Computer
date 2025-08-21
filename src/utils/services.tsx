@@ -368,3 +368,25 @@ export const addProfile = (streamId: string, profile_name: string) => {
   const isMatch = createStreamConfigMatcher(streamId, "profile");
   return sendAndWait(msg, isMatch);
 };
+
+export const start_calculation = (streamId: string) => {
+  const msg = {
+    scope: "start_calculation",
+    stream_id: streamId,
+  };
+  console.log(msg);
+  const isMatch = (res: any) => {
+    if (
+      res?.success &&
+      typeof res.success === "string" &&
+      res.success.includes(`stream '${streamId}'`)
+    ) {
+      return true;
+    }
+    if (res?.streams?.[streamId]?.calculator?.status === "running") {
+      return true;
+    }
+    return false;
+  };
+  return sendAndWait(msg, isMatch);
+}

@@ -203,4 +203,7 @@ export class Stream {
   public revertConversionChanges(snapshot: any) {
     this.stream_config.compressibility_kfactor_config = snapshot;
   }
+  public revertPipelineProfileChanges(snapshot: any) {
+    this.stream_config.calculation_profile = snapshot;
+  }
 }

@@ -53,7 +53,6 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
             onChange={handleMethodChange}
             className="w-full max-w-xs border border-gray-200 rounded-sm px-2 py-1 text-sm shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
           >
-            <option value="Constant">Constant</option>
             {Object.keys(config.methods).map((methodName) => (
               <option key={methodName} value={methodName}>
                 {methodName}

@@ -165,7 +165,6 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
   };
 
   const pressureUnitOptions = [
-    { value: "", label: "None" },
     { value: "Bar", label: "Bar" },
     { value: "Pascal", label: "Pascal" },
     { value: "Pa", label: "Pa" },
