@@ -284,18 +284,32 @@ export const updateDevice = (
 //                                 STREAM CONFIGURATIONS API
 // ==============================================================================================
 
+// const createStreamConfigMatcher = (streamId: string, configKey: string) => {
+//   return (res: any) => {
+//     if (
+//       res?.success &&
+//       typeof res.success === "string" &&
+//       res.success.includes(`stream '${streamId}'`)
+//     ) {
+//       return true;
+//     }
+//     if (res?.streams?.[streamId]?.calculator?.[configKey] !== undefined) {
+//       return true;
+//     }
+//     return false;
+//   };
+// };
+
+
 const createStreamConfigMatcher = (streamId: string, configKey: string) => {
   return (res: any) => {
-    if (
-      res?.success &&
-      typeof res.success === "string" &&
-      res.success.includes(`stream '${streamId}'`)
-    ) {
+    if (res?.success && typeof res.success === 'string') {
       return true;
     }
     if (res?.streams?.[streamId]?.calculator?.[configKey] !== undefined) {
       return true;
     }
+    
     return false;
   };
 };

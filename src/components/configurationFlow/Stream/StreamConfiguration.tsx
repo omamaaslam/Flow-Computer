@@ -7,6 +7,7 @@ import {
   Wind,
   GitCompareArrows,
   ArrowRight,
+  Square,
 } from "lucide-react";
 import MuiModalWrapper from "../MuiModalWrapper";
 import VolumeForm, { defaultVolumeConfig } from "./VolumeForm";
@@ -31,6 +32,7 @@ import {
 } from "../../../utils/services";
 import PipelineProfileForm from "./PipelineProfileForm";
 import AlertBox from "../../AlertBox";
+type RunState = "start" | "stop" | "disabled";
 type AlertState = {
   isOpen: boolean;
   type: "success" | "error" | "warning";
@@ -54,7 +56,7 @@ const StreamConfiguration = observer(() => {
   const [activeModal, setActiveModal] = useState<ActiveModalState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { streamId } = useParams<{ streamId: string }>();
-
+  const [runState, setRunState] = useState<RunState>("start");
   if (!streamId) {
     return <div>Stream ID is missing.</div>;
   }
@@ -64,8 +66,34 @@ const StreamConfiguration = observer(() => {
     type: "success",
     message: "",
   });
+  // --- Define button appearance based on its current state ---
+  const buttonConfigs = {
+    start: {
+      text: "Start",
+      Icon: ArrowRight,
+      className: "bg-[#FFB700] hover:bg-yellow-500 text-black",
+      disabled: false,
+    },
+    stop: {
+      text: "Stop",
+      Icon: Square,
+      className: "bg-[#DD2C01] hover:bg-red-700 text-white",
+      disabled: false,
+    },
+    disabled: {
+      text: "Start",
+      Icon: ArrowRight,
+      className: "bg-gray-300 text-gray-500 cursor-not-allowed",
+      disabled: true,
+    },
+  };
+  const currentButtonConfig = buttonConfigs[runState];
+  const handleRunButtonClick = () => {
+    setRunState((currentState) =>
+      currentState === "start" ? "stop" : "start"
+    );
+  };
 
-  // Inside the StreamConfiguration component, before the return statement
   const handleCloseAlert = () => {
     setAlertState({ ...alertState, isOpen: false });
   };
@@ -164,7 +192,7 @@ const StreamConfiguration = observer(() => {
 
   const handleSave = async () => {
     if (!currentStream || !activeModal) return;
-    console.log("StreamCOnfiguration line no.168", toJS(currentStream))
+    console.log("StreamCOnfiguration line no.168", toJS(currentStream));
     const modalType = activeModal.type;
     setIsSaving(true);
     try {
@@ -441,7 +469,7 @@ const StreamConfiguration = observer(() => {
                       config.volume_configuration?.min_operating_volume_limit ??
                       "N/A";
                     maxDisplay =
-                      config.volume_configuration?.max_total_volume_limit ??
+                      config.volume_configuration?.max_volume_step_limit ??
                       "N/A";
                     break;
                   case "flowRate":
@@ -453,7 +481,7 @@ const StreamConfiguration = observer(() => {
                     minDisplay =
                       config.compressibility_kfactor_config?.active_method ??
                       "N/A";
-                    maxDisplay = "-"; // Not a range
+                    maxDisplay = ""; // Not a range
                     break;
                   case "pipelineProfile":
                     minDisplay =
@@ -501,7 +529,7 @@ const StreamConfiguration = observer(() => {
                     </div> */}
                     <div className="flex flex-col items-end space-y-4 justify-center h-full">
                       {id === "pipelineProfile" || id === "conversion" ? (
-                        <p className="text-4xl font-bold text-green-600">
+                        <p className="text-2xl font-bold text-green-600">
                           {formatValue(minDisplay)}
                         </p>
                       ) : (
@@ -557,7 +585,7 @@ const StreamConfiguration = observer(() => {
                       config.volume_configuration?.min_operating_volume_limit ??
                       "N/A";
                     maxDisplay =
-                      config.volume_configuration?.max_total_volume_limit ??
+                      config.volume_configuration?.max_volume_step_limit ??
                       "N/A";
                     break;
                   case "flowRate":
@@ -629,9 +657,13 @@ const StreamConfiguration = observer(() => {
         {/* --- Start Button (Preserved) --- */}
         <div className="pb-6 px-6 md:pt-8">
           <div className="flex justify-center">
-            <button className="w-full flex justify-center items-center py-2 md:py-3 text-sm md:text-lg font-semibold font-sans text-black bg-[#FFB700] border border-[#F5F5F5] rounded-full shadow-lg hover:shadow-xl hover:bg-yellow-500 transition-all">
-              <ArrowRight size={20} />
-              <span>Start</span>
+            <button
+              onClick={handleRunButtonClick}
+              disabled={currentButtonConfig.disabled}
+              className={`w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans border border-[#F5F5F5] rounded-full shadow-lg transition-all ${currentButtonConfig.className}`}
+            >
+              <currentButtonConfig.Icon size={20} />
+              <span>{currentButtonConfig.text}</span>
             </button>
           </div>
         </div>

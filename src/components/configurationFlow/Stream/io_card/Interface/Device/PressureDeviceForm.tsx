@@ -338,9 +338,9 @@ const PressureDeviceForm: React.FC<PressureDeviceFormProps> = ({
                 onChange={(e) => handleStateChange("unit", e.target.value)}
                 className="w-full border rounded-md py-1.5 px-3 text-sm border-gray-300"
               >
+                <option value="">select unit</option>
                 {pressureUnitOptions.map((opt) => (
                   <>
-                  <option value="">select unit</option>
                     <option key={opt.value} value={opt.value}>
                       {opt.label}
                     </option>

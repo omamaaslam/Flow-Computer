@@ -7,7 +7,7 @@ import type {
 import type globalStore from "../../../stores/GlobalStore";
 
 const operatingModes = [
-  { value: "OnePulseVolumeConfig", label: "Modbus" },
+  { value: "Modbus", label: "Modbus" },
   { value: "EncoderOnlyVolumeConfig", label: "Encoder Only" },
   { value: "OnePulseVolumeConfig", label: "One pulse input" },
 ];
@@ -28,7 +28,6 @@ interface VolumeFormProps {
 }
 const VolumeForm: React.FC<VolumeFormProps> = observer(
   ({ store, config, onSave, onClose, isSaving }) => {
-    console.log("VolumeConfiguration", config);
     const [hasProceededOnce, setHasProceededOnce] = useState(false);
     const [isEditingMode, setIsEditingMode] = useState(false);
 
@@ -187,7 +186,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                     </option>
                     {volume_devices.map((device) => (
                       <option key={device.id} value={device.id}>
-                        {`${device.id} (${device.config.tag_name || "No Tag"})`}
+                        {`${device.id}`}
                       </option>
                     ))}
                   </select>

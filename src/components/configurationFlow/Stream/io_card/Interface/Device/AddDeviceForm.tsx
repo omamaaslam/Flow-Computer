@@ -153,7 +153,7 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({
     const id = interfaceId.toUpperCase();
 
     if (id === "MODM1") {
-      return allDeviceOptions;
+      return allDeviceOptions.filter((d)=> !d.value.startsWith("Pulse"));
     }
     if (id === "TI1") {
       return allDeviceOptions.filter(
