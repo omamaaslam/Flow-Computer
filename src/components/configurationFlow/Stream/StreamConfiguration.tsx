@@ -75,7 +75,6 @@ const StreamConfiguration = observer(() => {
       // Use toLocaleString for better formatting and handling of large numbers
       return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
     }
-    // Return non-number values (like 'N/A' or '-') as is
     return value;
   };
 

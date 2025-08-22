@@ -25,96 +25,97 @@ class GlobalStore {
 
   private _updateStreams(snapshotData: any) {
     const rawStreams = snapshotData?.streams;
-    if (!rawStreams || typeof rawStreams !== "object") {
-      this.streams = [];
+    // Guard Clause: Ignore invalid or empty stream messages to prevent accidentally wiping the state.
+    if (!rawStreams || typeof rawStreams !== 'object' || Object.keys(rawStreams).length === 0) {
+      console.warn("Received snapshot with no streams data. Ignoring update to prevent state wipe.");
       return;
     }
 
-    const incomingStreamIds = Object.keys(rawStreams);
+    // --- START OF CORRECTED, NON-DESTRUCTIVE LOGIC ---
 
+    // Iterate over the streams in the INCOMING MESSAGE, not the existing state.
     Object.values<any>(rawStreams).forEach((streamData) => {
-      try {
-        const calcProfile = streamData.stream_config?.calculation_profile;
-        if (
-          calcProfile &&
-          calcProfile.active_profile_id &&
-          calcProfile.profiles
-        ) {
-          const activeProfileId = calcProfile.active_profile_id;
-          const activeProfile = calcProfile.profiles[activeProfileId];
-
-          if (activeProfile && activeProfile.result) {
-            const resultWithStreamId = {
-              ...activeProfile.result,
-              stream_id: streamData.stream_id,
-            };
-
-            // 🔑 Check if result already exists
-            const existingIndex = this.results.findIndex(
-              (r) => r.stream_id === streamData.stream_id
-            );
-
-            if (existingIndex !== -1) {
-              // Merge changes instead of replacing
-              Object.keys(resultWithStreamId).forEach((key) => {
-                if (
-                  this.results[existingIndex][key] !== resultWithStreamId[key]
-                ) {
-                  this.results[existingIndex][key] = resultWithStreamId[key];
-                }
-              });
-            } else {
-              this.results.push(resultWithStreamId);
-            }
-          }
-        }
-      } catch (e) {
-        console.error(
-          `Error extracting result for stream ${streamData.stream_id}:`,
-          e
-        );
+      // Safety check for malformed data from the server
+      if (!streamData.stream_id) {
+          console.error("Received stream data without a stream_id", streamData);
+          return;
       }
 
+      // Find if this stream already exists in our current state array.
       const existingStream = this.streams.find(
         (s) => s.id === streamData.stream_id
       );
 
       if (existingStream) {
+        // If it exists, simply update it with the new data.
+        // MobX will detect the changes within the object and trigger re-renders.
         existingStream.update(streamData);
       } else {
+        // If it's a new stream we haven't seen before, create an instance and add it.
         this.streams.push(new Stream(streamData));
       }
     });
+    // --- END OF CORRECTED LOGIC ---
 
-    this.streams = this.streams.filter((s) => incomingStreamIds.includes(s.id));
+
+    // This separate loop for handling results is fine to keep.
+    // It also iterates over the incoming data to update results.
+    Object.values<any>(rawStreams).forEach((streamData) => {
+        try {
+            const calcProfile = streamData.stream_config?.calculation_profile;
+            if (
+            calcProfile &&
+            calcProfile.active_profile_id &&
+            calcProfile.profiles
+            ) {
+            const activeProfileId = calcProfile.active_profile_id;
+            const activeProfile = calcProfile.profiles[activeProfileId];
+
+            if (activeProfile && activeProfile.result) {
+                const resultWithStreamId = {
+                ...activeProfile.result,
+                stream_id: streamData.stream_id,
+                };
+
+                const existingIndex = this.results.findIndex(
+                (r) => r.stream_id === streamData.stream_id
+                );
+
+                if (existingIndex !== -1) {
+                Object.keys(resultWithStreamId).forEach((key) => {
+                    if (
+                    this.results[existingIndex][key] !== resultWithStreamId[key]
+                    ) {
+                    this.results[existingIndex][key] = resultWithStreamId[key];
+                    }
+                });
+                } else {
+                this.results.push(resultWithStreamId);
+                }
+            }
+            }
+        } catch (e) {
+            console.error(
+            `Error extracting result for stream ${streamData.stream_id}:`,
+            e
+            );
+        }
+    });
   }
 
-  // Add this method inside the GlobalStore class
-
   public updateResults(incomingData: any) {
-    // MobX state should be modified within an action
     runInAction(() => {
-      // The incoming data is structured like: { "7": { "test_profile4": {...} } }
       Object.keys(incomingData).forEach((streamId) => {
         const profilesForStream = incomingData[streamId];
-
-        // In your case, there's only one profile ("test_profile4")
         Object.keys(profilesForStream).forEach((profileId) => {
           const newResultData = profilesForStream[profileId];
-
-          // Find the existing result object for this stream in our store's array
           const existingResult = this.results.find(
             (r) => r.stream_id === streamId
           );
-
           if (existingResult) {
-            // Merge the new data into the existing object.
-            // Object.assign updates the properties of the existing object,
-            // which is crucial for MobX to detect the change and re-render the UI.
             Object.assign(existingResult, newResultData);
             console.log(`Successfully updated results for stream ${streamId}`);
           } else {
-            // This case is unlikely if the initial snapshot was loaded, but it's good practice
             console.warn(
               `Received a result update for stream ${streamId}, but it doesn't exist in the store yet.`
             );
@@ -132,8 +133,7 @@ class GlobalStore {
             console.log("Received globalState data:", toJS(data));
             this.setGlobalSnapshot(data);
           });
-        } else
-           if (data && data.result) {
+        } else if (data && data.result) {
           console.log("Received live result update:", data.result);
           this.updateResults(data.result);
         } else {

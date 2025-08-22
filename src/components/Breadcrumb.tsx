@@ -30,12 +30,13 @@ const Breadcrumb = observer(() => {
       if (segments[1]) {
         const streamId = segments[1];
         const stream = globalStore.streams.find((s: any) => s.id.toString() === streamId);
-        if (stream) {
+        if (stream && stream.name) {
           crumbs.push({ name: stream.name, path: `/configuration/${streamId}` });
         } else {
-          // If stream not found, show the raw id (fallback)
-          crumbs.push({ name: streamId, path: `/configuration/${streamId}` });
+          // If stream not found or name is missing, show a safe fallback.
+          crumbs.push({ name: `Stream ${streamId}`, path: `/configuration/${streamId}` });
         }
+        // --- END OF CORRECTION ---
       }
 
       // add any deeper segments beyond configuration/:streamId
