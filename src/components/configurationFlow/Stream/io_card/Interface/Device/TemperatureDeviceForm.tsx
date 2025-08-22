@@ -123,7 +123,6 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = ({
 
     // Destructure to separate the modbus settings from everything else
     const { modbus_settings, ...restOfState } = formState;
-
     // Build the main config object with all flat properties (general, parameters, HART)
     const finalConfig: DeviceConfig = {
       ...restOfState,

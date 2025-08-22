@@ -165,7 +165,7 @@ const StreamConfiguration = observer(() => {
 
   const handleSave = async () => {
     if (!currentStream || !activeModal) return;
-
+    console.log("StreamCOnfiguration line no.168", toJS(currentStream))
     const modalType = activeModal.type;
     setIsSaving(true);
     try {

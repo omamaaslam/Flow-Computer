@@ -53,7 +53,6 @@ const InterfacesConfiguration = observer(
   ({ stream, onConfigure }: InterfacesConfigurationProps) => {
     const ioCard = stream.ioCards[0];
     const statuses = ioCard ? ioCard.interfaceStatuses : UNCONFIGURED_STATUSES;
-    console.log("Interface COnfiguration", toJS(stream))
     return (
       <>
         <Legend />

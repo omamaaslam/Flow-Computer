@@ -24,7 +24,6 @@ export interface DeviceConfig {
   commandSet?: string; // Optional for HART devices
   variableType?: string; // Optional for HART devices
   // Gas-specific value
-  gas_value?: number;
   data?: {
     status?: string;
     timestamp?: string;

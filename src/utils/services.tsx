@@ -1,3 +1,5 @@
+import { toJS } from "mobx";
+import globalStore from "../stores/GlobalStore";
 import { sendMessage, addListener, removeListener } from "./api";
 
 const sendAndWait = (
@@ -304,7 +306,7 @@ export const setTemperatureConfig = (streamId: string, data: any) => {
     stream_id: streamId,
     data: data,
   };
-  console.log(msg);
+    console.log("services line no.307", toJS(globalStore))
   const isMatch = createStreamConfigMatcher(streamId, "temperature_config");
   return sendAndWait(msg, isMatch);
 };

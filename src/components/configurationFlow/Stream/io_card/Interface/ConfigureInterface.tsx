@@ -140,8 +140,8 @@ const ConfigureInterface = observer(
         setAlertState({
           isOpen: true,
           type: "error",
-          message: `Failed to save configuration. Please try again.`, 
-        })
+          message: `Failed to save configuration. Please try again.`,
+        });
         console.error("Failed to save interface config:", error);
       } finally {
         setIsSaving(false);
@@ -198,9 +198,11 @@ const ConfigureInterface = observer(
             } = config;
 
             if (!pollingAddress || !variableType) {
-              console.error(
-                "Polling Address and Variable Type are required for HART device ID."
-              );
+              setAlertState({
+                isOpen: true,
+                type: "error",
+                message: "Please select a polling address and variable type.",
+              });
               setIsSaving(false);
               return;
             }
@@ -222,11 +224,6 @@ const ConfigureInterface = observer(
             ...config,
             device_id: newDeviceId,
           };
-
-          console.log(
-            "Adding a new device with generated config:",
-            finalConfig
-          );
           await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
         }
         closeModal();

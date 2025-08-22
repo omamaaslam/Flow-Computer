@@ -52,7 +52,7 @@ const ConfigurationPage = observer(() => {
 
   // Agar stream na mile to loading ya error state dikhayein
   if (!selectedStream) {
-    return <div>Loading Stream or Stream not found...</div>;
+    return <div>No Stream Fount...</div>;
   }
 
   return (

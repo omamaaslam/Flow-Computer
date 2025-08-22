@@ -132,7 +132,8 @@ class GlobalStore {
             console.log("Received globalState data:", toJS(data));
             this.setGlobalSnapshot(data);
           });
-        } else if (data && data.result) {
+        } else
+           if (data && data.result) {
           console.log("Received live result update:", data.result);
           this.updateResults(data.result);
         } else {
