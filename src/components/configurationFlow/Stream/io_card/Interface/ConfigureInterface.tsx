@@ -153,49 +153,16 @@ const ConfigureInterface = observer(
       try {
         if (isEditing && editingDevice) {
           await anInterface.updateDevice(editingDevice.id, config);
-        }
-        // else if (!isEditing && deviceTypeToConfigure) {
-        //   const singleDeviceInterfacePrefixes = ["DI", "TI"];
-        //   const currentInterfacePrefix = anInterface.interface_id.substring(
-        //     0,
-        //     2
-        //   );
-
-        //   let newDeviceId: string;
-        //   if (singleDeviceInterfacePrefixes.includes(currentInterfacePrefix)) {
-        //     newDeviceId = anInterface.interface_id;
-        //   } else {
-        //     const deviceCount = anInterface.devices.length;
-        //     newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
-        //   }
-        //   const finalConfig = {
-        //     ...config,
-        //     device_id: newDeviceId,
-        //   };
-
-        //   console.log(
-        //     "Adding a new device with generated config:",
-        //     finalConfig
-        //   );
-        //   // await anInterface.addDevice(deviceTypeToConfigure, finalConfig);
-        // }
-        // --- ADD a new device ---
-        else if (!isEditing && deviceTypeToConfigure) {
+        } else if (!isEditing && deviceTypeToConfigure) {
           let newDeviceId: string;
           const currentInterfacePrefix = anInterface.interface_id.substring(
             0,
             2
           );
           const deviceCount = anInterface.devices.length;
-          let payloadToSave: Partial<DeviceConfig>;
-          // --- CASE 1: HART Interface ---
+
           if (currentInterfacePrefix === "HI") {
-            const {
-              pollingAddress,
-              variableType,
-              commandSet,
-              ...restOfConfig
-            } = config;
+            const { pollingAddress, variableType, ...restOfConfig } = config;
 
             if (!pollingAddress || !variableType) {
               setAlertState({
@@ -206,15 +173,8 @@ const ConfigureInterface = observer(
               setIsSaving(false);
               return;
             }
-
-            // This is the clean payload without the transient fields
-            payloadToSave = restOfConfig;
-
-            // Assemble the special HART device ID
             newDeviceId = `${anInterface.interface_id}T${pollingAddress}${variableType}`;
-          }
-          // --- CASE 2: Single-Device Interfaces (DI, RTD) ---
-          else if (["DI", "TI"].includes(currentInterfacePrefix)) {
+          } else if (["DI", "TI"].includes(currentInterfacePrefix)) {
             newDeviceId = anInterface.interface_id;
           } else {
             newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
@@ -270,21 +230,6 @@ const ConfigureInterface = observer(
       setModalView("addDevice_selectType");
     };
 
-    // const handleAddNewDeviceClick = () => {
-    //   setIsEditing(false);
-    //   setEditingDevice(null);
-
-    //   const currentInterfacePrefix = anInterface.interface_id.substring(0, 2);
-
-    //   if (currentInterfacePrefix === 'DI') {
-    //     console.log("DI interface detected. Forcing device type to PulseVolumeDevice.");
-    //     setDeviceTypeToConfigure("PulseVolumeDevice");
-    //     setModalView("addDevice_configure");
-    //   } else {
-    //     setModalView("addDevice_selectType");
-    //   }
-    // };
-
     const handleDeleteDevice = () => {
       if (selectedDeviceId !== null) {
         anInterface.removeDevice(selectedDeviceId);
@@ -292,32 +237,40 @@ const ConfigureInterface = observer(
       }
     };
 
+    // *** MODIFIED FUNCTION ***
     const handleDeviceClick = (device: Device) => {
-      setSelectedDeviceId(device.id);
-      setDeviceTypeToConfigure(device.name);
-      setIsEditing(true);
+      // Find the actual device instance from the store to ensure it's observable and live
+      const deviceFromStore = anInterface.devices.find(
+        (d) => d.id === device.id
+      );
 
-      let completeInitialData = { ...device.config };
+      if (deviceFromStore) {
+        if (anInterface.config.interface_type === "ModbusInterface") {
+          const modbusSettingsForDevice = (anInterface.config as any)
+            ?.modbus_settings?.[deviceFromStore.id];
 
-      if (
-        anInterface.config.interface_type === "ModbusInterface" &&
-        (anInterface.config as any).modbus_settings
-      ) {
-        const deviceModbusSettings = (anInterface.config as any)
-          .modbus_settings[device.id];
-
-        if (deviceModbusSettings) {
-          completeInitialData.modbus_settings = deviceModbusSettings;
+          if (modbusSettingsForDevice) {
+            deviceFromStore.config.modbus_settings = {
+              slave_address: modbusSettingsForDevice.slave_address,
+              register_address: modbusSettingsForDevice.register_address,
+              register_count: modbusSettingsForDevice.register_count,
+              data_type: modbusSettingsForDevice.data_type,
+            };
+          }
         }
+
+        setSelectedDeviceId(deviceFromStore.id);
+        setDeviceTypeToConfigure(deviceFromStore.name);
+        setIsEditing(true);
+        // CRITICAL: Set the entire MobX device object into the state
+        setEditingDevice(deviceFromStore);
+        setModalView("addDevice_configure");
+      } else {
+        console.error(
+          "Could not find the clicked device in the interface store.",
+          device
+        );
       }
-
-      // Create a NEW INSTANCE of the Device class with the complete data
-      const updatedDeviceInstance = new Device(completeInitialData);
-
-      // Set this new, valid instance into the state
-      setEditingDevice(updatedDeviceInstance);
-
-      setModalView("addDevice_configure");
     };
 
     const handleDeviceTypeSelection = (deviceType: string) => {
@@ -354,7 +307,6 @@ const ConfigureInterface = observer(
     };
 
     const currentConfig = anInterface.getConfig();
-
     const renderModalContent = () => {
       const settingsProps = {
         onSave: handleSaveInterfaceConfig,
@@ -362,9 +314,8 @@ const ConfigureInterface = observer(
         isSaving: isSaving,
         interface_id: anInterface.interface_id,
       };
-
       const deviceProps = {
-        initialData: isEditing ? editingDevice?.config : null,
+        device: editingDevice,
         onSave: handleSaveDeviceConfiguration,
         onBack: closeModal,
         interface_type: anInterface.config.interface_type,

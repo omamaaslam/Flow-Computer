@@ -1,5 +1,6 @@
 import React from "react";
 
+// CustomCombobox and FormField components remain unchanged...
 interface CustomComboboxProps {
   options: { value: string; label: string }[];
   value: string;
@@ -132,11 +133,12 @@ const MODBridge: React.FC<MODBridgeProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-      <FormField label="Slave ID" error={errors.slave_id}>
+      <FormField label="Slave ID" error={errors.slave_address}>
         <CustomCombobox
-         hasError={!!errors.slave_address}
+          hasError={!!errors.slave_address}
           value={formState.slave_address}
-          onChange={(val: any) => handleStateChange("slave_id", val)}
+          // *** FIX: Update the 'slave_address' field, not 'slave_id' ***
+          onChange={(val: any) => handleStateChange("slave_address", val)}
           placeholder="Please set slave ID"
           options={[
             { value: "1", label: "1" },

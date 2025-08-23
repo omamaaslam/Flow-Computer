@@ -18,4 +18,15 @@ export class Device {
   updateConfig(newConfig: Partial<DeviceConfig>) {
     Object.assign(this.config, newConfig);
   }
+
+  updateData(liveData: {
+    status?: string;
+    timestamp?: string;
+    value?: string;
+  }) {
+    if (!this.config.data) {
+      this.config.data = {};
+    }
+    Object.assign(this.config.data, liveData);
+  }
 }

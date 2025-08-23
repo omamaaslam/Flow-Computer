@@ -1,9 +1,10 @@
-// src/components/configurationFlow/VolumeDeviceForm.tsx
-import React, { useState } from "react";
-import { observer } from "mobx-react-lite"; // 1. IMPORT OBSERVER
+import React, { useState, useEffect } from "react";
+import { observer } from "mobx-react-lite";
 import type { DeviceConfig } from "../../../../../../types/device";
+import type { Device } from "../../../../../../stores/Device";
 import BridgeComponent from "../BridgeComponent";
 
+// Helper component for a standard text input
 interface InputProps extends React.ComponentPropsWithoutRef<"input"> {}
 const Input = (props: InputProps) => (
   <input
@@ -12,73 +13,82 @@ const Input = (props: InputProps) => (
   />
 );
 
+// *** PROPS HAVE BEEN UPDATED ***
 interface VolumeDeviceFormProps {
   onBack: () => void;
   onSave: (config: DeviceConfig) => void;
   interface_type: string;
-  initialData?: DeviceConfig | any;
-  interface_id: string;
+  device?: Device | null;
 }
 
-// Wrap component definition with observer
 const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = observer(
-  ({ onBack, onSave, interface_type, initialData, interface_id }) => {
+  ({ onBack, onSave, interface_type, device }) => {
+    console.log("VolumeDeviceFormProps: ", device);
     const [activeTab, setActiveTab] = useState<"general" | "parameters">(
       "general"
     );
 
-    // 2. REMOVE useEffect and USE LAZY INITIALIZATION FOR useState
-    const [formState, setFormState] = useState(() => {
-      // This function runs only ONCE on initial render
-      const defaultState = {
-        manufacturer: "Omega Traders",
-        serial_number: "SN-123456",
-        model: "2023",
-        tag_name: "RMA",
-        build_year: "2023",
-        min_volume: "",
-        max_volume: "",
-        version: "v1.0",
-        modbus_settings: {
-          slave_id: "",
-          register_address: "",
-          register_count: "",
-          data_type: "Float32",
-        },
-      };
-
-      if (initialData) {
-        return {
-          ...defaultState,
-          manufacturer: initialData.manufacturer ?? "",
-          serial_number: initialData.serial_number ?? "",
-          model: initialData.model ?? "",
-          tag_name: initialData.tag_name ?? "",
-          build_year: initialData.build_year ?? "",
-          min_volume: String(initialData.min_volume ?? ""),
-          max_volume: String(initialData.max_volume ?? ""),
-          version: initialData.version ?? "",
-          // Safely merge modbus_settings
-          modbus_settings: initialData.modbus_settings
-            ? {
-                ...defaultState.modbus_settings,
-                ...initialData.modbus_settings,
-              }
-            : defaultState.modbus_settings,
-        };
-      }
-
-      return defaultState;
+    // Define the full shape of the form's state
+    const [formState, setFormState] = useState({
+      manufacturer: "",
+      serial_number: "",
+      model: "",
+      tag_name: "",
+      build_year: "",
+      min_volume: "",
+      max_volume: "",
+      version: "",
+      modbus_settings: {
+        slave_address: "",
+        register_address: "",
+        register_count: "",
+        data_type: "Float32",
+      },
+      pollingAddress: "",
+      commandSet: "Universal",
+      variableType: "",
     });
 
-    // --- No more useEffect ---
+    useEffect(() => {
+      if (device) {
+        const config = device.config;
+        const baseState = {
+          manufacturer: config.manufacturer ?? "",
+          serial_number: config.serial_number ?? "",
+          model: config.model ?? "",
+          tag_name: config.tag_name ?? "",
+          build_year: config.build_year ?? "",
+          version: config.version ?? "",
+          min_volume: String(config.min_volume ?? ""),
+          max_volume: String(config.max_volume ?? ""),
+          modbus_settings: {
+            slave_address: config.modbus_settings?.slave_address ?? "",
+            register_address: config.modbus_settings?.register_address ?? "",
+            register_count: config.modbus_settings?.register_count ?? "",
+            data_type: config.modbus_settings?.data_type ?? "Float32",
+          },
+          commandSet: config.commandSet ?? "Universal",
+          pollingAddress: "",
+          variableType: "",
+        };
 
-    // General handler for top-level state changes
+        if (interface_type === "HartInterface" && config.device_id) {
+          const hartIdRegex = /T(\d+)(P|S)$/;
+          const match = config.device_id.match(hartIdRegex);
+          if (match) {
+            baseState.pollingAddress = match[1];
+            baseState.variableType = match[2];
+          }
+        }
+        setFormState((prevState) => ({ ...prevState, ...baseState }));
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [device, interface_type]);
+
     const handleStateChange = (field: string, value: string) => {
       setFormState((prev) => ({ ...prev, [field]: value }));
     };
 
-    // 3. ADD a specific handler for nested modbus_settings
     const handleModbusChange = (field: string, value: string) => {
       setFormState((prev) => ({
         ...prev,
@@ -89,13 +99,13 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = observer(
       }));
     };
 
-    // 6. REFINE the submit handler
-    const handleSubmit = () => {
+    // *** SAVE LOGIC IS NOW SIMPLER ***
+    const validateAndSave = () => {
       const { modbus_settings, ...restOfState } = formState;
 
       const finalConfig: DeviceConfig = {
         ...restOfState,
-        device_id: initialData?.device_id || interface_id,
+        device_id: device?.id || "",
         device_type: "VolumeDevice",
         min_volume: parseFloat(formState.min_volume) || 0,
         max_volume: parseFloat(formState.max_volume) || 0,
@@ -103,7 +113,7 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = observer(
 
       if (interface_type === "ModbusInterface") {
         finalConfig.modbus_settings = {
-          slave_address: modbus_settings.slave_id,
+          slave_address: modbus_settings.slave_address,
           register_address: modbus_settings.register_address,
           register_count: modbus_settings.register_count,
           data_type: modbus_settings.data_type,
@@ -115,32 +125,47 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = observer(
 
     return (
       <div className="flex flex-col space-y-6">
-        <div className="flex justify-start items-center gap-6 text-blue-400">
-          <div>Status: {initialData?.data?.status ?? "N/A"}</div>
-          <div>
+        {/* *** LIVE DATA DISPLAY *** */}
+        <div className="grid grid-cols-3 gap-4 text-slate-500 text-sm p-3 border rounded-lg bg-gray-50">
+          <div className="truncate">
             Timestamp:{" "}
-            {initialData?.data?.timestamp
-              ? new Date(initialData.data.timestamp * 1000).toLocaleTimeString(
-                  [],
-                  {
-                    hour12: false,
-                  }
-                )
-              : "N/A"}
+            <span className="font-medium text-gray-700">
+              {device?.config.data?.timestamp ?? "N/A"}
+            </span>
           </div>
-          <div>Value: {initialData?.data?.value ?? "N/A"}</div>
+          <div className="truncate">
+            Status:{" "}
+            <span className="font-medium text-gray-700">
+              {device?.config.data?.status ?? "N/A"}
+            </span>
+          </div>
+          <div className="truncate">
+            Live Value:{" "}
+            <span className="font-medium text-gray-700">
+              {typeof device?.config.data?.value === "number"
+                ? device.config.data.value.toFixed(5)
+                : device?.config.data?.value ?? "N/A"}
+            </span>
+          </div>
         </div>
 
-        {/* 4. UPDATE BridgeComponent props */}
+        {/* --- Conditional Rendering Logic for the Bridge --- */}
+        {interface_type === "HartInterface" && (
+          <BridgeComponent
+            interface_type={interface_type}
+            formState={formState}
+            errors={{}}
+            handleStateChange={handleStateChange}
+          />
+        )}
         {interface_type === "ModbusInterface" && (
           <BridgeComponent
             interface_type={interface_type}
-            formState={formState.modbus_settings} // Pass the nested object
+            formState={formState.modbus_settings}
             errors={{}}
-            handleStateChange={handleModbusChange} // Pass the specific handler
+            handleStateChange={handleModbusChange}
           />
         )}
-        {/* Add other interface types like HART if needed */}
 
         <div className="flex bg-gray-200 p-1 rounded-lg">
           <button
@@ -276,7 +301,7 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = observer(
             Cancel
           </button>
           <button
-            onClick={handleSubmit}
+            onClick={validateAndSave}
             className="px-6 py-2 rounded-full font-semibold text-sm bg-yellow-400 text-black hover:bg-yellow-500 transition-colors shadow-sm"
           >
             Save
@@ -285,6 +310,6 @@ const VolumeDeviceForm: React.FC<VolumeDeviceFormProps> = observer(
       </div>
     );
   }
-); // 7. WRAP the component here
+);
 
 export default VolumeDeviceForm;
