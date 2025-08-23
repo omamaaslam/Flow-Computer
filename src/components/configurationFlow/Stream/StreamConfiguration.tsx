@@ -29,6 +29,7 @@ import {
   setVolumeConfig,
   setCompressibilityConfig,
   addProfile,
+  start_calculation,
 } from "../../../utils/services";
 import PipelineProfileForm from "./PipelineProfileForm";
 import AlertBox from "../../AlertBox";
@@ -88,10 +89,32 @@ const StreamConfiguration = observer(() => {
     },
   };
   const currentButtonConfig = buttonConfigs[runState];
-  const handleRunButtonClick = () => {
-    setRunState((currentState) =>
-      currentState === "start" ? "stop" : "start"
-    );
+  const handleRunButtonClick = async () => {
+    if (!streamId || runState === "disabled") return;
+    if (runState === "start") {
+      setIsSaving(true);
+      try {
+        await start_calculation(streamId);
+        setRunState("stop");
+        setAlertState({
+          isOpen: true,
+          type: "success",
+          message: "Calculation started successfully!",
+        });
+      } catch (error) {
+        console.error("Failed to start calculation:", error);
+        setAlertState({
+          isOpen: true,
+          type: "error",
+          message: "Failed to start calculation. Please try again.",
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    } else {
+      console.warn("Stop functionality is not yet implemented.");
+      setRunState("start"); // For now, just toggle back to "Start"
+    }
   };
 
   const handleCloseAlert = () => {
@@ -659,11 +682,18 @@ const StreamConfiguration = observer(() => {
           <div className="flex justify-center">
             <button
               onClick={handleRunButtonClick}
-              disabled={currentButtonConfig.disabled}
+              // 👇 UPDATE THIS LINE
+              disabled={currentButtonConfig.disabled || isSaving}
               className={`w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans border border-[#F5F5F5] rounded-full shadow-lg transition-all ${currentButtonConfig.className}`}
             >
-              <currentButtonConfig.Icon size={20} />
-              <span>{currentButtonConfig.text}</span>
+              {isSaving && runState === "start" ? ( // Optional: Show a "Starting..." text
+                <span>Starting...</span>
+              ) : (
+                <>
+                  <currentButtonConfig.Icon size={20} />
+                  <span>{currentButtonConfig.text}</span>
+                </>
+              )}
             </button>
           </div>
         </div>
