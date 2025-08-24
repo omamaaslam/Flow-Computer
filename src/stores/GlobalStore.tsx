@@ -132,19 +132,15 @@ class GlobalStore {
 
   public updateDeviceData(liveData: any) {
     runInAction(() => {
-      // The live data comes in a structure like { "7": { "HI1": { "HI1T15": ... } } }
-      // We need to iterate through it to find the device ID and its data.
       Object.values<any>(liveData).forEach((streamData) => {
         Object.values<any>(streamData).forEach((cardData) => {
           Object.entries<any>(cardData).forEach(([deviceId, deviceData]) => {
             // Find the device instance in our entire store
             const device = this.allDevices.find((d) => d.id === deviceId);
             if (device) {
-              // If found, call its internal update method
+              console.warn("Updating device data:", deviceData);
               device.updateData(deviceData);
             } else {
-              // This can happen briefly if data arrives before the full snapshot
-              // console.warn(`Received data for unknown device ID: ${deviceId}`);
             }
           });
         });

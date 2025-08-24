@@ -57,6 +57,7 @@ export interface GasComponent {
   key: string;
   display_name: string;
   unit: string;
+  live_value: number;
   value: number;
   linked_device_id?: string;
 }
@@ -365,13 +366,14 @@ export const createDefaultStreamConfig = (): stream_config => ({
   },
   compressibility_kfactor_config: {
     active_method: "Constant",
-    constant_k_value: 1, // Add default value
-    methods: {}, // Add empty methods object
+    constant_k_value: 1,
+    methods: {},
     gas_components: [
       {
         key: "CH4",
         display_name: "Methane",
         unit: "mol%",
+        live_value: 0.0,
         value: 95.0,
         linked_device_id: "",
       },
@@ -379,6 +381,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
         key: "C2H6",
         display_name: "Ethane",
         unit: "mol%",
+        live_value: 0.0,
         value: 3.0,
         linked_device_id: "",
       },
@@ -386,6 +389,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
         key: "N2",
         display_name: "Nitrogen",
         unit: "mol%",
+        live_value: 0.0,
         value: 2.0,
         linked_device_id: "",
       },
@@ -393,6 +397,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
         key: "CO2",
         display_name: "Carbon Dioxide",
         unit: "mol%",
+        live_value: 0.0,
         value: 0.0,
         linked_device_id: "",
       },
@@ -400,6 +405,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
         key: "C3H8",
         display_name: "Propane",
         unit: "mol%",
+        live_value: 0.0,
         value: 0.0,
         linked_device_id: "",
       },
@@ -407,6 +413,15 @@ export const createDefaultStreamConfig = (): stream_config => ({
         key: "H2O",
         display_name: "Water",
         unit: "mol%",
+        live_value: 0.0,
+        value: 0.0,
+        linked_device_id: "",
+      },
+      {
+        key: "HS",
+        display_name: "Hydrogen Sulfide",
+        unit: "mol%",
+        live_value: 0.0,
         value: 0.0,
         linked_device_id: "",
       },
@@ -414,6 +429,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
         key: "H2S",
         display_name: "Hydrogen Sulfide",
         unit: "mol%",
+        live_value: 0.0,
         value: 0.0,
         linked_device_id: "",
       },
@@ -421,6 +437,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
         key: "H2",
         display_name: "Hydrogen",
         unit: "mol%",
+        live_value: 0.0,
         value: 0.0,
         linked_device_id: "",
       },
@@ -428,6 +445,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
         key: "CO",
         display_name: "Carbon Monoxide",
         unit: "mol%",
+        live_value: 0.0,
         value: 0.0,
         linked_device_id: "",
       },
@@ -435,9 +453,18 @@ export const createDefaultStreamConfig = (): stream_config => ({
         key: "O2",
         display_name: "Oxygen",
         unit: "mol%",
+        live_value: 0.0,
         value: 0.0,
         linked_device_id: "",
       },
+      {
+        key: "SD",
+        display_name: "Standard Density",
+        unit: "kg/m³", // Assuming a unit, adjust if needed
+        live_value: 0.0,
+        value: 0.0,
+        linked_device_id: "",
+      }
     ],
   },
   pipeline_profile_configuration: {
