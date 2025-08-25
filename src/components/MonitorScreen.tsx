@@ -2,25 +2,10 @@ import { observer } from "mobx-react-lite";
 import globalStore from "../stores/GlobalStore";
 import MeterGuage from "./MeterGuage";
 import Thermometer from "./Thermometer";
-const GaugeIcon = ({ size = 100 }: { size?: number }) => (
-  <img
-    src="/MonitorSvg/Meter.svg"
-    alt="Meter Icon"
-    width={size}
-    height={size}
-    className="mx-auto"
-  />
-);
-const ThermometerIcon = ({ size = 100 }: { size?: number }) => (
-  <img
-    src="/MonitorSvg/Thermometer.svg"
-    alt="Thermometer Icon"
-    width={size * 0.33}
-    height={size}
-    className="mx-auto"
-  />
-);
+import React from "react";
+
 const results = globalStore.results;
+
 const InfoCard = ({
   title,
   children,
@@ -33,7 +18,7 @@ const InfoCard = ({
   className?: string;
 }) => (
   <div
-    className={`bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col p-4 h-[190px] lg:h-[260px] ${className}`} // Applied the className prop
+    className={`bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col p-4 h-[190px] lg:h-[260px] ${className}`}
   >
     <h3 className="font-semibold text-gray-600 border-b pb-1 mb-1 text-lg">
       {title}
@@ -48,631 +33,152 @@ const InfoCard = ({
   </div>
 );
 
-const GasDevices = [
-  { name: "CH4", label: "Methanes" },
-  { name: "N2", label: "Nitrogen" },
-  { name: "CO2", label: "Carbon Dioxide" },
-  { name: "C2H6", label: "Ethane" },
-  { name: "C3H8", label: "Propane" },
-  { name: "H2O", label: "Water" },
-  { name: "H2S", label: "Hydrogen sulfides" },
-  { name: "H2", label: "Hydrogen" },
-  { name: "CO", label: "Carbon monoxide" },
-  { name: "O2", label: "Oxygen" },
-  { name: "IC4H10", label: "i-Butane" },
-  { name: "C4H10", label: "n-butane" },
-  { name: "IC5H12", label: "i-Pentane" },
-  { name: "C5H12", label: "n-Pentanes" },
-  { name: "C6H14", label: "n-hexanes" },
-  { name: "C7H16", label: "n-heptanes" },
-  { name: "C8H18", label: "n-octanes" },
-  { name: "C9H20", label: "n-Nonane" },
-  { name: "C10H22", label: "n-Decane" },
-  { name: "HE", label: "Helium" },
-  { name: "AR", label: "Argon" },
-  { name: "HI", label: "heating value" },
-  { name: "RD", label: "density ratio" },
-  { name: "WI", label: "Wobbe index" },
-];
-
 // --- Main Screen Component ---
 const MonitorScreen = observer(() => {
   return (
     <div className="w-full font-sans text-gray-600">
       {results.length > 0 ? (
         <>
-          {results.map((res) => (
-            <>
-              <div className="space-y-6">
-                {/* ======================================= */}
-                {/*         LARGE SCREEN LAYOUT             */}
-                {/* ======================================= */}
+          {results.map((res: any, index) => {
+            // ==================================================================
+            // === NEW: Configuration Array for the Detailed Table            ===
+            // This array defines the exact order and content of the table.
+            // ==================================================================
+            const tableDisplayConfig = [
+              // Group 1: Original Volume
+              { label: 'Original Volume', key: 'current_volume_original', unit: 'm³', statusKey: 'volume_interference_flag' },
+              { label: 'Last Original Volume', key: 'last_volume_original', unit: 'm³' },
+              { label: 'Delta Original Volume', key: 'delta_volume_original', unit: 'm³' },
+              // Group 2: Temperature
+              { label: 'Operating Temperature', key: 'operating_temperature', unit: res.temperature_unit, statusKey: 'temperature_interference_flag' },
+              { label: 'Base Temperature', key: 'base_temperature', unit: res.temperature_unit },
+              // Group 3: Pressure
+              { label: 'Operating Pressure', key: 'operating_pressure', unit: res.pressure_unit, statusKey: 'pressure_interference_flag' },
+              { label: 'Base Pressure', key: 'base_pressure', unit: res.pressure_unit },
+              // Group 4: Flow Rate
+              { label: 'Device Flow Rate', key: 'device_flow_rate', unit: 'm³/h', statusKey: 'flow_rate_interference_flag' },
+              { label: 'Software Flow Rate', key: 'software_flow_rate', unit: 'm³/h' },
+              // Group 5: Standard & Interference Volumes and Flow Rates
+              { label: 'Operating Volume (Net)', key: 'operating_volume_net', unit: 'm³' },
+              { label: 'Standard Volume (Forward)', key: 'standard_volume_forward', unit: 'm³' },
+              { label: 'Interference Volume (Forward)', key: 'interference_volume_forward', unit: 'm³' },
+              { label: 'Standard Interference Volume (Forward)', key: 'standard_interference_volume_forward', unit: 'm³' },
+              { label: 'Operating Flow Rate', key: 'operating_flow_rate', unit: 'm³/h' },
+              { label: 'Standard Flow Rate', key: 'standard_flow_rate', unit: 'm³/h' },
+              { label: 'Interference Flow Rate', key: 'interference_flow_rate', unit: 'm³/h' },
+              { label: 'Standard Interference Flow Rate', key: 'standard_interference_flow_rate', unit: 'm³/h' },
+              // Group 6: Flow Creep
+              { label: 'Flow Creep Enabled', key: 'flow_creep_enable_flag', statusKey: 'flow_creep_interference_flag' },
+              { label: 'Flow Creep Alarm', key: 'flow_creep_alarm', statusKey: 'flow_creep_interference_flag' },
+              // Group 7: All Gasses
+              { label: 'Methane', key: 'CH4', unit: '%mol', statusKey: 'CH4_interference' },
+              { label: 'Nitrogen', key: 'N2', unit: '%mol', statusKey: 'N2_interference' },
+              { label: 'Carbon Dioxide', key: 'CO2', unit: '%mol', statusKey: 'CO2_interference' },
+              { label: 'Ethane', key: 'C2H6', unit: '%mol', statusKey: 'C2H6_interference' },
+              { label: 'Propane', key: 'C3H8', unit: '%mol', statusKey: 'C3H8_interference' },
+              { label: 'i-Butane', key: 'I_C4H10', unit: '%mol', statusKey: 'I_C4H10_interference' },
+              { label: 'n-Butane', key: 'N_C4H10', unit: '%mol', statusKey: 'N_C4H10_interference' },
+              { label: 'i-Pentane', key: 'I_C5H12', unit: '%mol', statusKey: 'I_C5H12_interference' },
+              { label: 'n-Pentane', key: 'N_C5H12', unit: '%mol', statusKey: 'N_C5H12_interference' },
+              { label: 'n-Hexane', key: 'C6H14', unit: '%mol', statusKey: 'C6H14_interference' },
+              { label: 'n-Heptane', key: 'C7H16', unit: '%mol', statusKey: 'C7H16_interference' },
+              { label: 'n-Octane', key: 'C8H18', unit: '%mol', statusKey: 'C8H18_interference' },
+              { label: 'n-Nonane', key: 'C9H20', unit: '%mol', statusKey: 'C9H20_interference' },
+              { label: 'n-Decane', key: 'C10H22', unit: '%mol', statusKey: 'C10H22_interference' },
+              { label: 'Hydrogen', key: 'H2', unit: '%mol', statusKey: 'H2_interference' },
+              { label: 'Hydrogen Sulfide', key: 'H2S', unit: '%mol', statusKey: 'H2S_interference' },
+              { label: 'Carbon Monoxide', key: 'CO', unit: '%mol', statusKey: 'CO_interference' },
+              { label: 'Oxygen', key: 'O2', unit: '%mol', statusKey: 'O2_interference' },
+              { label: 'Water', key: 'H2O', unit: '%mol', statusKey: 'H2O_interference' },
+              { label: 'Helium', key: 'HE', unit: '%mol', statusKey: 'HE_interference' },
+              { label: 'Argon', key: 'AR', unit: '%mol', statusKey: 'AR_interference' },
+              { label: 'Pseudo HS', key: 'HS', unit: '', statusKey: 'HS_interference' },
+              { label: 'Pseudo SD', key: 'SD', unit: '', statusKey: 'SD_interference' },
+            ];
+            
+            return (
+              <div key={index} className="space-y-6">
+                {/* The top sections (cards, gauges) remain unchanged as they work correctly */}
                 <div className="hidden lg:block space-y-8">
-                  {/* *** NEW: Operating Volume Section for large screens *** */}
                   <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="grid grid-cols-3 gap-6">
-                      {/* Card 1: Positive */}
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <p className="text-md">
-                          <span className="font-bold text-gray-600">
-                            Original Volume
-                          </span>{" "}
-                          <span className="font-semibold text-cyan-600 pl-2">
-                            {res.current_volume_original.toFixed(5)} m³
-                          </span>
-                        </p>
-                      </div>
-
-                      {/* Card 2: Reverse */}
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <p className="text-md">
-                          <span className="font-bold text-gray-600 ">
-                            Operating Volume
-                          </span>
-
-                          <span className="font-semibold text-cyan-600 pl-2">
-                            {res.operating_volume_net.toFixed(5)} m³
-                          </span>
-                        </p>
-                      </div>
-
-                      {/* Card 3: Net */}
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <p className="text-md">
-                          <span className="font-bold text-gray-600">
-                            Std Volume
-                          </span>{" "}
-                          <span className="font-semibold text-cyan-600 pl-2">
-                            {res.standard_volume_forward.toFixed(5)} m³
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-6">
-                      {/* Card 1: Positive */}
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <p className="text-md">
-                          <span className="font-bold text-gray-600">
-                            Current Flow Rate:
-                          </span>{" "}
-                          <span className="font-semibold text-cyan-600 pl-2">
-                            {res.device_flow_rate ? res.device_flow_rate.toFixed(5) : "N/A"} m³/h
-                          </span>
-                        </p>
-                      </div>
-
-                      {/* Card 2: Reverse */}
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <p className="text-md">
-                          <span className="font-bold text-gray-600 ">
-                            Interference Volume:
-                          </span>
-
-                          <span className="font-semibold text-cyan-600 pl-2">
-                            {res.interference_volume_forward.toFixed(5)} m³
-                          </span>
-                        </p>
-                      </div>
-
-                      {/* Card 3: Net */}
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <p className="text-md">
-                          <span className="font-bold text-gray-600">
-                            Std. Interference Volume:
-                          </span>{" "}
-                          <span className="font-semibold text-cyan-600 pl-2">
-                            {res.standard_interference_volume_forward.toFixed(
-                              5
-                            )}{" "}
-                            m³
-                          </span>
-                        </p>
-                      </div>
+                      <div className="border border-gray-200 rounded-lg p-6"><p className="text-md"><span className="font-bold text-gray-600">Original Volume</span>{" "}<span className="font-semibold text-cyan-600 pl-2">{res.current_volume_original.toFixed(5)} m³</span></p></div>
+                      <div className="border border-gray-200 rounded-lg p-6"><p className="text-md"><span className="font-bold text-gray-600 ">Operating Volume</span><span className="font-semibold text-cyan-600 pl-2">{res.operating_volume_net.toFixed(5)} m³</span></p></div>
+                      <div className="border border-gray-200 rounded-lg p-6"><p className="text-md"><span className="font-bold text-gray-600">Std Volume</span>{" "}<span className="font-semibold text-cyan-600 pl-2">{res.standard_volume_forward.toFixed(5)} m³</span></p></div>
+                      <div className="border border-gray-200 rounded-lg p-6"><p className="text-md"><span className="font-bold text-gray-600">Current Flow Rate:</span>{" "}<span className="font-semibold text-cyan-600 pl-2">{res.device_flow_rate.toFixed(5)} m³/h</span></p></div>
+                      <div className="border border-gray-200 rounded-lg p-6"><p className="text-md"><span className="font-bold text-gray-600 ">Interference Volume:</span><span className="font-semibold text-cyan-600 pl-2">{res.interference_volume_forward.toFixed(5)} m³</span></p></div>
+                      <div className="border border-gray-200 rounded-lg p-6"><p className="text-md"><span className="font-bold text-gray-600">Std. Interference Volume:</span>{" "}<span className="font-semibold text-cyan-600 pl-2">{res.standard_interference_volume_forward.toFixed(5)} m³</span></p></div>
                     </div>
                   </div>
-
                   <div className="grid grid-cols-5 gap-6">
-                    <InfoCard title="Conditions" className="col-span-2">
-                      <div className="text-sm divide-y divide-gray-200">
-                        <p className="flex justify-between py-2.5">
-                          <span>Pressure:</span>{" "}
-                          <span className="font-semibold text-cyan-600">
-                            {res.operating_pressure.toFixed(5)}{" "}
-                            {res.pressure_unit}
-                          </span>
-                        </p>
-                        <p className="flex justify-between py-2.5">
-                          <span>Temperature:</span>{" "}
-                          <span className="font-semibold text-cyan-600">
-                            {res.operating_temperature.toFixed(5)}{" "}
-                            {res.temperature_unit}
-                          </span>
-                        </p>
-                        <p className="flex justify-between py-2.5">
-                          <span>K-Number:</span>{" "}
-                          <span className="font-semibold text-cyan-600">
-                            {res.compressibility_k_factor.toFixed(5)}
-                          </span>
-                        </p>
-                        <p className="flex justify-between py-2.5">
-                          <span>Z-Factor:</span>{" "}
-                          <span className="font-semibold text-cyan-600">
-                            {res.correction_z_factor.toFixed(5)}
-                          </span>
-                        </p>
-                      </div>
-                    </InfoCard>
-
-                    <InfoCard title="System Status" className="col-span-1">
-                      <div className="space-y-3 text-sm pt-2 ">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-3 h-3 rounded-full ${
-                              res.pressure_interference_flag
-                                ? "bg-red-600"
-                                : "bg-green-500"
-                            }`}
-                          />
-                          <span>Pressure</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-3 h-3 rounded-full ${
-                              res.temperature_interference_flag
-                                ? "bg-red-600"
-                                : "bg-green-500"
-                            }`}
-                          />
-                          <span>Temperature</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-3 h-3 rounded-full ${
-                              res.volume_interference_flag
-                                ? "bg-red-600"
-                                : "bg-green-500"
-                            }`}
-                          />
-                          <span>Volume</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-3 h-3 rounded-full ${
-                              res.flow_rate_interference_flag
-                                ? "bg-red-600"
-                                : "bg-green-500"
-                            }`}
-                          />
-                          <span>FlowRate</span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-3 h-3 rounded-full ${
-                              res.compressibility_interference_flag
-                                ? "bg-red-600"
-                                : "bg-green-500"
-                            }`}
-                          />
-                          <span>K-Number</span>
-                        </div>
-                      </div>
-                    </InfoCard>
-
-                    <InfoCard
-                      title="Alerts"
-                      scrollable={true}
-                      className="col-span-2"
-                    >
-                      <div className="space-y-2 text-sm">
-                        <div
-                          className={`p-2 border-l-4 ${
-                            res.temperature_interference_flag
-                              ? "border-red-500 bg-red-100/80 text-red-700"
-                              : "bg-green-100 border-green-500 text-green-800"
-                          }`}
-                        >
-                          {
-                            res.temperature_logs[
-                              res.temperature_logs.length - 1
-                            ]
-                          }
-                        </div>
-                        <div
-                          className={`p-2 border-l-4 ${
-                            res.flow_rate_interference_flag
-                              ? "border-red-500 bg-red-100/80 text-red-700"
-                              : "bg-green-100 border-green-500 text-green-800"
-                          }`}
-                        >
-                          {res.flow_rate_logs[res.flow_rate_logs.length - 1]}
-                        </div>
-                        <div
-                          className={`p-2 border-l-4 ${
-                            res.pressure_interference_flag
-                              ? "border-red-500 bg-red-100/80 text-red-700"
-                              : "bg-green-100 border-green-500 text-green-800"
-                          }`}
-                        >
-                          {res.pressure_logs[res.pressure_logs.length - 1]}
-                        </div>
-                        <div
-                          className={`p-2 border-l-4 ${
-                            res.system_logs
-                              ? "border-red-500 bg-red-100/80 text-red-700"
-                              : "bg-green-100 border-blue-500 text-blue-800"
-                          }`}
-                        >
-                          {res.system_logs[res.system_logs.length - 1]}
-                        </div>
-                        <div
-                          className={`p-2 border-l-4 ${
-                            res.volume_interference_flag
-                              ? "border-red-500 bg-red-100/80 text-red-700"
-                              : "bg-green-100 border-green-500 text-green-800"
-                          }`}
-                        >
-                          {res.volume_logs[res.volume_logs.length - 1]}
-                        </div>
-                        <div
-                          className={`p-2 border-l-4 ${
-                            res.compressibility_interference_flag
-                              ? "border-red-500 bg-red-100/80 text-red-700"
-                              : "bg-green-100 border-green-500 text-green-800"
-                          }`}
-                        >
-                          {
-                            res.compressibility_logs[
-                              res.compressibility_logs.length - 1
-                            ]
-                          }
-                        </div>
-                      </div>
-                    </InfoCard>
+                    <InfoCard title="Conditions" className="col-span-2"><div className="text-sm divide-y divide-gray-200"><p className="flex justify-between py-2.5"><span>Pressure:</span>{" "}<span className="font-semibold text-cyan-600">{res.operating_pressure.toFixed(5)} {res.pressure_unit}</span></p><p className="flex justify-between py-2.5"><span>Temperature:</span>{" "}<span className="font-semibold text-cyan-600">{res.operating_temperature.toFixed(5)} {res.temperature_unit}</span></p><p className="flex justify-between py-2.5"><span>K-Number:</span>{" "}<span className="font-semibold text-cyan-600">{res.compressibility_k_factor.toFixed(5)}</span></p><p className="flex justify-between py-2.5"><span>Z-Factor:</span>{" "}<span className="font-semibold text-cyan-600">{res.correction_z_factor.toFixed(5)}</span></p></div></InfoCard>
+                    <InfoCard title="System Status" className="col-span-1"><div className="space-y-3 text-sm pt-2 "><div className="flex items-center gap-3"><div className={`w-3 h-3 rounded-full ${res.pressure_interference_flag ? "bg-red-600" : "bg-green-500"}`}/><span>Pressure</span></div><div className="flex items-center gap-3"><div className={`w-3 h-3 rounded-full ${res.temperature_interference_flag ? "bg-red-600" : "bg-green-500"}`}/><span>Temperature</span></div><div className="flex items-center gap-3"><div className={`w-3 h-3 rounded-full ${res.volume_interference_flag ? "bg-red-600" : "bg-green-500"}`}/><span>Volume</span></div><div className="flex items-center gap-3"><div className={`w-3 h-3 rounded-full ${res.flow_rate_interference_flag ? "bg-red-600" : "bg-green-500"}`}/><span>FlowRate</span></div><div className="flex items-center gap-3"><div className={`w-3 h-3 rounded-full ${res.compressibility_interference_flag ? "bg-red-600" : "bg-green-500"}`}/><span>K-Number</span></div></div></InfoCard>
+                    <InfoCard title="Alerts" scrollable={true} className="col-span-2"><div className="space-y-2 text-sm"><div className={`p-2 border-l-4 ${res.temperature_interference_flag ? "border-red-500 bg-red-100/80 text-red-700" : "bg-green-100 border-green-500 text-green-800"}`}>{res.temperature_logs?.[res.temperature_logs.length - 1] || "No temperature logs"}</div><div className={`p-2 border-l-4 ${res.flow_rate_interference_flag ? "border-red-500 bg-red-100/80 text-red-700" : "bg-green-100 border-green-500 text-green-800"}`}>{res.flow_rate_logs?.[res.flow_rate_logs.length - 1] || "No flow rate logs"}</div><div className={`p-2 border-l-4 ${res.pressure_interference_flag ? "border-red-500 bg-red-100/80 text-red-700" : "bg-green-100 border-green-500 text-green-800"}`}>{res.pressure_logs?.[res.pressure_logs.length - 1] || "No pressure logs"}</div><div className={`p-2 border-l-4 ${!res.last_status_ok ? "border-red-500 bg-red-100/80 text-red-700" : "bg-blue-100 border-blue-500 text-blue-800"}`}>{res.system_logs?.[res.system_logs.length - 1] || "No system logs"}</div><div className={`p-2 border-l-4 ${res.volume_interference_flag ? "border-red-500 bg-red-100/80 text-red-700" : "bg-green-100 border-green-500 text-green-800"}`}>{res.volume_logs?.[res.volume_logs.length - 1] || "No volume logs"}</div><div className={`p-2 border-l-4 ${res.compressibility_interference_flag ? "border-red-500 bg-red-100/80 text-red-700" : "bg-green-100 border-green-500 text-green-800"}`}>{res.compressibility_logs?.[res.compressibility_logs.length - 1] || "No compressibility logs"}</div></div></InfoCard>
                   </div>
-
                   <div>
-                    <div className="grid grid-cols-3 gap-6">
-                      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg flex flex-col items-center ">
-                        <h3 className="font-bold text-xl">Flow Rate</h3>
-                        <div className="text-center mt-2">
-                          <MeterGuage
-                            currentValue={res.device_flow_rate}
-                            unit="m3/h"
-                            min={0}
-                            max={50000}
-                          />
-                          <p className="text-lg text-gray-500 mt-3">
-                            {res.device_flow_rate ? res.device_flow_rate.toFixed(5) : "N/A"} m³/h
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg flex flex-col items-center justify-around">
-                        <h3 className="font-bold text-xl">Pressure</h3>
-                        <div className="text-center mt-2">
-                          <MeterGuage
-                            currentValue={res.operating_pressure}
-                            unit="Bar"
-                            min={0}
-                            max={20}
-                          />
-                          <p className="text-lg text-gray-500 mt-3">
-                            {res.operating_pressure.toFixed(5)}{" "}
-                            {res.pressure_unit}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg flex flex-col items-center justify-around">
-                        <h3 className="font-bold text-xl">Temperature</h3>
-                        <div className="text-center">
-                          <Thermometer currentValue={6} min={-20} max={100} />
-                          <p className="text-lg text-gray-500 mt-3">
-                            {res.operating_temperature} {res.temperature_unit}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <div className="grid grid-cols-3 gap-6"><div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg flex flex-col items-center "><h3 className="font-bold text-xl">Flow Rate</h3><div className="text-center mt-2"><MeterGuage currentValue={res.device_flow_rate} unit="m3/h" min={0} max={50000}/><p className="text-lg text-gray-500 mt-3">{res.device_flow_rate.toFixed(5)} m³/h</p></div></div><div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg flex flex-col items-center justify-around"><h3 className="font-bold text-xl">Pressure</h3><div className="text-center mt-2"><MeterGuage currentValue={res.operating_pressure} unit="Bar" min={0} max={20}/><p className="text-lg text-gray-500 mt-3">{res.operating_pressure.toFixed(5)}{" "}{res.pressure_unit}</p></div></div><div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg flex flex-col items-center justify-around"><h3 className="font-bold text-xl">Temperature</h3><div className="text-center"><Thermometer currentValue={res.operating_temperature} min={-20} max={100}/><p className="text-lg text-gray-500 mt-3">{res.operating_temperature}{" "}{res.temperature_unit}</p></div></div></div>
                   </div>
                 </div>
-
-                {/* ======================================= */}
-                {/*          SMALL SCREEN LAYOUT            */}
-                {/* ======================================= */}
-                <div className="block lg:hidden space-y-4">
-                  <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
-                        <p className="font-bold text-xs">Orignal Volume</p>
-                        <p className="font-semibold text-cyan-600 text-sm">
-                          {res.current_volume_original.toFixed(5)} m³
-                        </p>
-                      </div>
-                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
-                        <p className="font-bold text-xs">Operating Volume:</p>
-                        <p className="font-semibold text-cyan-600 text-sm">
-                          {res.operating_volume_net.toFixed(5)} m³
-                        </p>
-                      </div>
-                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
-                        <p className="font-bold text-xs">Std. Volume</p>
-                        <p className="font-semibold text-cyan-600 text-sm">
-                          {res.standard_volume_net.toFixed(5)} m³
-                        </p>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
-                        <p className="font-bold text-xs">Current Flow Rate</p>
-                        <p className="font-semibold text-cyan-600 text-sm">
-                          {res.device_flow_rate ? res.device_flow_rate.toFixed(5) : "N/A"} m³/h
-                        </p>
-                      </div>
-                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
-                        <p className="font-bold text-xs">Interference Volume</p>
-                        <p className="font-semibold text-cyan-600 text-sm">
-                          {res.interference_volume_forward.toFixed(5)} m³
-                        </p>
-                      </div>
-                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
-                        <p className="font-bold text-xs">
-                          Std. Interference Volume
-                        </p>
-                        <p className="font-semibold text-cyan-600 text-sm">
-                          {res.standard_interference_volume_forward.toFixed(5)}{" "}
-                          m³
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex flex-row items-stretch gap-2 h-[170px]">
-                      <div className="flex flex-1 flex-col bg-white border rounded-lg shadow-sm p-3">
-                        <h3 className="font-semibold text-gray-600 text-sm border-b pb-1 mb-2">
-                          Conditions
-                        </h3>
-                        <div className="text-xs divide-y divide-gray-200">
-                          <p className="flex justify-between py-1.5">
-                            <span className="text-cyan-600">Pressure</span>
-                            <span className="font-medium text-gray-700">
-                              {res.operating_pressure.toFixed(5)}{" "}
-                              {res.pressure_unit}
-                            </span>
-                          </p>
-                          <p className="flex justify-between py-1.5">
-                            <span className="text-cyan-600">Temp</span>
-                            <span className="font-medium text-gray-700">
-                              {res.operating_temperature.toFixed(5)}{" "}
-                              {res.temperature_unit}
-                            </span>
-                          </p>
-                          <p className="flex justify-between py-1.5">
-                            <span className="text-cyan-600">K-Factor</span>
-                            <span className="font-medium text-gray-700">
-                              {res.compressibility_k_factor.toFixed(5)}
-                            </span>
-                          </p>
-                          <p className="flex justify-between py-1.5">
-                            <span className="text-cyan-600">Z-Number</span>
-                            <span className="font-medium text-gray-700">
-                              {res.correction_z_factor.toFixed(5)}
-                            </span>
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col bg-white border rounded-lg shadow-sm p-3">
-                        <h3 className="font-semibold text-gray-600 text-sm border-b pb-1 mb-2">
-                          System Status
-                        </h3>
-                        <div className="space-y-1.5 text-xs pt-1">
-                          <div className="flex items-center gap-1.5">
-                            <div className="w-2.5 h-2.5 bg-green-500 rounded-full flex-shrink-0"></div>
-                            <span>System OK</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <div
-                              className={`w-2.5 h-2.5 rounded-full ${
-                                res.flow_rate_interference_flag
-                                  ? "bg-red-600"
-                                  : "bg-green-500"
-                              } flex-shrink-0`}
-                            ></div>
-                            <span>Flow Normal</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <div
-                              className={`w-2.5 h-2.5 rounded-full ${
-                                res.temperature_interference_flag
-                                  ? "bg-red-600"
-                                  : "bg-green-500"
-                              } flex-shrink-0`}
-                            ></div>
-                            <span className="font-bold">Temperature</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <div
-                              className={`w-2.5 h-2.5 rounded-full ${
-                                res.pressure_interference_flag
-                                  ? "bg-red-600"
-                                  : "bg-green-500"
-                              } flex-shrink-0`}
-                            ></div>
-                            <span>Pressure</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <div
-                              className={`w-2.5 h-2.5 rounded-full ${
-                                res.volume_interference_flag
-                                  ? "bg-red-600"
-                                  : "bg-green-500"
-                              } flex-shrink-0`}
-                            ></div>
-                            <span>Volume</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-1 flex-col bg-white border rounded-lg shadow-sm p-3">
-                        <h3 className="font-semibold text-gray-600 text-sm border-b pb-1 mb-2">
-                          Alerts
-                        </h3>
-                        <div className="flex-grow overflow-y-auto space-y-1.5 text-xs pr-1">
-                          <div
-                            className={`border-l-4 p-2 rounded-r-sm ${
-                              res.temperature_interference_flag
-                                ? "border-red-500 bg-red-100/80 text-red-700" // Consistent error style
-                                : "bg-green-100 border-green-500 text-gray-800" // New light green success style
-                            }`}
-                          >
-                            {
-                              res.temperature_logs[
-                                res.temperature_logs.length - 1
-                              ]
-                            }
-                          </div>
-                          <div
-                            className={`border-l-4 p-2 rounded-r-sm ${
-                              res.flow_rate_interference_flag
-                                ? "border-red-500 bg-red-100/80 text-red-700" // Consistent error style
-                                : "bg-green-100 border-green-500 text-gray-800" // New light green success style
-                            }`}
-                          >
-                            {res.flow_rate_logs[res.flow_rate_logs.length - 1]}
-                          </div>
-                          <div
-                            className={`border-l-4 p-2 rounded-r-sm ${
-                              res.pressure_interference_flag
-                                ? "border-red-500 bg-red-100/80 text-red-700" // Consistent error style
-                                : "bg-green-100 border-green-500 text-gray-800" // New light green success style
-                            }`}
-                          >
-                            {res.pressure_logs[res.pressure_logs.length - 1]}
-                          </div>
-                          <div
-                            className={`border-l-4 p-2 rounded-r-sm ${
-                              res.system_logs
-                                ? "border-red-500 bg-red-100/80 text-red-700"
-                                : "bg-blue-100 border-blue-500 text-blue-800" // Replaced green style with blue
-                            }`}
-                          >
-                            {res.system_logs[res.system_logs.length - 1]}
-                          </div>
-                          <div
-                            className={`border-l-4 p-2 rounded-r-sm ${
-                              res.volume_interference_flag
-                                ? "border-red-500 bg-red-100/80 text-red-700" // Consistent error style
-                                : "bg-green-100 border-green-500 text-gray-800" // New light green success style
-                            }`}
-                          >
-                            {res.volume_logs[res.volume_logs.length - 1]}
-                          </div>
-                          <div
-                            className={`border-l-4 p-2 rounded-r-sm ${
-                              res.compressibility_interference_flag
-                                ? "border-red-500 bg-red-100/80 text-red-700" // Consistent error style
-                                : "bg-green-100 border-green-500 text-gray-800" // New light green success style
-                            }`}
-                          >
-                            {
-                              res.compressibility_logs[
-                                res.compressibility_logs.length - 1
-                              ]
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="grid grid-cols-3 gap-4 p-4">
-                      {/* Card 1: Flow Rate */}
-                      <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
-                        <h3 className="font-bold text-base md:text-lg mb-2">
-                          Flow Rate
-                        </h3>
-                        <MeterGuage
-                          currentValue={res.device_flow_rate}
-                          unit="m³/h"
-                          min={0}
-                          max={50000}
-                        />
-                        <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
-                          {res.device_flow_rate ? res.device_flow_rate.toFixed(2) : "N/A"} m³/h
-                        </p>
-                      </div>
-
-                      {/* Card 2: Pressure (Moved to the middle) */}
-                      <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
-                        <h3 className="font-bold text-base md:text-lg mb-2">
-                          Pressure
-                        </h3>
-                        <MeterGuage
-                          currentValue={res.operating_pressure}
-                          unit="Bar"
-                          min={0}
-                          max={20} // Adjusted max for a more realistic pressure range shown in the image
-                        />
-                        <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
-                          {res.operating_pressure.toFixed(2)}{" "}
-                          {res.pressure_unit}
-                        </p>
-                      </div>
-
-                      {/* Card 3: Temperature (Moved to the end) */}
-                      <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
-                        <h3 className="font-bold text-base md:text-lg mb-2">
-                          Temperature
-                        </h3>
-                        <Thermometer currentValue={20} min={-20} max={100} />
-                        <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
-                          {res.operating_temperature.toFixed(0)}{" "}
-                          {res.temperature_unit}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Table Section */}
-                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm overflow-auto h-96 lg:h-[500px] my-6">
+                
+                {/* ================================================================== */}
+                {/* === REVISED: Clean, Ordered Table Matching Your Requirements === */}
+                {/* ================================================================== */}
+                <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm overflow-auto my-6">
+                  <h3 className="text-xl font-bold p-2 text-gray-700">Detailed Results</h3>
                   <table className="w-full text-sm text-left">
                     <thead className="text-sm text-gray-700 uppercase bg-[#FFB700] sticky top-0">
                       <tr>
-                        <th className="px-6 py-3">Name</th>
-                        <th className="px-6 py-3 whitespace-nowrap">Value</th>
-                        <th className="px-6 py-3 whitespace-nowrap">Unit</th>
+                        <th className="px-6 py-3">NAME</th>
+                        <th className="px-6 py-3">VALUE</th>
+                        <th className="px-6 py-3">UNIT</th>
+                        <th className="px-6 py-3">STATUS</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {GasDevices.map((device) => {
-                        if (res.hasOwnProperty(device.name)) {
-                          const value = res[device.name];
-                          return (
-                            <tr
-                              key={device.name}
-                              className="bg-white border-b hover:bg-gray-50"
-                            >
-                              <td className="px-6 py-4 font-medium text-gray-900">
-                                {device.label}
-                              </td>
-                              <td className="px-6 py-4">
-                                {typeof value === "number"
-                                  ? value.toFixed(4)
-                                  : value}
-                              </td>
-                              <td className="px-6 py-4">%mol</td>
-                            </tr>
-                          );
+                      {tableDisplayConfig.map((item) => {
+                        // Skip rendering if the key doesn't exist in the data
+                        if (!res.hasOwnProperty(item.key)) {
+                          return null;
                         }
-                        return null; // Don't render a row if the data doesn't exist for it
+
+                        const value = res[item.key];
+                        const isInterference = item.statusKey ? res[item.statusKey] : false;
+
+                        // Format value for display
+                        let displayValue;
+                        if (typeof value === 'number') {
+                          displayValue = value.toFixed(4);
+                        } else if (typeof value === 'boolean') {
+                          displayValue = value ? 'True' : 'False';
+                        } else {
+                          displayValue = String(value);
+                        }
+
+                        return (
+                          <tr key={item.key} className="bg-white border-b hover:bg-gray-50">
+                            <td className="px-6 py-4 font-medium text-gray-900">{item.label}</td>
+                            <td className="px-6 py-4">{displayValue}</td>
+                            <td className="px-6 py-4">{item.unit || '---'}</td>
+                            <td className="px-6 py-4">
+                              {item.statusKey ? (
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2.5 h-2.5 rounded-full ${isInterference ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                                  <span>{isInterference ? "Interference" : "OK"}</span>
+                                </div>
+                              ) : (
+                                '---'
+                              )}
+                            </td>
+                          </tr>
+                        );
                       })}
                     </tbody>
                   </table>
                 </div>
+
               </div>
-            </>
-          ))}
+            );
+          })}
         </>
       ) : (
         <p>No results yet...</p>
