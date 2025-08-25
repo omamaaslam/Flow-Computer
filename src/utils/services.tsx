@@ -300,16 +300,15 @@ export const updateDevice = (
 //   };
 // };
 
-
 const createStreamConfigMatcher = (streamId: string, configKey: string) => {
   return (res: any) => {
-    if (res?.success && typeof res.success === 'string') {
+    if (res?.success && typeof res.success === "string") {
       return true;
     }
     if (res?.streams?.[streamId]?.calculator?.[configKey] !== undefined) {
       return true;
     }
-    
+
     return false;
   };
 };
@@ -320,7 +319,7 @@ export const setTemperatureConfig = (streamId: string, data: any) => {
     stream_id: streamId,
     data: data,
   };
-    console.log("services line no.307", toJS(globalStore))
+  console.log("services line no.307", toJS(globalStore));
   const isMatch = createStreamConfigMatcher(streamId, "temperature_config");
   return sendAndWait(msg, isMatch);
 };
@@ -347,14 +346,11 @@ export const setFlowRateConfig = (streamId: string, data: any) => {
   return sendAndWait(msg, isMatch);
 };
 
-export const setVolumeConfig = (
-  streamId: string,
-  data: any
-) => {
+export const setVolumeConfig = (streamId: string, data: any) => {
   const msg = {
     scope: "set_volume_config",
     stream_id: streamId,
-    data:  data,
+    data: data,
   };
   console.log("Current Volume Config:", data);
   const isMatch = createStreamConfigMatcher(streamId, "volume_configuration");
@@ -390,19 +386,42 @@ export const start_calculation = (streamId: string) => {
     scope: "get_start_button",
     stream_id: streamId,
   };
-  console.log(msg);
   const isMatch = (res: any) => {
     if (
-      res?.success &&
-      typeof res.success === "string" &&
-      res.success.includes(`stream '${streamId}'`)
+      res?.success === "Stream start calculation." &&
+      res?.stream_id === streamId
     ) {
+      console.log("Matched start calculation success message:", res);
       return true;
     }
+
     if (res?.streams?.[streamId]?.calculator?.status === "running") {
+      console.log("Matched running status:", res);
       return true;
     }
+
     return false;
   };
   return sendAndWait(msg, isMatch);
-}
+};
+
+export const stop_calculation = (streamId: string) => {
+  const msg = {
+    scope: "stop_calculation",
+    stream_id: streamId,
+  };
+  const isMatch = (res: any) => {
+    if (res) {
+      console.log("calculation stopped:", res);
+      return true;
+    }
+
+    if (res?.streams?.[streamId]?.calculator?.status === "running") {
+      console.log("Matched running status:", res);
+      return true;
+    }
+
+    return false;
+  };
+  return sendAndWait(msg, isMatch);
+};

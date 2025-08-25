@@ -30,6 +30,7 @@ import {
   setCompressibilityConfig,
   addProfile,
   start_calculation,
+  stop_calculation,
 } from "../../../utils/services";
 import PipelineProfileForm from "./PipelineProfileForm";
 import AlertBox from "../../AlertBox";
@@ -91,8 +92,10 @@ const StreamConfiguration = observer(() => {
   const currentButtonConfig = buttonConfigs[runState];
   const handleRunButtonClick = async () => {
     if (!streamId || runState === "disabled") return;
+
+    setIsSaving(true); // Set loading state for both start and stop actions
+
     if (runState === "start") {
-      setIsSaving(true);
       try {
         await start_calculation(streamId);
         setRunState("stop");
@@ -106,17 +109,33 @@ const StreamConfiguration = observer(() => {
         setAlertState({
           isOpen: true,
           type: "error",
-          message: "Failed to start calculation. Please try again.",
+          message: `Failed to start calculation. ${error}`,
         });
       } finally {
         setIsSaving(false);
       }
     } else {
-      console.warn("Stop functionality is not yet implemented.");
-      setRunState("start"); // For now, just toggle back to "Start"
+      // This is the 'stop' logic
+      try {
+        await stop_calculation(streamId);
+        setRunState("start");
+        setAlertState({
+          isOpen: true,
+          type: "success",
+          message: "Calculation stopped successfully!",
+        });
+      } catch (error) {
+        console.error("Failed to stop calculation:", error);
+        setAlertState({
+          isOpen: true,
+          type: "error",
+          message: `Failed to stop calculation. ${error}`,
+        });
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
-
   const handleCloseAlert = () => {
     setAlertState({ ...alertState, isOpen: false });
   };
@@ -682,13 +701,16 @@ const StreamConfiguration = observer(() => {
           <div className="flex justify-center">
             <button
               onClick={handleRunButtonClick}
-              // 👇 UPDATE THIS LINE
               disabled={currentButtonConfig.disabled || isSaving}
               className={`w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans border border-[#F5F5F5] rounded-full shadow-lg transition-all ${currentButtonConfig.className}`}
             >
-              {isSaving && runState === "start" ? ( // Optional: Show a "Starting..." text
-                <span>Starting...</span>
+              {isSaving ? (
+                // NEW LOGIC: When saving, check the runState to show the correct text
+                <span>
+                  {runState === "start" ? "Starting..." : "Stopping..."}
+                </span>
               ) : (
+                // Original logic: When not saving, show the icon and text
                 <>
                   <currentButtonConfig.Icon size={20} />
                   <span>{currentButtonConfig.text}</span>
