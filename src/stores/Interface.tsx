@@ -80,7 +80,7 @@ export class Interface {
       console.error("Cannot add a device without a device_id.");
       throw new Error("Device ID is missing.");
     }
-    console.log("ya bhej raha hu", {
+    console.log("add device payload", {
       stream_id: this.stream_id,
       interface_id: this.interface_id,
       deviceType: deviceType,

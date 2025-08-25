@@ -176,7 +176,7 @@ const ConfigureInterface = observer(
               return;
             }
             newDeviceId = `${anInterface.interface_id}T${pollingAddress}${variableType}`;
-          } else if (["DI", "TI"].includes(currentInterfacePrefix)) {
+          } else if (["DI", "TI", "AI1", "AI2"].includes(currentInterfacePrefix)) {
             newDeviceId = anInterface.interface_id;
           } else {
             newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;

@@ -160,7 +160,7 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({
         (opt) => opt.value === "TemperatureDevice"
       );
     }
-    if (id === "HI1" || id === "HI2") {
+    if (id === "HI1" || id === "HI2" || id === "AI1" || id === "AI2") {
       return allDeviceOptions.filter((opt) =>
         ["TemperatureDevice", "PressureDevice"].includes(opt.value)
       );
