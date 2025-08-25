@@ -136,7 +136,7 @@ const MonitorScreen = observer(() => {
                             Current Flow Rate:
                           </span>{" "}
                           <span className="font-semibold text-cyan-600 pl-2">
-                            {res.device_flow_rate.toFixed(5)} m³/h
+                            {res.device_flow_rate ? res.device_flow_rate.toFixed(5) : "N/A"} m³/h
                           </span>
                         </p>
                       </div>
@@ -161,7 +161,10 @@ const MonitorScreen = observer(() => {
                             Std. Interference Volume:
                           </span>{" "}
                           <span className="font-semibold text-cyan-600 pl-2">
-                            {res.standard_interference_volume_forward.toFixed(5)} m³
+                            {res.standard_interference_volume_forward.toFixed(
+                              5
+                            )}{" "}
+                            m³
                           </span>
                         </p>
                       </div>
@@ -174,13 +177,15 @@ const MonitorScreen = observer(() => {
                         <p className="flex justify-between py-2.5">
                           <span>Pressure:</span>{" "}
                           <span className="font-semibold text-cyan-600">
-                            {res.operating_pressure.toFixed(5)} {res.pressure_unit}
+                            {res.operating_pressure.toFixed(5)}{" "}
+                            {res.pressure_unit}
                           </span>
                         </p>
                         <p className="flex justify-between py-2.5">
                           <span>Temperature:</span>{" "}
                           <span className="font-semibold text-cyan-600">
-                            {res.operating_temperature.toFixed(5)} {res.temperature_unit}
+                            {res.operating_temperature.toFixed(5)}{" "}
+                            {res.temperature_unit}
                           </span>
                         </p>
                         <p className="flex justify-between py-2.5">
@@ -337,7 +342,7 @@ const MonitorScreen = observer(() => {
                             max={50000}
                           />
                           <p className="text-lg text-gray-500 mt-3">
-                            {res.device_flow_rate.toFixed(5)} m³/h
+                            {res.device_flow_rate ? res.device_flow_rate.toFixed(5) : "N/A"} m³/h
                           </p>
                         </div>
                       </div>
@@ -361,8 +366,7 @@ const MonitorScreen = observer(() => {
                         <div className="text-center">
                           <Thermometer currentValue={6} min={-20} max={100} />
                           <p className="text-lg text-gray-500 mt-3">
-                            {res.operating_temperature}{" "}
-                            {res.temperature_unit}
+                            {res.operating_temperature} {res.temperature_unit}
                           </p>
                         </div>
                       </div>
@@ -399,7 +403,7 @@ const MonitorScreen = observer(() => {
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
                         <p className="font-bold text-xs">Current Flow Rate</p>
                         <p className="font-semibold text-cyan-600 text-sm">
-                          {res.device_flow_rate.toFixed(5)} m³/h
+                          {res.device_flow_rate ? res.device_flow_rate.toFixed(5) : "N/A"} m³/h
                         </p>
                       </div>
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
@@ -413,7 +417,8 @@ const MonitorScreen = observer(() => {
                           Std. Interference Volume
                         </p>
                         <p className="font-semibold text-cyan-600 text-sm">
-                          {res.standard_interference_volume_forward.toFixed(5)} m³
+                          {res.standard_interference_volume_forward.toFixed(5)}{" "}
+                          m³
                         </p>
                       </div>
                     </div>
@@ -429,13 +434,15 @@ const MonitorScreen = observer(() => {
                           <p className="flex justify-between py-1.5">
                             <span className="text-cyan-600">Pressure</span>
                             <span className="font-medium text-gray-700">
-                              {res.operating_pressure.toFixed(5)} {res.pressure_unit}
+                              {res.operating_pressure.toFixed(5)}{" "}
+                              {res.pressure_unit}
                             </span>
                           </p>
                           <p className="flex justify-between py-1.5">
                             <span className="text-cyan-600">Temp</span>
                             <span className="font-medium text-gray-700">
-                              {res.operating_temperature.toFixed(5)} {res.temperature_unit}
+                              {res.operating_temperature.toFixed(5)}{" "}
+                              {res.temperature_unit}
                             </span>
                           </p>
                           <p className="flex justify-between py-1.5">
@@ -578,44 +585,52 @@ const MonitorScreen = observer(() => {
                   </div>
 
                   <div>
-<div className="grid grid-cols-3 gap-4 p-4">
-  {/* Card 1: Flow Rate */}
-  <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
-    <h3 className="font-bold text-base md:text-lg mb-2">Flow Rate</h3>
-    <MeterGuage
-      currentValue={res.device_flow_rate}
-      unit="m³/h"
-      min={0}
-      max={50000}
-    />
-    <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
-      {res.device_flow_rate.toFixed(2)} m³/h
-    </p>
-  </div>
+                    <div className="grid grid-cols-3 gap-4 p-4">
+                      {/* Card 1: Flow Rate */}
+                      <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
+                        <h3 className="font-bold text-base md:text-lg mb-2">
+                          Flow Rate
+                        </h3>
+                        <MeterGuage
+                          currentValue={res.device_flow_rate}
+                          unit="m³/h"
+                          min={0}
+                          max={50000}
+                        />
+                        <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
+                          {res.device_flow_rate ? res.device_flow_rate.toFixed(2) : "N/A"} m³/h
+                        </p>
+                      </div>
 
-  {/* Card 2: Pressure (Moved to the middle) */}
-  <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
-    <h3 className="font-bold text-base md:text-lg mb-2">Pressure</h3>
-    <MeterGuage
-      currentValue={res.operating_pressure}
-      unit="Bar"
-      min={0}
-      max={20} // Adjusted max for a more realistic pressure range shown in the image
-    />
-    <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
-     {res.operating_pressure.toFixed(2)} {res.pressure_unit}
-    </p>
-  </div>
+                      {/* Card 2: Pressure (Moved to the middle) */}
+                      <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
+                        <h3 className="font-bold text-base md:text-lg mb-2">
+                          Pressure
+                        </h3>
+                        <MeterGuage
+                          currentValue={res.operating_pressure}
+                          unit="Bar"
+                          min={0}
+                          max={20} // Adjusted max for a more realistic pressure range shown in the image
+                        />
+                        <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
+                          {res.operating_pressure.toFixed(2)}{" "}
+                          {res.pressure_unit}
+                        </p>
+                      </div>
 
-  {/* Card 3: Temperature (Moved to the end) */}
-  <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
-    <h3 className="font-bold text-base md:text-lg mb-2">Temperature</h3>
-    <Thermometer currentValue={20} min={-20} max={100} />
-    <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
-      {res.operating_temperature.toFixed(0)} {res.temperature_unit}
-    </p>
-  </div>
-</div>
+                      {/* Card 3: Temperature (Moved to the end) */}
+                      <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
+                        <h3 className="font-bold text-base md:text-lg mb-2">
+                          Temperature
+                        </h3>
+                        <Thermometer currentValue={20} min={-20} max={100} />
+                        <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
+                          {res.operating_temperature.toFixed(0)}{" "}
+                          {res.temperature_unit}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
