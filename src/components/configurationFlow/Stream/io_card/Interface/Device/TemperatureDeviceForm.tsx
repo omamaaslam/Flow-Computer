@@ -54,7 +54,7 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = observer(
     });
 
     useEffect(() => {
-      console.log(toJS(device))
+      console.log(toJS(device));
       if (device) {
         const config = device.config;
         let baseState = {
@@ -156,7 +156,9 @@ const TemperatureDeviceForm: React.FC<TemperatureDeviceFormProps> = observer(
           <div className="truncate">
             Timestamp:{" "}
             <span className="font-medium text-gray-700">
-              {device?.config.data?.timestamp ?? "N/A"}
+              {typeof device?.config.data?.timestamp === "number"
+                ? new Date(device.config.data.timestamp * 1000).toLocaleTimeString()
+                : "N/A"}
             </span>
           </div>
           <div className="truncate">

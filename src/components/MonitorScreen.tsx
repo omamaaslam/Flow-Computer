@@ -631,7 +631,6 @@ const MonitorScreen = observer(() => {
                     </thead>
                     <tbody>
                       {GasDevices.map((device) => {
-                        // Check if the device name exists as a key in the result object
                         if (res.hasOwnProperty(device.name)) {
                           const value = res[device.name];
                           return (
@@ -643,7 +642,6 @@ const MonitorScreen = observer(() => {
                                 {device.label}
                               </td>
                               <td className="px-6 py-4">
-                                {/* Format number to a few decimal places for readability */}
                                 {typeof value === "number"
                                   ? value.toFixed(4)
                                   : value}

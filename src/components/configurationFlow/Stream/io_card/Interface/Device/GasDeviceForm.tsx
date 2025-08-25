@@ -22,7 +22,6 @@ interface GasDeviceFormProps {
   deviceTypeLabel: string;
 }
 
-
 const GasDeviceForm: React.FC<GasDeviceFormProps> = observer(
   ({ onBack, onSave, interface_type, device, deviceTypeLabel }) => {
     const [formState, setFormState] = useState({
@@ -121,7 +120,9 @@ const GasDeviceForm: React.FC<GasDeviceFormProps> = observer(
           <div className="truncate">
             Timestamp:{" "}
             <span className="font-medium text-gray-700">
-              {device?.config.data?.timestamp ?? "N/A"}
+              {typeof device?.config.data?.timestamp === "number"
+                ? new Date(device.config.data.timestamp * 1000).toLocaleTimeString()
+                : "N/A"}
             </span>
           </div>
           <div className="truncate">

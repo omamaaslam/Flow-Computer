@@ -4,6 +4,7 @@ import { makeAutoObservable, runInAction, toJS } from "mobx";
 import { Stream } from "./Stream"; // Assuming this file exists
 import type { Device } from "./Device"; // Assuming this file exists
 import { addListener } from "../utils/api"; // Assuming this file exists
+import AlertBox from "../components/AlertBox";
 
 class GlobalStore {
   public globalSnapshot: any = null;
@@ -163,7 +164,7 @@ class GlobalStore {
         } else if (data && data.data) {
           this.updateDeviceData(data.data);
         } else {
-          console.log("Ignoring non-snapshot message at global level:", data);
+          <AlertBox isOpen={true} type="warning" message="Ignoring non-snapshot message at global level:" onClose={() => {}} />  
         }
       } catch (error) {
         console.error(

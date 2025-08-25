@@ -387,7 +387,7 @@ export const addProfile = (streamId: string, profile_name: string) => {
 
 export const start_calculation = (streamId: string) => {
   const msg = {
-    scope: "start_calculation",
+    scope: "get_start_button",
     stream_id: streamId,
   };
   console.log(msg);
