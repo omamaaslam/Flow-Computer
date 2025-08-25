@@ -70,30 +70,29 @@ const deviceOptions = [
   { value: "C2H6", label: "Ethane" },
   { value: "C3H8", label: "Propane" },
   { value: "H2O", label: "Water" },
-  { value: "H2S", label: "Hydrogen sulfides" },
+  { value: "H2S", label: "Hydrogen Sulfides" },
   { value: "H2", label: "Hydrogen" },
   { value: "CO", label: "Carbon monoxide" },
   { value: "O2", label: "Oxygen" },
-  { value: "IC4H10", label: "i-Butane" },
-  { value: "C4H10", label: "n-butane" },
-  { value: "IC5H12", label: "i-Pentane" },
+  { value: "I-C4H10", label: "i-Butane" },
+  { value: "C4H10", label: "n-Butane" },
+  { value: "I-C5H12", label: "i-Pentane" },
   { value: "C5H12", label: "n-Pentanes" },
-  { value: "C6H14", label: "n-hexanes" },
-  { value: "C7H16", label: "n-heptanes" },
-  { value: "C8H18", label: "n-octanes" },
-  { value: "C9H20", label: "n-Nonane" },
-  { value: "C10H22", label: "n-Decane" },
+  { value: "C6H14", label: "Hexanes" },
+  { value: "C7H16", label: "Heptanes" },
+  { value: "C8H18", label: "Octane" },
+  { value: "C9H20", label: "Nonane" },
+  { value: "C10H22", label: "Decane" },
   { value: "HE", label: "Helium" },
   { value: "AR", label: "Argon" },
-  { value: "HI", label: "heating value" },
-  { value: "RD", label: "density ratio" },
-  { value: "WI", label: "Wobbe index" },
+  { value: "HS", label: "Calorific Value" },
+  { value: "SD", label: "Standard Density" }
 ];
 
 const gasDeviceTypes = deviceOptions
   .filter(
     (opt) =>
-      !opt.value.endsWith("Device") && !["HI", "RD", "WI"].includes(opt.value)
+      !opt.value.endsWith("Device") && !["HI", "SD", "WI"].includes(opt.value)
   )
   .map((opt) => opt.value);
 

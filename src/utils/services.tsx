@@ -425,3 +425,50 @@ export const stop_calculation = (streamId: string) => {
   };
   return sendAndWait(msg, isMatch);
 };
+
+
+type ArchiveRequestParams = {
+  streamId: string;
+  profileId: string;
+  archiveType: 'minute' | 'hour' | 'day' | 'event'; // Use a union type for better type-safety
+  startDate: string;
+  endDate: string;
+};
+
+
+export const get_archives = ({
+  streamId,
+  profileId,
+  archiveType,
+  startDate,
+  endDate,
+}: ArchiveRequestParams) => {
+  const msg = {
+    scope: "get_archives",
+    stream_id: streamId,
+    profile_id: profileId,
+    archive_type: archiveType,
+    start_date: startDate,
+    end_date: endDate,
+  };
+
+  const isMatch = (res: any) => {
+    if (
+      res?.scope === "archives_data" &&
+      res?.stream_id === streamId &&
+      res?.profile_id === profileId
+    ) {
+      console.log("Matched archives data response:", res);
+      return true;
+    }
+
+    if (res?.success === false && res?.request?.scope === "get_archives") {
+        console.error("Received an error response for get_archives:", res);
+        return true;
+    }
+
+    return false;
+  };
+
+  return sendAndWait(msg, isMatch);
+};

@@ -18,7 +18,7 @@ const SUPPORTED_COMPONENTS_BY_METHOD: Record<string, string[]> = {
   AGA8_GCM_1: ["N2", "SD", "CO2"],
   AGA8_GCM_2: ["N2", "SD", "CO2"],
   SGERG_H2: ["H2", "N2", "CO2", "CH4", "HE", "H2O"],
-  AGA_NX19_H: ["H2", "Standard Density", "CO2", "N2"],
+  AGA_NX19_H: ["H2", "SD", "CO2", "N2"],
   AGA8_DC92: [ "CH4", "N2", "CO2", "C2H6", "C3H8", "I-C4H10", "C4H10", "I-C5H12", "C5H12", "C6H14", "C7H16", "C8H18", "C9H20", "C10H22", "H2", "H2S", "CO", "O2", "H2O", "HE", "AR" ],
 };
 const ALL_KFACTOR_METHODS = Object.keys(SUPPORTED_COMPONENTS_BY_METHOD);
