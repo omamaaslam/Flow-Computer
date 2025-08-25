@@ -14,8 +14,8 @@ const ALL_INTERFACES_META: { [id: string]: { type: string } } = {
   HI1: { type: "HartInterface" },
   HI2: { type: "HartInterface" },
   TI1: { type: "RtdInterface" },
-  AI1: { type: "AnalogInputInterface" }, // You'll need to define AnalogInputInterface in your types
-  AI2: { type: "AnalogInputInterface" },
+  AI1: { type: "AnalogInput" }, // You'll need to define AnalogInputInterface in your types
+  AI2: { type: "AnalogInput" },
   DO1: { type: "DigitalOutputInterface" }, // You'll need to define DigitalOutputInterface in your types
   DO2: { type: "DigitalOutputInterface" },
   DO3: { type: "DigitalOutputInterface" },

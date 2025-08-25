@@ -1,5 +1,7 @@
 import { observer } from "mobx-react-lite";
 import globalStore from "../stores/GlobalStore";
+import MeterGuage from "./MeterGuage";
+import Thermometer from "./Thermometer";
 const GaugeIcon = ({ size = 100 }: { size?: number }) => (
   <img
     src="/MonitorSvg/Meter.svg"
@@ -96,7 +98,7 @@ const MonitorScreen = observer(() => {
                             Original Volume
                           </span>{" "}
                           <span className="font-semibold text-cyan-600 pl-2">
-                            {res.current_volume_original} m³
+                            {res.current_volume_original.toFixed(5)} m³
                           </span>
                         </p>
                       </div>
@@ -109,7 +111,7 @@ const MonitorScreen = observer(() => {
                           </span>
 
                           <span className="font-semibold text-cyan-600 pl-2">
-                            {res.operating_volume_net} m³
+                            {res.operating_volume_net.toFixed(5)} m³
                           </span>
                         </p>
                       </div>
@@ -121,7 +123,7 @@ const MonitorScreen = observer(() => {
                             Std Volume
                           </span>{" "}
                           <span className="font-semibold text-cyan-600 pl-2">
-                            {res.standard_volume_forward} m³
+                            {res.standard_volume_forward.toFixed(5)} m³
                           </span>
                         </p>
                       </div>
@@ -134,7 +136,7 @@ const MonitorScreen = observer(() => {
                             Current Flow Rate:
                           </span>{" "}
                           <span className="font-semibold text-cyan-600 pl-2">
-                            {res.device_flow_rate} m³/h
+                            {res.device_flow_rate.toFixed(5)} m³/h
                           </span>
                         </p>
                       </div>
@@ -147,7 +149,7 @@ const MonitorScreen = observer(() => {
                           </span>
 
                           <span className="font-semibold text-cyan-600 pl-2">
-                            {res.interference_volume_forward} m³
+                            {res.interference_volume_forward.toFixed(5)} m³
                           </span>
                         </p>
                       </div>
@@ -159,7 +161,7 @@ const MonitorScreen = observer(() => {
                             Std. Interference Volume:
                           </span>{" "}
                           <span className="font-semibold text-cyan-600 pl-2">
-                            {res.standard_interference_volume_forward} m³
+                            {res.standard_interference_volume_forward.toFixed(5)} m³
                           </span>
                         </p>
                       </div>
@@ -172,25 +174,25 @@ const MonitorScreen = observer(() => {
                         <p className="flex justify-between py-2.5">
                           <span>Pressure:</span>{" "}
                           <span className="font-semibold text-cyan-600">
-                            {res.operating_pressure} {res.pressure_unit}
+                            {res.operating_pressure.toFixed(5)} {res.pressure_unit}
                           </span>
                         </p>
                         <p className="flex justify-between py-2.5">
                           <span>Temperature:</span>{" "}
                           <span className="font-semibold text-cyan-600">
-                            {res.operating_temperature} {res.temperature_unit}
+                            {res.operating_temperature.toFixed(5)} {res.temperature_unit}
                           </span>
                         </p>
                         <p className="flex justify-between py-2.5">
                           <span>K-Number:</span>{" "}
                           <span className="font-semibold text-cyan-600">
-                            {res.compressibility_k_factor}
+                            {res.compressibility_k_factor.toFixed(5)}
                           </span>
                         </p>
                         <p className="flex justify-between py-2.5">
                           <span>Z-Factor:</span>{" "}
                           <span className="font-semibold text-cyan-600">
-                            {res.correction_z_factor}
+                            {res.correction_z_factor.toFixed(5)}
                           </span>
                         </p>
                       </div>
@@ -328,18 +330,28 @@ const MonitorScreen = observer(() => {
                       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg flex flex-col items-center ">
                         <h3 className="font-bold text-xl">Flow Rate</h3>
                         <div className="text-center mt-2">
-                          <GaugeIcon size={250} />
+                          <MeterGuage
+                            currentValue={res.device_flow_rate}
+                            unit="m3/h"
+                            min={0}
+                            max={50000}
+                          />
                           <p className="text-lg text-gray-500 mt-3">
-                            Flow Rate: {res.device_flow_rate}
+                            {res.device_flow_rate.toFixed(5)} m³/h
                           </p>
                         </div>
                       </div>
                       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg flex flex-col items-center justify-around">
                         <h3 className="font-bold text-xl">Pressure</h3>
                         <div className="text-center mt-2">
-                          <GaugeIcon size={250} />
+                          <MeterGuage
+                            currentValue={res.operating_pressure}
+                            unit="Bar"
+                            min={0}
+                            max={20}
+                          />
                           <p className="text-lg text-gray-500 mt-3">
-                            Pressure:{res.operating_pressure}{" "}
+                            {res.operating_pressure.toFixed(5)}{" "}
                             {res.pressure_unit}
                           </p>
                         </div>
@@ -347,9 +359,9 @@ const MonitorScreen = observer(() => {
                       <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-lg flex flex-col items-center justify-around">
                         <h3 className="font-bold text-xl">Temperature</h3>
                         <div className="text-center">
-                          <ThermometerIcon size={250} />
+                          <Thermometer currentValue={6} min={-20} max={100} />
                           <p className="text-lg text-gray-500 mt-3">
-                            Temperature: {res.operating_temperature}{" "}
+                            {res.operating_temperature}{" "}
                             {res.temperature_unit}
                           </p>
                         </div>
@@ -367,19 +379,19 @@ const MonitorScreen = observer(() => {
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
                         <p className="font-bold text-xs">Orignal Volume</p>
                         <p className="font-semibold text-cyan-600 text-sm">
-                          {res.current_volume_original} m³
+                          {res.current_volume_original.toFixed(5)} m³
                         </p>
                       </div>
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
                         <p className="font-bold text-xs">Operating Volume:</p>
                         <p className="font-semibold text-cyan-600 text-sm">
-                          {res.operating_volume_net} m³
+                          {res.operating_volume_net.toFixed(5)} m³
                         </p>
                       </div>
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
                         <p className="font-bold text-xs">Std. Volume</p>
                         <p className="font-semibold text-cyan-600 text-sm">
-                          {res.standard_volume_net} m³
+                          {res.standard_volume_net.toFixed(5)} m³
                         </p>
                       </div>
                     </div>
@@ -387,13 +399,13 @@ const MonitorScreen = observer(() => {
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
                         <p className="font-bold text-xs">Current Flow Rate</p>
                         <p className="font-semibold text-cyan-600 text-sm">
-                          {res.device_flow_rate} m³/h
+                          {res.device_flow_rate.toFixed(5)} m³/h
                         </p>
                       </div>
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
                         <p className="font-bold text-xs">Interference Volume</p>
                         <p className="font-semibold text-cyan-600 text-sm">
-                          {res.interference_volume_forward} m³
+                          {res.interference_volume_forward.toFixed(5)} m³
                         </p>
                       </div>
                       <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
@@ -401,7 +413,7 @@ const MonitorScreen = observer(() => {
                           Std. Interference Volume
                         </p>
                         <p className="font-semibold text-cyan-600 text-sm">
-                          {res.standard_interference_volume_forward} m³
+                          {res.standard_interference_volume_forward.toFixed(5)} m³
                         </p>
                       </div>
                     </div>
@@ -417,25 +429,25 @@ const MonitorScreen = observer(() => {
                           <p className="flex justify-between py-1.5">
                             <span className="text-cyan-600">Pressure</span>
                             <span className="font-medium text-gray-700">
-                              {res.operating_pressure} {res.pressure_unit}
+                              {res.operating_pressure.toFixed(5)} {res.pressure_unit}
                             </span>
                           </p>
                           <p className="flex justify-between py-1.5">
                             <span className="text-cyan-600">Temp</span>
                             <span className="font-medium text-gray-700">
-                              {res.operating_temperature} {res.temperature_unit}
+                              {res.operating_temperature.toFixed(5)} {res.temperature_unit}
                             </span>
                           </p>
                           <p className="flex justify-between py-1.5">
                             <span className="text-cyan-600">K-Factor</span>
                             <span className="font-medium text-gray-700">
-                              {res.compressibility_k_factor}
+                              {res.compressibility_k_factor.toFixed(5)}
                             </span>
                           </p>
                           <p className="flex justify-between py-1.5">
                             <span className="text-cyan-600">Z-Number</span>
                             <span className="font-medium text-gray-700">
-                              {res.correction_z_factor}
+                              {res.correction_z_factor.toFixed(5)}
                             </span>
                           </p>
                         </div>
@@ -566,35 +578,44 @@ const MonitorScreen = observer(() => {
                   </div>
 
                   <div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-white p-2 rounded-lg border shadow-lg flex flex-col items-center justify-between text-center">
-                        <h3 className="font-bold text-lg mb-1">Flow Rate</h3>
-                        <div className="my-2">
-                          <GaugeIcon size={150} />
-                          <p className="text-[20px] text-gray-500 mt-3">
-                            {res.operating_flow_rate}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-white p-2 rounded-lg border shadow-lg flex flex-col items-center justify-between text-center">
-                        <h3 className="font-bold text-lg mb-1">Pressure</h3>
-                        <div className="my-2">
-                          <GaugeIcon size={150} />
-                          <p className="text-[20px] text-gray-500 mt-3">
-                            {res.operating_pressure}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="bg-white p-2 rounded-lg border shadow-lg flex flex-col items-center text-center">
-                        <h3 className="font-bold text-lg mb-1">Temperature</h3>
-                        <div className="text-center pt-3    ">
-                          <ThermometerIcon size={150} />
-                          <p className="text-[20px] text-gray-500 mt-1">
-                            {res.operating_temperature}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+<div className="grid grid-cols-3 gap-4 p-4">
+  {/* Card 1: Flow Rate */}
+  <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
+    <h3 className="font-bold text-base md:text-lg mb-2">Flow Rate</h3>
+    <MeterGuage
+      currentValue={res.device_flow_rate}
+      unit="m³/h"
+      min={0}
+      max={50000}
+    />
+    <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
+      {res.device_flow_rate.toFixed(2)} m³/h
+    </p>
+  </div>
+
+  {/* Card 2: Pressure (Moved to the middle) */}
+  <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
+    <h3 className="font-bold text-base md:text-lg mb-2">Pressure</h3>
+    <MeterGuage
+      currentValue={res.operating_pressure}
+      unit="Bar"
+      min={0}
+      max={20} // Adjusted max for a more realistic pressure range shown in the image
+    />
+    <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
+     {res.operating_pressure.toFixed(2)} {res.pressure_unit}
+    </p>
+  </div>
+
+  {/* Card 3: Temperature (Moved to the end) */}
+  <div className="bg-white p-4 rounded-lg border shadow-lg flex flex-col items-center text-center">
+    <h3 className="font-bold text-base md:text-lg mb-2">Temperature</h3>
+    <Thermometer currentValue={20} min={-20} max={100} />
+    <p className="text-sm md:text-base text-gray-600 mt-3 break-words">
+      {res.operating_temperature.toFixed(0)} {res.temperature_unit}
+    </p>
+  </div>
+</div>
                   </div>
                 </div>
 

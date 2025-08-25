@@ -8,6 +8,12 @@ interface BaseInterfaceConfig {
 
 // Specific configuration for Digital Input (DI1)
 // REVISED: Using string literals for better type safety and simpler form handling.
+
+export interface AnalogInputConfig extends BaseInterfaceConfig {
+  interface_type: "AnalogInput";
+  isenable: boolean;
+}
+
 export interface DigitalInputConfig extends BaseInterfaceConfig {
   interface_type: "DigitalInputInterface";
   debounce_time_ms: number | null;
@@ -49,7 +55,7 @@ export interface ModbusConfig extends BaseInterfaceConfig {
   stop_bits: number;
   timeout_ms: number;
   port_name: string;
-  physical_layer: string
+  physical_layer: string;
   device_congif?: { [key: string]: any };
 }
 
@@ -69,4 +75,5 @@ export type InterfaceConfig =
   | DigitalOutputConfig
   | HartConfig
   | ModbusConfig
-  | RtdConfig;
+  | RtdConfig
+  | AnalogInputConfig;

@@ -22,10 +22,11 @@ export class Interface {
     isInitiallyConfigured: boolean,
     stream_id: string
   ) {
-    makeAutoObservable(this, {
-      isConfigured: true,
-      setConfigured: action,
-    });
+    // makeAutoObservable(this, {
+    //   isConfigured: true,
+    //   setConfigured: action,
+    // });
+    makeAutoObservable(this);
 
     const { interface_id, interface_type, devices, ...configData } =
       interfaceData;

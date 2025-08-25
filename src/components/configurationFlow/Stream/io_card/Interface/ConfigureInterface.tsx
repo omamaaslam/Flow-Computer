@@ -22,6 +22,7 @@ import DeviceIcon from "../../../../DeviceIcon.tsx";
 import Legend from "../../../../Legend.tsx";
 import DO_InterfaceSettingsForm from "./DO_InterfaceSettingsForm.tsx";
 import AlertBox from "../../../../AlertBox.tsx";
+import AIInterfaceSettingsForm from "./Ai_InterfaceSettingsForm.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
@@ -41,6 +42,7 @@ type ModalView =
   | "RTDSettings"
   | "HART1"
   | "Di_InterfaceSettings"
+  | "AI_InterfaceSettings"
   | "Do_InterfaceSettings"
   | "addDevice_selectType"
   | "addDevice_configure";
@@ -219,11 +221,13 @@ const ConfigureInterface = observer(
         setModalView("Do_InterfaceSettings");
       else if (interfaceNameUpper.includes("DIGITALINPUT"))
         setModalView("Di_InterfaceSettings");
+      else if (interfaceNameUpper.includes("ANALOGINPUT"))
+        // <-- ADD THIS
+        setModalView("AI_InterfaceSettings");
       else if (interfaceNameUpper.includes("RTD")) setModalView("RTDSettings");
       else if (interfaceNameUpper.includes("HART")) setModalView("HART1");
       else setModalView("modbusSettings");
     };
-
     const handleAddNewDeviceClick = () => {
       setIsEditing(false);
       setEditingDevice(null);
@@ -354,6 +358,14 @@ const ConfigureInterface = observer(
         case "Do_InterfaceSettings":
           return (
             <DO_InterfaceSettingsForm
+              currentConfig={currentConfig as any}
+              {...settingsProps}
+            />
+          );
+
+        case "AI_InterfaceSettings":
+           return (
+            <AIInterfaceSettingsForm
               currentConfig={currentConfig as any}
               {...settingsProps}
             />

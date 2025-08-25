@@ -131,6 +131,7 @@ class GlobalStore {
   }
 
   public updateDeviceData(liveData: any) {
+    console.log("live data", liveData);
     runInAction(() => {
       Object.values<any>(liveData).forEach((streamData) => {
         Object.values<any>(streamData).forEach((cardData) => {
@@ -138,7 +139,6 @@ class GlobalStore {
             // Find the device instance in our entire store
             const device = this.allDevices.find((d) => d.id === deviceId);
             if (device) {
-              console.warn("Updating device data:", deviceData);
               device.updateData(deviceData);
             } else {
             }

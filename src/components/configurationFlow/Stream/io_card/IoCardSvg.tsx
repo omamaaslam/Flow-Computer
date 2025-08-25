@@ -106,7 +106,7 @@ const IoCardSvg = (props: IoCardSvgProps) => {
       </g>
       <g onClick={props.onDi2Click} className="cursor-pointer group">
         <rect x="5" y="101.819" width="158.387" height="39.1182" rx="5.39562" fill={props.di2StatusColor} className="transition-all group-hover:brightness-110" />
-        <text x="84.19" y="125" textAnchor="middle" dy=".3em" fill={getTextColor(props.di2StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital input 1</text>
+        <text x="84.19" y="125" textAnchor="middle" dy=".3em" fill={getTextColor(props.di2StatusColor)} className="text-[16px] font-semibold capitalize pointer-events-none">digital input 2</text>
       </g>
       <g onClick={props.onDi4LeftClick} className="cursor-pointer group">
         <rect x="5" y="163.868" width="158.387" height="39.1182" rx="5.39562" fill={props.di4LeftStatusColor} className="transition-all group-hover:brightness-110" />
