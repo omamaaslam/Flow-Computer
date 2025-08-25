@@ -86,7 +86,7 @@ const deviceOptions = [
   { value: "HE", label: "Helium" },
   { value: "AR", label: "Argon" },
   { value: "HS", label: "Calorific Value" },
-  { value: "SD", label: "Standard Density" }
+  { value: "SD", label: "Standard Density" },
 ];
 
 const gasDeviceTypes = deviceOptions
@@ -175,7 +175,9 @@ const ConfigureInterface = observer(
               return;
             }
             newDeviceId = `${anInterface.interface_id}T${pollingAddress}${variableType}`;
-          } else if (["DI", "TI", "AI1", "AI2"].includes(currentInterfacePrefix)) {
+          } else if (
+            ["DI", "TI", "AI1", "AI2"].includes(currentInterfacePrefix)
+          ) {
             newDeviceId = anInterface.interface_id;
           } else {
             newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
@@ -363,18 +365,25 @@ const ConfigureInterface = observer(
           );
 
         case "AI_InterfaceSettings":
-           return (
+          return (
             <AIInterfaceSettingsForm
               currentConfig={currentConfig as any}
               {...settingsProps}
             />
           );
         case "addDevice_selectType":
+          // 1. Get the list of already configured device types
+          const existingDeviceTypes = anInterface.devices.map(
+            (device) => device.config.device_type
+          );
+
           return (
             <AddDeviceForm
               onClose={closeModal}
               onNext={handleDeviceTypeSelection}
               interfaceId={anInterface.interface_id}
+              // 2. Pass the list down as a prop
+              existingDeviceTypes={existingDeviceTypes}
             />
           );
         case "addDevice_configure":

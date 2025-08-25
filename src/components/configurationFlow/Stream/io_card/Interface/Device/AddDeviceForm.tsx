@@ -107,6 +107,7 @@ interface AddDeviceFormProps {
   onClose: () => void;
   onNext: (deviceType: string) => void;
   interfaceId: string;
+  existingDeviceTypes: string[];
 }
 
 const allDeviceOptions = [
@@ -145,38 +146,47 @@ const AddDeviceForm: React.FC<AddDeviceFormProps> = ({
   onClose,
   onNext,
   interfaceId,
+  existingDeviceTypes,
 }) => {
   const [selectedType, setSelectedType] = useState<string>("");
 
   const filteredOptions = useMemo(() => {
     const id = interfaceId.toUpperCase();
 
+    let potentialOptions = allDeviceOptions;
+
     if (id === "MODM1") {
-      return allDeviceOptions.filter((d)=> !d.value.startsWith("Pulse"));
-    }
-    if (id === "TI1") {
-      return allDeviceOptions.filter(
+      potentialOptions = allDeviceOptions.filter(
+        (d) => !d.value.startsWith("Pulse")
+      );
+    } else if (id === "TI1") {
+      potentialOptions = allDeviceOptions.filter(
         (opt) => opt.value === "TemperatureDevice"
       );
-    }
-    if (id === "HI1" || id === "HI2" || id === "AI1" || id === "AI2") {
-      return allDeviceOptions.filter((opt) =>
+    } else if (id === "HI1" || id === "HI2" || id === "AI1" || id === "AI2") {
+      potentialOptions = allDeviceOptions.filter((opt) =>
         ["TemperatureDevice", "PressureDevice"].includes(opt.value)
+      );
+    } else if (id.startsWith("DI")) {
+      potentialOptions = allDeviceOptions.filter(
+        (opt) => opt.value === "PulseVolumeDevice"
+      );
+    } else {
+      const specialDevices = [
+        "TemperatureDevice",
+        "PressureDevice",
+        "VolumeDevice",
+      ];
+      potentialOptions = allDeviceOptions.filter(
+        (opt) => !specialDevices.includes(opt.value)
       );
     }
 
-    if (id.startsWith("DI")) {
-      return allDeviceOptions.filter((opt) => opt.value === "PulseVolumeDevice");
-    }
-    const specialDevices = [
-      "TemperatureDevice",
-      "PressureDevice",
-      "VolumeDevice",
-    ];
-    return allDeviceOptions.filter(
-      (opt) => !specialDevices.includes(opt.value)
+    const existingTypesSet = new Set(existingDeviceTypes);
+    return potentialOptions.filter(
+      (option) => !existingTypesSet.has(option.value)
     );
-  }, [interfaceId]);
+  }, [interfaceId, existingDeviceTypes]);
 
   useEffect(() => {
     if (
