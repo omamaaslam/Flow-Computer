@@ -22,7 +22,7 @@ import DeviceIcon from "../../../../DeviceIcon.tsx";
 import Legend from "../../../../Legend.tsx";
 import DO_InterfaceSettingsForm from "./DO_InterfaceSettingsForm.tsx";
 import AlertBox from "../../../../AlertBox.tsx";
-import AIInterfaceSettingsForm from "./Ai_InterfaceSettingsForm.tsx";
+import AIInterfaceSettingsForm from "./AI_InterfaceSettingsForm.tsx";
 
 interface ConfigureInterfaceProps {
   anInterface: Interface;
@@ -75,6 +75,7 @@ const deviceOptions = [
   { value: "CO", label: "Carbon monoxide" },
   { value: "O2", label: "Oxygen" },
   { value: "I-C4H10", label: "i-Butane" },
+  { value: "RHOL", label: "Standard Air Density" },
   { value: "C4H10", label: "n-Butane" },
   { value: "I-C5H12", label: "i-Pentane" },
   { value: "C5H12", label: "n-Pentanes" },
@@ -89,12 +90,12 @@ const deviceOptions = [
   { value: "SD", label: "Standard Density" },
 ];
 
-const gasDeviceTypes = deviceOptions
-  .filter(
-    (opt) =>
-      !opt.value.endsWith("Device") && !["HI", "SD", "WI"].includes(opt.value)
-  )
-  .map((opt) => opt.value);
+ const gasDeviceTypes = deviceOptions
+   .filter(
+     (opt) =>
+       !opt.value.endsWith("Device") && !["HI", "WI"].includes(opt.value)
+   )
+   .map((opt) => opt.value);
 
 const ConfigureInterface = observer(
   ({ anInterface, onBack }: ConfigureInterfaceProps) => {

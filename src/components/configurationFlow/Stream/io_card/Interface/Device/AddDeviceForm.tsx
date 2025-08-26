@@ -136,6 +136,7 @@ const allDeviceOptions = [
   { value: "C8H18", label: "Octane" },
   { value: "C9H20", label: "Nonane" },
   { value: "C10H22", label: "Decane" },
+  { value: "RHOL", label: "Standard Air Density" },
   { value: "HE", label: "Helium" },
   { value: "AR", label: "Argon" },
   { value: "HS", label: "Calorific Value" },
