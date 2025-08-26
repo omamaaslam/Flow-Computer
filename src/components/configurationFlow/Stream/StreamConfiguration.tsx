@@ -285,6 +285,8 @@ const StreamConfiguration = observer(() => {
             currentStream.stream_config.volume_configuration
           );
           let payloadToSend: any = { ...rawConfig };
+
+          // Handle the OnePulseVolumeConfig name change for max volume limit
           if (payloadToSend.mode_type === "OnePulseVolumeConfig") {
             const { max_volume_step_limit, ...rest } = payloadToSend;
             payloadToSend = {
@@ -292,6 +294,12 @@ const StreamConfiguration = observer(() => {
               max_total_volume_limit: max_volume_step_limit,
             };
           }
+
+          // Transform UI's "Modbus" mode to backend's "EncoderOnlyVolumeConfig"
+          if (payloadToSend.mode_type === "Modbus") {
+            payloadToSend.mode_type = "EncoderOnlyVolumeConfig";
+          }
+
           await setVolumeConfig(streamId, payloadToSend);
           break;
         }

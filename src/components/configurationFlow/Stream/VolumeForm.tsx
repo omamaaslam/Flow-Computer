@@ -116,30 +116,6 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
             <h3 className="text-sm font-semibold text-gray-800">Volume</h3>
             <div className="grid grid-cols-2 gap-x-3 gap-y-3 text-xs">
               {/* --- START OF CORRECTED LOGIC --- */}
-              {/* This block shows ONLY for the 'modbus' mode */}
-              {config.mode_type === "modbus" && (
-                <div className="space-y-1">
-                  <label className="block font-medium">Link Device</label>
-                  <select
-                    name="encoder_device_id"
-                    value={config.encoder_device_id ?? ""}
-                    onChange={handleInputChange}
-                    className="w-full border border-gray-300 rounded-sm px-2 py-1 text-sm shadow-sm"
-                  >
-                    <option value="">
-                      {diDevices.length > 0
-                        ? "Select a device..."
-                        : "None available"}
-                    </option>
-                    {diDevices.map((device) => (
-                      <option key={device.id} value={device.id}>
-                        {`${device.id}`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               {/* This block shows ONLY for the 'OnePulseVolumeConfig' mode */}
               {config.mode_type === "OnePulseVolumeConfig" && (
                 <div className="space-y-1">
@@ -159,7 +135,7 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                     </option>
                     {diDevices.map((device) => (
                       <>
-                      <option value="none">None</option>
+                        <option value="none">None</option>
                         <option key={device.id} value={device.id}>
                           {`${device.id}`}
                         </option>
@@ -169,8 +145,9 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                 </div>
               )}
 
-              {/* This block shows ONLY for the 'EncoderOnlyVolumeConfig' mode */}
-              {config.mode_type === "EncoderOnlyVolumeConfig" && (
+              {/* This block now shows for BOTH 'EncoderOnlyVolumeConfig' and 'Modbus' modes */}
+              {(config.mode_type === "EncoderOnlyVolumeConfig" ||
+                config.mode_type === "modbus") && (
                 <div className="space-y-1">
                   <label className="block font-medium">Encoder Device</label>
                   <select
@@ -193,8 +170,6 @@ const VolumeForm: React.FC<VolumeFormProps> = observer(
                 </div>
               )}
               {/* --- END OF CORRECTED LOGIC --- */}
-
-              {/* These fields are common and will always show */}
               <div className="space-y-1">
                 <label className="block font-medium">
                   min operational volume
