@@ -34,12 +34,15 @@ import {
 } from "../../../utils/services";
 import PipelineProfileForm from "./PipelineProfileForm";
 import AlertBox from "../../AlertBox";
+
 type RunState = "start" | "stop" | "disabled";
+
 type AlertState = {
   isOpen: boolean;
   type: "success" | "error" | "warning";
   message: string;
 };
+
 // UI-aware ModalType
 type ModalType =
   | "volume"
@@ -59,16 +62,18 @@ const StreamConfiguration = observer(() => {
   const [isSaving, setIsSaving] = useState(false);
   const { streamId } = useParams<{ streamId: string }>();
   const [runState, setRunState] = useState<RunState>("start");
+
   if (!streamId) {
     return <div>Stream ID is missing.</div>;
   }
   const currentStream = globalStore.streams.find((s) => s.id === streamId);
+
   const [alertState, setAlertState] = useState<AlertState>({
     isOpen: false,
     type: "success",
     message: "",
   });
-  // --- Define button appearance based on its current state ---
+
   const buttonConfigs = {
     start: {
       text: "Start",
@@ -89,11 +94,13 @@ const StreamConfiguration = observer(() => {
       disabled: true,
     },
   };
+
   const currentButtonConfig = buttonConfigs[runState];
+
   const handleRunButtonClick = async () => {
     if (!streamId || runState === "disabled") return;
 
-    setIsSaving(true); // Set loading state for both start and stop actions
+    setIsSaving(true);
 
     if (runState === "start") {
       try {
@@ -115,7 +122,6 @@ const StreamConfiguration = observer(() => {
         setIsSaving(false);
       }
     } else {
-      // This is the 'stop' logic
       try {
         await stop_calculation(streamId);
         setRunState("start");
@@ -136,13 +142,13 @@ const StreamConfiguration = observer(() => {
       }
     }
   };
+
   const handleCloseAlert = () => {
     setAlertState({ ...alertState, isOpen: false });
   };
 
   const formatValue = (value: any) => {
     if (typeof value === "number") {
-      // Use toLocaleString for better formatting and handling of large numbers
       return value.toLocaleString(undefined, { maximumFractionDigits: 2 });
     }
     return value;
@@ -234,7 +240,7 @@ const StreamConfiguration = observer(() => {
 
   const handleSave = async () => {
     if (!currentStream || !activeModal) return;
-    console.log("StreamCOnfiguration line no.168", toJS(currentStream));
+
     const modalType = activeModal.type;
     setIsSaving(true);
     try {
@@ -255,8 +261,6 @@ const StreamConfiguration = observer(() => {
           const profileConfig = toJS(
             currentStream.stream_config.calculation_profile
           );
-
-          // 2. Check karein ki user ne koi profile select kiya hai ya nahi
           if (!profileConfig.active_profile_id) {
             setAlertState({
               isOpen: true,
@@ -283,20 +287,11 @@ const StreamConfiguration = observer(() => {
           let payloadToSend: any = { ...rawConfig };
           if (payloadToSend.mode_type === "OnePulseVolumeConfig") {
             const { max_volume_step_limit, ...rest } = payloadToSend;
-
             payloadToSend = {
               ...rest,
               max_total_volume_limit: max_volume_step_limit,
             };
           }
-          // const volumeTypeMap: { [key: string]: string } = {
-          //   modbus: "ModbusVolumeConfig",
-          //   EncoderOnlyVolumeConfig: "EncoderOnlyVolumeConfig",
-          //   OnePulseVolumeConfig: "OnePulseVolumeConfig",
-          // };
-          // const volumeType = volumeTypeMap[payloadToSend.mode_type];
-
-          // 5. Send the final, potentially transformed payload to the API
           await setVolumeConfig(streamId, payloadToSend);
           break;
         }
@@ -305,21 +300,6 @@ const StreamConfiguration = observer(() => {
           const rawConfig = toJS(
             currentStream.stream_config.compressibility_kfactor_config
           );
-
-          // 1. Transform the gas_components array into an object keyed by component.key
-          // const gasComponentsObject = rawConfig.gas_components.reduce(
-          //   (acc: { [key: string]: GasComponent }, component) => {
-          //     acc[component.key] = {
-          //       key: component.key,
-          //       display_name: component.display_name,
-          //       unit: component.unit,
-          //       value: component.value,
-          //       linked_device_id: component.linked_device_id || "",
-          //     };
-          //     return acc;
-          //   },
-          //   {}
-          // );
           const payload = {
             active_method: rawConfig.active_method,
             constant_k_value: rawConfig.constant_k_value,
@@ -354,77 +334,24 @@ const StreamConfiguration = observer(() => {
   const modalConfig = {
     volume: {
       title: "Configure Volume",
-      Component: () => (
-        <VolumeForm
-          store={globalStore}
-          config={currentStream.stream_config.volume_configuration}
-          onSave={handleSave}
-          onClose={closeModal}
-          isSaving={isSaving}
-        />
-      ),
     },
     temperature: {
       title: "Configure Temperature",
-      Component: () => (
-        <TemperatureForm
-          store={globalStore}
-          config={currentStream.stream_config.temperature_config}
-          onSave={handleSave}
-          onClose={closeModal}
-          isSaving={isSaving}
-        />
-      ),
     },
     pressure: {
       title: "Configure Pressure",
-      Component: () => (
-        <PressureForm
-          config={currentStream.stream_config.pressure_config}
-          onSave={handleSave}
-          onClose={closeModal}
-          isSaving={isSaving}
-          store={globalStore}
-        />
-      ),
     },
     flowRate: {
       title: "Configure Flow Rate",
-      Component: () => (
-        <FlowRateForm
-          config={currentStream.stream_config.flow_rate_config}
-          onSave={handleSave}
-          onClose={closeModal}
-          isSaving={isSaving}
-        />
-      ),
     },
     pipelineProfile: {
       title: "Configure Pipeline Profile",
-      Component: () => (
-        <PipelineProfileForm
-          config={currentStream.stream_config.calculation_profile}
-          onSave={handleSave}
-          onClose={closeModal}
-          isSaving={isSaving}
-        />
-      ),
     },
     conversion: {
       title: "Compressibility Settings",
-      Component: () => (
-        <ConversionForm
-          store={globalStore}
-          stream={currentStream}
-          onSave={handleSave}
-          onClose={closeModal}
-          isSaving={isSaving}
-        />
-      ),
     },
   };
 
-  // Complete cardData from the UI code
   const cardData = [
     {
       id: "volume" as ModalType,
@@ -464,13 +391,7 @@ const StreamConfiguration = observer(() => {
     },
   ];
 
-  let modalTitle = "";
-  let ModalContent: (() => JSX.Element) | null = null;
-  if (activeModal) {
-    const details = modalConfig[activeModal.type];
-    modalTitle = details.title;
-    ModalContent = details.Component;
-  }
+  const modalTitle = activeModal ? modalConfig[activeModal.type].title : "";
 
   return (
     <>
@@ -512,6 +433,7 @@ const StreamConfiguration = observer(() => {
                       "N/A";
                     maxDisplay =
                       config.volume_configuration?.max_volume_step_limit ??
+                      config.volume_configuration?.max_total_volume_limit ??
                       "N/A";
                     break;
                   case "flowRate":
@@ -555,20 +477,6 @@ const StreamConfiguration = observer(() => {
                         className="w-[120px] h-[157.7px] object-contain"
                       />
                     </div>
-                    {/* <div className="flex flex-col items-end space-y-4">
-                      <div>
-                        <span className="text-lg text-gray-500">Min:</span>
-                        <p className="text-4xl font-bold text-red-600">
-                          {formatValue(minDisplay)}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-lg text-gray-500">Max:</span>
-                        <p className="text-4xl font-bold text-green-600">
-                          {formatValue(maxDisplay)}
-                        </p>
-                      </div>
-                    </div> */}
                     <div className="flex flex-col items-end space-y-4 justify-center h-full">
                       {id === "pipelineProfile" || id === "conversion" ? (
                         <p className="text-2xl font-bold text-green-600">
@@ -628,6 +536,7 @@ const StreamConfiguration = observer(() => {
                       "N/A";
                     maxDisplay =
                       config.volume_configuration?.max_volume_step_limit ??
+                      config.volume_configuration?.max_total_volume_limit ?? // <-- Add this fallback
                       "N/A";
                     break;
                   case "flowRate":
@@ -705,12 +614,10 @@ const StreamConfiguration = observer(() => {
               className={`w-full flex justify-center items-center gap-2 py-2 md:py-3 text-sm md:text-lg font-semibold font-sans border border-[#F5F5F5] rounded-full shadow-lg transition-all ${currentButtonConfig.className}`}
             >
               {isSaving ? (
-                // NEW LOGIC: When saving, check the runState to show the correct text
                 <span>
                   {runState === "start" ? "Starting..." : "Stopping..."}
                 </span>
               ) : (
-                // Original logic: When not saving, show the icon and text
                 <>
                   <currentButtonConfig.Icon size={20} />
                   <span>{currentButtonConfig.text}</span>
@@ -726,7 +633,58 @@ const StreamConfiguration = observer(() => {
         onClose={closeModal}
         title={modalTitle}
       >
-        {ModalContent && <ModalContent />}
+        {activeModal?.type === "volume" && (
+          <VolumeForm
+            store={globalStore}
+            config={currentStream.stream_config.volume_configuration}
+            onSave={handleSave}
+            onClose={closeModal}
+            isSaving={isSaving}
+          />
+        )}
+        {activeModal?.type === "temperature" && (
+          <TemperatureForm
+            store={globalStore}
+            config={currentStream.stream_config.temperature_config}
+            onSave={handleSave}
+            onClose={closeModal}
+            isSaving={isSaving}
+          />
+        )}
+        {activeModal?.type === "pressure" && (
+          <PressureForm
+            config={currentStream.stream_config.pressure_config}
+            onSave={handleSave}
+            onClose={closeModal}
+            isSaving={isSaving}
+            store={globalStore}
+          />
+        )}
+        {activeModal?.type === "flowRate" && (
+          <FlowRateForm
+            config={currentStream.stream_config.flow_rate_config}
+            onSave={handleSave}
+            onClose={closeModal}
+            isSaving={isSaving}
+          />
+        )}
+        {activeModal?.type === "pipelineProfile" && (
+          <PipelineProfileForm
+            config={currentStream.stream_config.calculation_profile}
+            onSave={handleSave}
+            onClose={closeModal}
+            isSaving={isSaving}
+          />
+        )}
+        {activeModal?.type === "conversion" && (
+          <ConversionForm
+            store={globalStore}
+            stream={currentStream}
+            onSave={handleSave}
+            onClose={closeModal}
+            isSaving={isSaving}
+          />
+        )}
       </MuiModalWrapper>
     </>
   );

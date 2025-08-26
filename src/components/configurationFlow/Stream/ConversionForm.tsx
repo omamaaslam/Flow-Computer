@@ -1,7 +1,7 @@
 // File: ConversionForm.tsx
 
 import React from "react";
-import { observer } from "mobx-react-lite";
+import { observer, useLocalObservable } from "mobx-react-lite"; // --- MODIFICATION: Imported useLocalObservable
 import type globalStore from "../../../stores/GlobalStore";
 import type { GasComponent } from "../../../types/streamConfig";
 import type { Stream } from "../../../stores/Stream";
@@ -15,6 +15,79 @@ interface ConversionFormProps {
   onClose: () => void;
   isSaving: boolean;
 }
+
+// --- MODIFICATION START: Row logic extracted into its own component ---
+interface ComponentRowProps {
+  component: GasComponent;
+  availableDevices: Device[];
+  resultForStream: any; // Assuming 'any' type for simplicity based on original code
+  onInputChange: (
+    componentKey: string,
+    field: keyof GasComponent,
+    value: string | number
+  ) => void;
+}
+
+const ComponentRow: React.FC<ComponentRowProps> = observer(
+  ({ component, availableDevices, resultForStream, onInputChange }) => {
+    // useLocalObservable is the modern MobX way to handle component-local state.
+    // This state is temporary and only exists for this row's input field.
+    const localState = useLocalObservable(() => ({
+      inputValue: component.value.toString(),
+      setInputValue(value: string) {
+        this.inputValue = value;
+      },
+    }));
+
+    const relevantDevices = availableDevices.filter(
+      (device) => device.name.toLowerCase() === component.key.toLowerCase()
+    );
+
+    let liveValue: string | number = "0.0000";
+    if (resultForStream && resultForStream[component.key] !== undefined) {
+      const val = resultForStream[component.key];
+      liveValue = typeof val === "number" ? val.toFixed(4) : val;
+    }
+
+    return (
+      <div className="grid grid-cols-[2fr_1.5fr_2.5fr_2.5fr] items-center text-xs border-b last:border-b-0">
+        <div className="font-medium text-gray-800 px-3 py-1.5">
+          {component.display_name}
+        </div>
+        <div className="font-medium text-gray-800 px-3 py-1.5">{liveValue}</div>
+        <div className="px-2 py-1.5">
+          <select
+            value={component.linked_device_id || ""}
+            onChange={(e) =>
+              onInputChange(component.key, "linked_device_id", e.target.value)
+            }
+            className="w-full border border-gray-300 rounded-sm px-2 py-1 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
+          >
+            <option value="">None</option>
+            {relevantDevices.map((device: Device) => (
+              <option key={device.id} value={device.id}>
+                {device.name} ({device.id})
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="px-2 py-1.5">
+          <input
+            type="number"
+            value={localState.inputValue}
+            onChange={(e) => localState.setInputValue(e.target.value)} // Updates fast, local state
+            onBlur={
+              () => onInputChange(component.key, "value", localState.inputValue) // Updates global store on blur
+            }
+            placeholder="Enter value"
+            className="w-full border border-gray-300 rounded-sm px-2 py-1 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500"
+          />
+        </div>
+      </div>
+    );
+  }
+);
+// --- MODIFICATION END ---
 
 const ConversionForm: React.FC<ConversionFormProps> = observer(
   ({ store, stream, onSave, onClose, isSaving }) => {
@@ -35,9 +108,10 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
       const component = activeMethodData[componentKey];
       if (component) {
         if (field === "value") {
-          component[field] = parseFloat(value as string) || 0;
-        } else {
-          (component[field] as string) = value as string;
+          const parsedValue = parseFloat(value as string);
+          component.value = isNaN(parsedValue) ? 0 : parsedValue;
+        } else if (field === "linked_device_id") {
+          component.linked_device_id = value as string;
         }
       }
     };
@@ -68,89 +142,23 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
               <div className="px-3 py-2">Live Value</div>
               <div className="px-3 py-2">Link Device</div>
               <div className="px-3 py-2">Subsitute Value</div>
-              {/* <div className="px-3 py-2">Unit</div> */}
             </div>
             <div>
               {stream.componentsForActiveMethod.map(
                 (component: GasComponent) => {
-                  const Row = observer(() => {
-                    const relevantDevices = availableDevices.filter(
-                      (device) => {
-                        return (
-                          device.name.toLowerCase() ===
-                          component.key.toLowerCase()
-                        );
-                      }
-                    );
-
-                    // --- START OF NEW LOGIC ---
-                    // 1. Find the result object for the current stream from the global store.
-                    const resultForStream = store.results.find(
-                      (r) => r.stream_id === stream.id
-                    );
-
-                    // 2. Look up the live value for the specific component (e.g., 'N2') inside the result object.
-                    let liveValue: string | number = 0; // Default to 0
-                    if (
-                      resultForStream &&
-                      resultForStream[component.key] !== undefined
-                    ) {
-                      const val = resultForStream[component.key];
-                      liveValue =
-                        typeof val === "number" ? val.toFixed(4) : val;
-                    }
-                    // --- END OF NEW LOGIC ---
-
-                    return (
-                      <div className="grid grid-cols-[2fr_1.5fr_2.5fr_2.5fr] items-center text-xs border-b last:border-b-0">
-                        <div className="font-medium text-gray-800 px-3 py-1.5">
-                          {component.display_name}
-                        </div>
-                        <div className="font-medium text-gray-800 px-3 py-1.5">
-                          {liveValue}
-                        </div>
-                        <div className="px-2 py-1.5">
-                          <select
-                            value={component.linked_device_id || ""}
-                            onChange={(e) =>
-                              handleComponentInputChange(
-                                component.key,
-                                "linked_device_id",
-                                e.target.value
-                              )
-                            }
-                            className="w-full border border-gray-300 rounded-sm px-2 py-1 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 focus:border-yellow-500"
-                          >
-                            <option value="">None</option>
-                            {relevantDevices.map((device: Device) => (
-                              <option key={device.id} value={device.id}>
-                                {device.name} ({device.id})
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="px-2 py-1.5">
-                          <input
-                            type="number"
-                            value={component.value}
-                            onChange={(e) =>
-                              handleComponentInputChange(
-                                component.key,
-                                "value",
-                                e.target.value
-                              )
-                            }
-                            placeholder="Enter value"
-                            className="w-full border border-gray-300 rounded-sm px-2 py-1 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500 disabled:bg-gray-100"
-                          />
-                        </div>
-                        {/* <div className="text-gray-700 px-3 py-1.5">
-                          {component.unit}
-                        </div> */}
-                      </div>
-                    );
-                  });
-                  return <Row key={component.key} />;
+                  const resultForStream = store.results.find(
+                    (r) => r.stream_id === stream.id
+                  );
+                  // --- MODIFICATION: Render the new ComponentRow ---
+                  return (
+                    <ComponentRow
+                      key={component.key}
+                      component={component}
+                      availableDevices={availableDevices}
+                      resultForStream={resultForStream}
+                      onInputChange={handleComponentInputChange}
+                    />
+                  );
                 }
               )}
             </div>
