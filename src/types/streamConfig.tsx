@@ -327,6 +327,7 @@ export interface StreamData {
   stream_name: string;
   calculator: stream_config;
   io_card: IOCardConfig;
+  state: any;
 }
 
 export const createDefaultStreamConfig = (): stream_config => ({

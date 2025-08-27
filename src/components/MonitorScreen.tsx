@@ -300,7 +300,7 @@ const MonitorScreen = observer(() => {
                       <span>Active Profile</span>
                       <button
                         onClick={() => setShowArchive(res.stream_id || globalStore.streams[index]?.id || index.toString())}
-                        className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-gray-800 text-[#fcc028] rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-gray-800 text-bold rounded-lg transition-colors"
                       >
                         <Archive size={18} />
                         View Archive

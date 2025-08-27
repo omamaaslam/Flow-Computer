@@ -16,11 +16,10 @@ interface ConversionFormProps {
   isSaving: boolean;
 }
 
-// --- MODIFICATION START: Row logic extracted into its own component ---
 interface ComponentRowProps {
   component: GasComponent;
   availableDevices: Device[];
-  resultForStream: any; // Assuming 'any' type for simplicity based on original code
+  resultForStream: any;
   onInputChange: (
     componentKey: string,
     field: keyof GasComponent,
@@ -30,8 +29,7 @@ interface ComponentRowProps {
 
 const ComponentRow: React.FC<ComponentRowProps> = observer(
   ({ component, availableDevices, resultForStream, onInputChange }) => {
-    // useLocalObservable is the modern MobX way to handle component-local state.
-    // This state is temporary and only exists for this row's input field.
+    console.log("resultForStream", resultForStream);
     const localState = useLocalObservable(() => ({
       inputValue: component.value.toString(),
       setInputValue(value: string) {
@@ -75,9 +73,9 @@ const ComponentRow: React.FC<ComponentRowProps> = observer(
           <input
             type="number"
             value={localState.inputValue}
-            onChange={(e) => localState.setInputValue(e.target.value)} // Updates fast, local state
-            onBlur={
-              () => onInputChange(component.key, "value", localState.inputValue) // Updates global store on blur
+            onChange={(e) => localState.setInputValue(e.target.value)}
+            onBlur={() =>
+              onInputChange(component.key, "value", localState.inputValue)
             }
             placeholder="Enter value"
             className="w-full border border-gray-300 rounded-sm px-2 py-1 text-xs shadow-sm focus:ring-1 focus:ring-yellow-500"
@@ -87,7 +85,6 @@ const ComponentRow: React.FC<ComponentRowProps> = observer(
     );
   }
 );
-// --- MODIFICATION END ---
 
 const ConversionForm: React.FC<ConversionFormProps> = observer(
   ({ store, stream, onSave, onClose, isSaving }) => {
@@ -145,11 +142,9 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
             <div>
               {stream.componentsForActiveMethod.map(
                 (component: GasComponent) => {
-
-                  const resultForStream = store.results.find(
-                    (r) => {r.stream_id === stream.id}
-                  );
-                  // --- MODIFICATION: Render the new ComponentRow ---
+                  const resultForStream = store.results.find((r) => {
+                    r.stream_id === stream.id;
+                  });
                   return (
                     <ComponentRow
                       key={component.key}

@@ -416,7 +416,7 @@ const ArchiveDataComponent = observer(({ streamId, onClose }: { streamId?: strin
   );
 
   return (
-    <div className="absolute top-0 left-0 w-full min-h-screen bg-gray-800 text-slate-100">
+    <div className="w-full min-h-screen bg-gray-800 text-slate-100">
       {onClose && (
         <div className="mb-6">
           <button

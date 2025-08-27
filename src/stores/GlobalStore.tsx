@@ -159,7 +159,7 @@ class GlobalStore {
             this.setGlobalSnapshot(data);
           });
         } else if (data && data.result) {
-          console.log("Received live result update:", data.result);
+          console.log("Received live result update:", data.result["7"]);
           this.updateResults(data.result);
         } else if (data && data.data) {
           this.updateDeviceData(data.data);
