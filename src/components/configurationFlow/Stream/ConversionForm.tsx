@@ -93,7 +93,6 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
   ({ store, stream, onSave, onClose, isSaving }) => {
     const config = stream.stream_config.compressibility_kfactor_config;
     const availableDevices = store.allDevices;
-
     const handleMethodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
       config.active_method = e.target.value;
     };
@@ -146,8 +145,9 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
             <div>
               {stream.componentsForActiveMethod.map(
                 (component: GasComponent) => {
+
                   const resultForStream = store.results.find(
-                    (r) => r.stream_id === stream.id
+                    (r) => {r.stream_id === stream.id}
                   );
                   // --- MODIFICATION: Render the new ComponentRow ---
                   return (

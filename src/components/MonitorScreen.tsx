@@ -2,7 +2,9 @@ import { observer } from "mobx-react-lite";
 import globalStore from "../stores/GlobalStore";
 import MeterGuage from "./MeterGuage";
 import Thermometer from "./Thermometer";
-import React from "react";
+import React, { useState } from "react";
+import ArchiveDataComponent from "./Archive";
+import { Archive } from "lucide-react";
 
 const results = globalStore.results;
 
@@ -35,6 +37,8 @@ const InfoCard = ({
 
 // --- Main Screen Component ---
 const MonitorScreen = observer(() => {
+  const [showArchive, setShowArchive] = useState<string | null>(null);
+  const streamId = results[0]?.stream_id;
   return (
     <div className="w-full font-sans text-gray-600">
       {results.length > 0 ? (
@@ -291,9 +295,33 @@ const MonitorScreen = observer(() => {
               <div key={index} className="space-y-6">
                 <div className="hidden lg:block space-y-8">
                   <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                    <h3>
-                      Active Profile: 
-                    </h3>
+                    <div className="flex justify-between">
+                      <div>
+                      <span>Active Profile</span>
+                      <button
+                        onClick={() => setShowArchive(res.stream_id || globalStore.streams[index]?.id || index.toString())}
+                        className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-gray-800 text-[#fcc028] rounded-lg transition-colors"
+                      >
+                        <Archive size={18} />
+                        View Archive
+                      </button>
+                      </div>
+                      <span>
+                        <strong>Update Time:</strong>
+                        {new Date(res.current_system_timestamp).toLocaleString(
+                          "en-GB",
+                          {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: false,
+                          }
+                        )}
+                      </span>
+                    </div>
                     <div className="grid grid-cols-3 gap-6">
                       <div className="border border-gray-200 rounded-lg p-6">
                         <p className="text-md">
@@ -637,6 +665,18 @@ const MonitorScreen = observer(() => {
               </div>
             );
           })}
+           {/* Archive start here  */}
+            {showArchive && (
+            <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-xl w-full max-w-7xl max-h-[90vh] overflow-hidden">
+                <div className="overflow-auto max-h-[calc(90vh-80px)]">
+                  <ArchiveDataComponent streamId={showArchive} onClose={() => setShowArchive(null)} />
+                </div>
+              </div>
+            </div>
+          )}
+
+           {/* Archive end here  */}
         </>
       ) : (
         <p>No results yet...</p>

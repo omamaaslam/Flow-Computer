@@ -17,7 +17,7 @@ const iconMap: Record<string, string> = {
 
     // All gas/fluid types will use the generic 'gas.svg' icon
     Ho_nDevice: '/devices/gas.svg',
-    RholDevice: '/devices/gas.svg',
+    RHOL: '/devices/gas.svg',
     RhonDevice: '/devices/gas.svg',
     NitrogenDevice: '/devices/gas.svg',
     HydrogenDevice: '/devices/gas.svg',

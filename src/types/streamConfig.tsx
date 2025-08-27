@@ -473,7 +473,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
         value: 0.0,
         linked_device_id: "",
       },
-        {
+      {
         key: "AR",
         display_name: "Argon",
         unit: "mol%",
@@ -500,6 +500,14 @@ export const createDefaultStreamConfig = (): stream_config => ({
       {
         key: "HS",
         display_name: "Calorific Value",
+        unit: "mol%",
+        live_value: 0.0,
+        value: 0.0,
+        linked_device_id: "",
+      },
+      {
+        key: "RHOL",
+        display_name: " Standard Air Density",
         unit: "mol%",
         live_value: 0.0,
         value: 0.0,
@@ -544,7 +552,7 @@ export const createDefaultStreamConfig = (): stream_config => ({
         live_value: 0.0,
         value: 0.0,
         linked_device_id: "",
-      }
+      },
     ],
   },
   pipeline_profile_configuration: {

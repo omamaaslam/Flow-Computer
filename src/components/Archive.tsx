@@ -1,230 +1,729 @@
-import { useState, useEffect } from 'react';
-import { Calendar, Filter, Download, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
-import * as mobx from 'mobx';
-import { observer } from 'mobx-react-lite';
+import { useState, useEffect } from "react";
+import { Calendar, Filter, ChevronLeft, ChevronRight, Clock, ArrowLeft, X } from "lucide-react";
+import * as mobx from "mobx";
+import { observer } from "mobx-react-lite";
+import globalStore from "../stores/GlobalStore";
 
-// Define custom types for better type safety
-type TimeFilter = 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly';
-type Status = 'success' | 'warning' | 'error';
+import { sendMessage, addListener, removeListener, connectWebSocket } from "../utils/api";
 
-// MobX Store (No changes to logic)
-class ArchiveDataStore {
-    constructor() {
-        mobx.makeAutoObservable(this);
-    }
+type TimeFilter = "minute" | "hourly" | "daily" | "weekly" | "monthly" | "yearly";
+type Status = "success" | "warning" | "error";
 
-    // State
-    startDate = new Date(new Date().setMonth(new Date().getMonth() - 1));
-    endDate = new Date();
-    startTime = '00:00';
-    endTime = '23:59';
-    timeFilter: TimeFilter = 'daily';
-    currentPage = 1;
-    itemsPerPage = 10;
-    filteredData: {
-        id: number;
-        timestamp: Date;
-        value: number;
-        status: Status;
-        category: string;
-        details: string;
-        volume: number;
-    }[] = [];
-    isLoading = false;
-    showStartCalendar = false;
-    showEndCalendar = false;
-
-    // Dummy data generator
-    generateDummyData() {
-        const data = [];
-        const startDateTime = new Date(this.startDate);
-        const [startHours, startMinutes] = this.startTime.split(':').map(Number);
-        startDateTime.setHours(startHours, startMinutes, 0, 0);
-
-        const endDateTime = new Date(this.endDate);
-        const [endHours, endMinutes] = this.endTime.split(':').map(Number);
-        endDateTime.setHours(endHours, endMinutes, 59, 999);
-
-        let current = new Date(startDateTime);
-        let increment;
-
-        switch (this.timeFilter) {
-            case 'hourly': increment = 60 * 60 * 1000; break;
-            case 'daily': increment = 24 * 60 * 60 * 1000; break;
-            case 'weekly': increment = 7 * 24 * 60 * 60 * 1000; break;
-            case 'monthly': increment = 30 * 24 * 60 * 60 * 1000; break;
-            case 'yearly': increment = 365 * 24 * 60 * 60 * 1000; break;
-            default: increment = 24 * 60 * 60 * 1000;
-        }
-
-        while (current <= endDateTime) {
-            const baseValue = Math.random() * 1000 + 500;
-            data.push({
-                id: data.length + 1,
-                timestamp: new Date(current),
-                value: Math.round(baseValue * 100) / 100,
-                status: (Math.random() > 0.8 ? 'warning' : Math.random() > 0.9 ? 'error' : 'success') as Status,
-                category: ['Analytics', 'Performance', 'Security', 'Usage'][Math.floor(Math.random() * 4)],
-                details: `Sample data point ${data.length + 1}`,
-                volume: Math.floor(Math.random() * 10000) + 1000
-            });
-            current = new Date(current.getTime() + increment);
-        }
-
-        return data.slice(0, 1000);
-    }
-
-    // Actions
-    setStartDate = (date: Date) => { this.startDate = date; this.showStartCalendar = false; this.loadData(); }
-    setEndDate = (date: Date) => { this.endDate = date; this.showEndCalendar = false; this.loadData(); }
-    setStartTime = (time: string) => { this.startTime = time; this.loadData(); }
-    setEndTime = (time:string) => { this.endTime = time; this.loadData(); }
-    setTimeFilter = (filter: string) => { this.timeFilter = filter as TimeFilter; this.currentPage = 1; this.loadData(); }
-    setCurrentPage = (page: number) => { this.currentPage = page; }
-    toggleStartCalendar = () => { this.showStartCalendar = !this.showStartCalendar; this.showEndCalendar = false; }
-    toggleEndCalendar = () => { this.showEndCalendar = !this.showEndCalendar; this.showStartCalendar = false; }
-    loadData = () => {
-        this.isLoading = true;
-        setTimeout(() => {
-            this.filteredData = this.generateDummyData();
-            this.isLoading = false;
-        }, 500);
-    }
-
-    // Computed values
-    get totalPages() { return Math.ceil(this.filteredData.length / this.itemsPerPage); }
-    get paginatedData() { const start = (this.currentPage - 1) * this.itemsPerPage; const end = start + this.itemsPerPage; return this.filteredData.slice(start, end); }
-    get summaryStats() { const data = this.filteredData; return { total: data.length, avgValue: data.length ? (data.reduce((sum, item) => sum + item.value, 0) / data.length).toFixed(2) : 0, successCount: data.filter(item => item.status === 'success').length, warningCount: data.filter(item => item.status === 'warning').length, errorCount: data.filter(item => item.status === 'error').length }; }
+interface ArchiveItem {
+  id: number;
+  timestamp: Date;
+  value: number;
+  status: Status;
+  category: string;
+  details: string;
+  volume: number;
 }
 
-const store = new ArchiveDataStore();
+class ArchiveDataStore {
+  constructor() {
+    mobx.makeAutoObservable(this);
+  }
 
-const ArchiveDataComponent = observer(() => {
-  const [showFilters, setShowFilters] = useState(false);
+  startDate = new Date('2022-04-26');
+  endDate = new Date('2022-04-29');
+  startTime = "00:00";
+  endTime = "23:59";
+  timeFilter: TimeFilter = "hourly";
+  rawData: any[] = [];
+  currentPage = 1;
+  itemsPerPage = 10;
+  filteredData: ArchiveItem[] = [];
+  isLoading = false;
+  showStartCalendar = false;
+  showEndCalendar = false;
 
-  useEffect(() => {
-    store.loadData();
-    const handleClickOutside = (event: MouseEvent) => { if (!(event.target as HTMLElement).closest('.calendar-container')) { store.showStartCalendar = false; store.showEndCalendar = false; } };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  streamId: string | null = null;
+  
+  setStreamId = (id: string) => {
+    this.streamId = id;
+  };
+  
+  get currentStreamId() {
+    return this.streamId;
+  }
+  
+  get currentProfileId() {
+    // Find the specific stream by ID
+    const stream = globalStore.streams.find(s => s.id === this.currentStreamId);
+    return stream?.stream_config?.calculation_profile?.active_profile_id;
+  }
 
-  const formatDisplayDate = (date: Date) => { return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }); };
+  get paginatedData() {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.rawData.slice(start, start + this.itemsPerPage);
+  }
+
+  get totalPages() {
+    return Math.ceil(this.rawData.length / this.itemsPerPage);
+  }
+
+  requestArchiveData = async () => {
+    const startDateTime = new Date(this.startDate);
+    const [startHours, startMinutes] = this.startTime.split(":").map(Number);
+    startDateTime.setHours(startHours, startMinutes, 0, 0);
+    
+    const endDateTime = new Date(this.endDate);
+    const [endHours, endMinutes] = this.endTime.split(":").map(Number);
+    endDateTime.setHours(endHours, endMinutes, 0, 0);
+    
+    const archiveTypeMap = {
+      minute: "minute", hourly: "hour", daily: "day", weekly: "week", monthly: "month", yearly: "year"
+    };
+    
+    const request = {
+      scope: "get_archives",
+      stream_id: this.currentStreamId,
+      profile_id: this.currentProfileId,
+      archive_type: archiveTypeMap[this.timeFilter] || "minute",
+      start_date: startDateTime.toISOString().slice(0, 19).replace('T', ' '),
+      end_date: endDateTime.toISOString().slice(0, 19).replace('T', ' ')
+    };
+    
+    console.log('Sending archive request:', request);
+    
+    try {
+      await connectWebSocket();
+      sendMessage(request);
+    } catch (error) {
+      this.isLoading = false;
+    }
+  };
+
+  handleWebSocketMessage = mobx.action((event: MessageEvent) => {
+    try {
+      const data = JSON.parse(event.data);
+      console.log('WebSocket Response:', data);
+      
+      if (data.results && Array.isArray(data.results)) {
+        console.log('Archive data received:', data.results.length, 'records');
+        console.log('First few records:', data.results.slice(0, 3));
+        this.rawData = data.results;
+        this.isLoading = false;
+      } else {
+        console.log('No results array found in response');
+      }
+    } catch (error) {
+      console.error('Error parsing WebSocket message:', error);
+      this.isLoading = false;
+    }
+  });
+
+  processData = mobx.action(() => {
+    if (!this.rawData?.length) {
+      this.filteredData = [];
+      return;
+    }
+    
+    this.filteredData = this.rawData.map((record, index) => ({
+      id: index + 1,
+      timestamp: new Date(record.current_system_timestamp || Date.now()),
+      value: record.device_flow_rate || record.operating_flow_rate || record.current_volume_original || 0,
+      status: (record.interference_flag ? 'warning' : 'success') as Status,
+      category: record.method_name || 'Archive',
+      details: 'Archive data',
+      volume: record.operating_total_volume_net || record.current_volume_original || 0
+    }));
+  });
+
+  extractValue = (record: any): number => {
+    if (typeof record === 'object' && record !== null) {
+      // Prioritize flow rate fields from your data structure
+      if (record.device_flow_rate !== undefined && record.device_flow_rate !== null) return Number(record.device_flow_rate);
+      if (record.operating_flow_rate !== undefined) return Number(record.operating_flow_rate);
+      if (record.standard_flow_rate !== undefined) return Number(record.standard_flow_rate);
+      if (record.current_volume_original !== undefined) return Number(record.current_volume_original);
+      
+      // Fallback to other numeric fields
+      if (record.value !== undefined) return Number(record.value);
+      if (record.measurement !== undefined) return Number(record.measurement);
+    }
+    return 0;
+  };
+
+  determineStatus = (record: any): Status => {
+    if (typeof record === 'object' && record !== null) {
+      if (record.interference_flag === true) return 'warning';
+      if (record.last_status_ok === false) return 'error';
+      if (record.error || record.error_flag || record.status === 'error') return 'error';
+    }
+    return 'success';
+  };
+
+  extractVolume = (record: any): number => {
+    if (typeof record === 'object' && record !== null) {
+      if (record.operating_total_volume_net !== undefined) return Number(record.operating_total_volume_net);
+      if (record.standard_total_volume_net !== undefined) return Number(record.standard_total_volume_net);
+      if (record.current_volume_original !== undefined) return Number(record.current_volume_original);
+      if (record.volume !== undefined) return Number(record.volume);
+    }
+    return 0;
+  };
+
+  setStartDate = mobx.action((date: Date) => {
+    this.startDate = date;
+    this.showStartCalendar = false;
+    this.loadData();
+  });
+
+  setEndDate = mobx.action((date: Date) => {
+    this.endDate = date;
+    this.showEndCalendar = false;
+    this.loadData();
+  });
+
+  setStartTime = mobx.action((time: string) => {
+    this.startTime = time;
+    this.loadData();
+  });
+
+  setEndTime = mobx.action((time: string) => {
+    this.endTime = time;
+    this.loadData();
+  });
+
+  setTimeFilter = mobx.action((filter: string) => {
+    this.timeFilter = filter as TimeFilter;
+    this.currentPage = 1;
+    this.loadData();
+  });
+
+  setCurrentPage = mobx.action((page: number) => {
+    this.currentPage = page;
+  });
+
+  toggleStartCalendar = mobx.action(() => {
+    this.showStartCalendar = !this.showStartCalendar;
+    this.showEndCalendar = false;
+  });
+
+  toggleEndCalendar = mobx.action(() => {
+    this.showEndCalendar = !this.showEndCalendar;
+    this.showStartCalendar = false;
+  });
+
+  loadData = mobx.action(() => {
+    if (!this.currentStreamId || this.isLoading) {
+      return;
+    }
+    
+    this.isLoading = true;
+    this.requestArchiveData();
+    
+    // Clear any existing timeout
+    if (this.loadingTimeout) {
+      clearTimeout(this.loadingTimeout);
+    }
+    
+    this.loadingTimeout = setTimeout(mobx.action(() => {
+      if (this.isLoading) {
+        this.isLoading = false;
+      }
+    }), 5000);
+  });
+
+  loadingTimeout: number | null = null;
+
+  setupWebSocketListener = () => {
+    // Remove any existing listener first to prevent duplicates
+    removeListener(this.handleWebSocketMessage);
+    addListener(this.handleWebSocketMessage);
+  };
+
+  cleanup = () => {
+    removeListener(this.handleWebSocketMessage);
+  };
+}
+
+const DatePickerCalendar = ({ selectedDate, onDateSelect, show }: {
+  selectedDate: Date;
+  onDateSelect: (date: Date) => void;
+  show: boolean;
+}) => {
+  const [viewDate, setViewDate] = useState(new Date(selectedDate));
+  
+  if (!show) return null;
 
   const generateCalendarDays = (date: Date) => {
-    const year = date.getFullYear(); const month = date.getMonth(); const firstDay = new Date(year, month, 1);
-    const startDate = new Date(firstDay); startDate.setDate(startDate.getDate() - firstDay.getDay());
-    const days = []; const current = new Date(startDate);
-    for (let i = 0; i < 42; i++) { days.push(new Date(current)); current.setDate(current.getDate() + 1); }
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    const days = [];
+    const current = new Date(startDate);
+    for (let i = 0; i < 42; i++) {
+      days.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
     return days;
   };
 
-  interface DatePickerCalendarProps { selectedDate: Date; onDateSelect: (date: Date) => void; show: boolean; }
-  
-  const DatePickerCalendar = ({ selectedDate, onDateSelect, show }: DatePickerCalendarProps) => {
-    const [viewDate, setViewDate] = useState(new Date(selectedDate));
-    const days = generateCalendarDays(viewDate);
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    if (!show) return null;
-    return (
-      <div className="calendar-container absolute top-full left-0 z-50 mt-2 bg-zinc-800 border border-zinc-700 rounded-lg shadow-2xl p-4 w-80">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() - 1)))} className="p-1 hover:bg-zinc-700 rounded transition-colors"><ChevronLeft size={20} className="text-zinc-300" /></button>
-          <h3 className="font-semibold text-zinc-100">{monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}</h3>
-          <button onClick={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() + 1)))} className="p-1 hover:bg-zinc-700 rounded transition-colors"><ChevronRight size={20} className="text-zinc-300" /></button>
-        </div>
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (<div key={day} className="text-center text-xs font-medium text-zinc-400 py-2">{day}</div>))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {days.map((day, index) => {
-            const isCurrentMonth = day.getMonth() === viewDate.getMonth();
-            const isSelected = day.toDateString() === selectedDate.toDateString();
-            const isToday = day.toDateString() === new Date().toDateString();
-            return (
-              <button key={index} onClick={() => onDateSelect(new Date(day))}
-                className={`p-2 text-sm rounded-md transition-colors font-medium ${isCurrentMonth ? 'text-zinc-200' : 'text-zinc-600'} ${isSelected ? 'bg-[rgb(234,179,8)] text-zinc-900 hover:bg-yellow-400' : 'hover:bg-zinc-700'} ${isToday && !isSelected ? 'border border-[rgb(234,179,8)]/50' : ''}`}>
-                {day.getDate()}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  const formatTimestamp = (timestamp: Date) => {
-    const options: Record<TimeFilter, Intl.DateTimeFormatOptions> = { hourly: { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', hour12: false }, daily: { day: '2-digit', month: '2-digit', year: 'numeric' }, weekly: { day: '2-digit', month: '2-digit', year: 'numeric' }, monthly: { month: 'short', year: 'numeric' }, yearly: { year: 'numeric' } };
-    if (store.timeFilter === 'hourly') { return timestamp.toLocaleString('en-GB', options[store.timeFilter]); }
-    return timestamp.toLocaleDateString('en-US', options[store.timeFilter]);
-  };
-
-  const getStatusColor = (status: Status) => {
-    const colors: Record<Status, string> = { success: 'bg-green-500/10 text-green-400', warning: 'bg-yellow-500/10 text-yellow-400', error: 'bg-red-500/10 text-red-400' };
-    return colors[status] || 'bg-zinc-700 text-zinc-300';
-  };
-
-  const timeFilters = [{ value: 'hourly', label: 'Hourly' }, { value: 'daily', label: 'Daily' }, { value: 'weekly', label: 'Weekly' }, { value: 'monthly', label: 'Monthly' }, { value: 'yearly', label: 'Yearly' }];
+  const days = generateCalendarDays(viewDate);
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   return (
-    <div className="w-full min-h-screen bg-[rgb(24,24,27)] text-zinc-200 p-4 sm:p-6 lg:p-8">
-      <div className="w-full max-w-7xl mx-auto space-y-6">
-        <div className="bg-zinc-900/50 rounded-lg shadow-2xl border border-zinc-800 p-6">
-          <h1 className="text-3xl font-bold text-zinc-100 mb-6">Archive Data</h1>
-          <div className="flex flex-col lg:flex-row lg:items-end gap-4 mb-6">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex flex-col relative"><label className="text-sm font-medium text-zinc-400 mb-2">Start Date & Time</label>
-                <div className="flex gap-2">
-                  <div className="relative"><button onClick={store.toggleStartCalendar} className="flex items-center gap-2 px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(234,179,8)] bg-zinc-800 hover:bg-zinc-700 transition-colors"><Calendar size={18} className="text-zinc-400" /><span className="text-sm">{formatDisplayDate(store.startDate)}</span></button><DatePickerCalendar selectedDate={store.startDate} onDateSelect={store.setStartDate} show={store.showStartCalendar} /></div>
-                  <div className="relative"><input type="time" value={store.startTime} onChange={(e) => store.setStartTime(e.target.value)} className="px-3 py-2 w-32 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(234,179,8)]" /><Clock size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none" /></div>
+    <div className="calendar-container absolute top-full left-0 z-[9999] mt-2 bg-slate-700/95 backdrop-blur-sm border border-slate-500/50 rounded-lg sm:rounded-xl shadow-2xl p-3 sm:p-4 lg:p-6 w-72 sm:w-80 max-w-[calc(100vw-2rem)]">
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() - 1)))}
+          className="p-2 hover:bg-slate-600/50 rounded-lg transition-all duration-200"
+        >
+          <ChevronLeft size={20} className="text-slate-200" />
+        </button>
+        <h3 className="font-bold text-slate-100 text-lg">
+          {monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}
+        </h3>
+        <button
+          onClick={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() + 1)))}
+          className="p-2 hover:bg-slate-600/50 rounded-lg transition-all duration-200"
+        >
+          <ChevronRight size={20} className="text-slate-200" />
+        </button>
+      </div>
+      <div className="grid grid-cols-7 gap-1 mb-3">
+        {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+          <div key={day} className="text-center text-xs font-bold text-slate-300 py-2">
+            {day}
+          </div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-1">
+        {days.map((day, index) => {
+          const isCurrentMonth = day.getMonth() === viewDate.getMonth();
+          const isSelected = day.toDateString() === selectedDate.toDateString();
+          const isToday = day.toDateString() === new Date().toDateString();
+          return (
+            <button
+              key={index}
+              onClick={() => onDateSelect(new Date(day))}
+              className={`p-2 text-sm rounded-lg transition-all duration-200 font-medium ${
+                isCurrentMonth ? "text-slate-200" : "text-slate-500"
+              } ${
+                isSelected
+                  ? "bg-gradient-to-r from-yellow-500 to-amber-600 text-black hover:from-yellow-600 hover:to-amber-700 shadow-lg"
+                  : "hover:bg-slate-600/50"
+              } ${
+                isToday && !isSelected ? "border border-yellow-400/50" : ""
+              }`}
+            >
+              {day.getDate()}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Create a global store instance to avoid multiple instances
+const archiveStore = new ArchiveDataStore();
+
+const ArchiveDataComponent = observer(({ streamId, onClose }: { streamId?: string; onClose?: () => void }) => {
+  
+  useEffect(() => {
+    if (streamId) {
+      archiveStore.setStreamId(streamId);
+      archiveStore.rawData = [];
+      archiveStore.currentPage = 1;
+      setTimeout(() => archiveStore.loadData(), 100);
+    }
+    
+    archiveStore.setupWebSocketListener();
+    
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!(event.target as HTMLElement).closest(".calendar-container")) {
+        archiveStore.showStartCalendar = false;
+        archiveStore.showEndCalendar = false;
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      archiveStore.cleanup();
+    };
+  }, [streamId]);
+
+  const formatDisplayDate = (date: Date) => {
+    return date.toLocaleDateString("en-US", {
+      weekday: "short", year: "numeric", month: "short", day: "numeric",
+    });
+  };
+
+  const timeFilters = [
+    { value: "minute", label: "Minute" },
+    { value: "hourly", label: "Hourly" },
+    { value: "daily", label: "Daily" },
+    { value: "weekly", label: "Weekly" },
+    { value: "monthly", label: "Monthly" },
+    { value: "yearly", label: "Yearly" },
+  ];
+
+  const DateTimeInput = ({ 
+    label, 
+    date, 
+    time, 
+    showCalendar, 
+    onDateClick, 
+    onTimeChange, 
+    onDateSelect 
+  }: {
+    label: string;
+    date: Date;
+    time: string;
+    showCalendar: boolean;
+    onDateClick: () => void;
+    onTimeChange: (time: string) => void;
+    onDateSelect: (date: Date) => void;
+  }) => (
+    <div className="flex flex-col relative z-[100]">
+      <label className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wide">
+        {label}
+      </label>
+      <div className="flex gap-3">
+        <div className="relative z-[100] flex-1 min-w-0">
+          <button
+            onClick={onDateClick}
+            className="flex items-center gap-3 px-4 py-3 h-12 w-full border border-slate-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 bg-slate-600/50 hover:bg-slate-600/70 transition-all duration-200 shadow-sm"
+          >
+            <Calendar size={18} className="text-slate-300 flex-shrink-0" />
+            <span className="text-sm font-medium text-slate-100 truncate">
+              {formatDisplayDate(date)}
+            </span>
+          </button>
+          <DatePickerCalendar
+            selectedDate={date}
+            onDateSelect={onDateSelect}
+            show={showCalendar}
+          />
+        </div>
+        <div className="relative w-36 flex-shrink-0">
+          <input
+            type="time"
+            value={time}
+            onChange={(e) => onTimeChange(e.target.value)}
+            className="px-4 py-3 w-full h-12 bg-gray-800 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 text-slate-100 font-medium shadow-sm"
+          />
+          <Clock size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 pointer-events-none" />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="absolute top-0 left-0 w-full min-h-screen bg-gray-800 text-slate-100">
+      {onClose && (
+        <div className="mb-6">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-800 text-slate-200 rounded-lg transition-all duration-200 border border-gray-800"
+          >
+            <X />
+            Close Archive
+          </button>
+        </div>
+      )}
+      <div className="w-full max-w-7xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
+        {/* Header Section */}
+        <div className="bg-gray-800 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-2xl p-4 sm:p-6 lg:p-8 relative z-[200]">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+            <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-lg flex items-center justify-center shadow-lg">
+              <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-50 tracking-tight">
+                Archive Data
+              </h1>
+              <p className="text-slate-300 text-xs sm:text-sm hidden sm:block">Stream {archiveStore.currentStreamId} Historical Data</p>
+            </div>
+          </div>
+          
+          {/* Control Panel */}
+          <div className="bg-gray-800 rounded-lg p-3 sm:p-4 lg:p-6 border relative z-[50]">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6 items-end">
+              <DateTimeInput
+                label="Start Date & Time"
+                date={archiveStore.startDate}
+                time={archiveStore.startTime}
+                showCalendar={archiveStore.showStartCalendar}
+                onDateClick={archiveStore.toggleStartCalendar}
+                onTimeChange={archiveStore.setStartTime}
+                onDateSelect={archiveStore.setStartDate}
+              />
+              <DateTimeInput
+                label="End Date & Time"
+                date={archiveStore.endDate}
+                time={archiveStore.endTime}
+                showCalendar={archiveStore.showEndCalendar}
+                onDateClick={archiveStore.toggleEndCalendar}
+                onTimeChange={archiveStore.setEndTime}
+                onDateSelect={archiveStore.setEndDate}
+              />
+              <div className="flex flex-col">
+                <label className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wide">
+                  Time Period
+                </label>
+                <div className="relative">
+                  <select
+                    value={archiveStore.timeFilter}
+                    onChange={(e) => archiveStore.setTimeFilter(e.target.value)}
+                    className="px-4 py-3 h-12 w-full border border-slate-500/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500/50 bg-gray-800 hover:bg-gray-600/70 transition-all duration-200 text-slate-100 font-medium shadow-sm appearance-none cursor-pointer"
+                  >
+                    <option disabled>Select Period</option>
+                    {timeFilters.map((filter) => (
+                      <option key={filter.value} value={filter.value}>
+                        {filter.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-col relative"><label className="text-sm font-medium text-zinc-400 mb-2">End Date & Time</label>
-                <div className="flex gap-2">
-                  <div className="relative"><button onClick={store.toggleEndCalendar} className="flex items-center gap-2 px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(234,179,8)] bg-zinc-800 hover:bg-zinc-700 transition-colors"><Calendar size={18} className="text-zinc-400" /><span className="text-sm">{formatDisplayDate(store.endDate)}</span></button><DatePickerCalendar selectedDate={store.endDate} onDateSelect={store.setEndDate} show={store.showEndCalendar} /></div>
-                  <div className="relative"><input type="time" value={store.endTime} onChange={(e) => store.setEndTime(e.target.value)} className="px-3 py-2 w-32 bg-zinc-800 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(234,179,8)]" /><Clock size={16} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-zinc-500 pointer-events-none" /></div>
-                </div>
+              <div className="flex justify-end md:col-span-2 xl:col-span-1">
+                <button
+                  onClick={() => archiveStore.loadData()}
+                  className="flex items-center gap-3 px-6 py-3 h-12 bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-600 hover:to-amber-700 text-black rounded-lg transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 w-full xl:w-auto"
+                >
+                  <Filter size={18} />
+                  Get Archive
+                </button>
               </div>
             </div>
-            <div className="flex flex-col"><label className="text-sm font-medium text-zinc-400 mb-2">Time Period</label><select value={store.timeFilter} onChange={(e) => store.setTimeFilter(e.target.value)} className="px-3 py-2 border border-zinc-700 rounded-md focus:outline-none focus:ring-2 focus:ring-[rgb(234,179,8)] bg-zinc-800 hover:bg-zinc-700 transition-colors"><option disabled>Select Period</option>{timeFilters.map(filter => (<option key={filter.value} value={filter.value}>{filter.label}</option>))}</select></div>
-            <div className="flex gap-2 lg:ml-auto"><button onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 rounded-md transition-colors"><Filter size={16} />Filters</button><button className="flex items-center gap-2 px-4 py-2 bg-[rgb(234,179,8)] hover:bg-yellow-600 text-zinc-900 font-bold rounded-md transition-colors"><Download size={16} />Export</button></div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="bg-zinc-800/50 p-4 rounded-lg border-t-4 border-zinc-500"><div className="text-3xl font-bold text-zinc-100">{store.summaryStats.total}</div><div className="text-sm text-zinc-400">Total Records</div></div>
-            <div className="bg-zinc-800/50 p-4 rounded-lg border-t-4 border-blue-500"><div className="text-3xl font-bold text-zinc-100">{store.summaryStats.avgValue}</div><div className="text-sm text-zinc-400">Avg Value</div></div>
-            <div className="bg-zinc-800/50 p-4 rounded-lg border-t-4 border-green-500"><div className="text-3xl font-bold text-green-400">{store.summaryStats.successCount}</div><div className="text-sm text-zinc-400">Success</div></div>
-            <div className="bg-zinc-800/50 p-4 rounded-lg border-t-4 border-yellow-500"><div className="text-3xl font-bold text-yellow-400">{store.summaryStats.warningCount}</div><div className="text-sm text-zinc-400">Warnings</div></div>
-            <div className="bg-zinc-800/50 p-4 rounded-lg border-t-4 border-red-500"><div className="text-3xl font-bold text-red-400">{store.summaryStats.errorCount}</div><div className="text-sm text-zinc-400">Errors</div></div>
           </div>
         </div>
-        <div className="bg-zinc-900/50 rounded-lg shadow-2xl border border-zinc-800 overflow-hidden">
-          {store.isLoading ? (<div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[rgb(234,179,8)]"></div></div>) : (
+
+        {/* Data Table Section */}
+        <div className="bg-gradient-to-r from-slate-800/90 to-slate-700/90 backdrop-blur-sm rounded-xl shadow-2xl border border-slate-600/50">
+          {archiveStore.isLoading ? (
+            <div className="flex flex-col items-center justify-center h-96">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-slate-600 border-t-yellow-500 shadow-lg"></div>
+              <p className="mt-4 text-slate-300 font-medium">Loading archive data...</p>
+            </div>
+          ) : (
             <>
-              <div className="hidden md:block overflow-x-auto"><table className="w-full text-sm">
-                  <thead className="bg-zinc-800/50"><tr >
-                      <th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Timestamp</th><th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Value</th><th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Status</th><th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Category</th><th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Volume</th><th className="px-6 py-3 text-left text-xs font-medium text-zinc-400 uppercase tracking-wider">Details</th>
-                  </tr></thead>
-                  <tbody className="divide-y divide-zinc-800">
-                    {store.paginatedData.map((item) => (<tr key={item.id} className="hover:bg-zinc-800/60 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-zinc-300">{formatTimestamp(item.timestamp)}</td><td className="px-6 py-4 whitespace-nowrap font-medium text-zinc-100">{item.value}</td><td className="px-6 py-4 whitespace-nowrap"><span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full capitalize ${getStatusColor(item.status)}`}>{item.status}</span></td><td className="px-6 py-4 whitespace-nowrap text-zinc-300">{item.category}</td><td className="px-6 py-4 whitespace-nowrap text-zinc-300">{item.volume.toLocaleString()}</td><td className="px-6 py-4 text-zinc-400">{item.details}</td>
-                    </tr>))}
+              {/* Desktop Table with Horizontal Scroll */}
+              <div className="overflow-x-auto rounded-xl">
+                <table className="w-full text-sm">
+                  <thead className="bg-gradient-to-r from-slate-700/80 to-slate-600/80 sticky top-0">
+                    <tr>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">ID</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">System Timestamp</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Delta Time</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Last Volume</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Current Volume</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Delta Volume</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Operating Temp</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Base Temp</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Temp Unit</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Operating Press</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Base Press</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Press Unit</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Device Flow Rate</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Software Flow Rate</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">CH4</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">N2</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">CO2</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">C2H6</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">C3H8</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">I_C4H10</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">N_C4H10</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">I_C5H12</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">N_C5H12</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">C6H14</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">C7H16</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">C8H18</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">C9H20</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">C10H22</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">H2</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">H2S</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">CO</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">O2</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">H2O</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">HE</th>
+                       <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">AR</th>
+                        <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">HS</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">SD</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Last Status OK</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Compress K Factor</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Last K Factor</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Delta k Factor</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Correction Z Factor</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Last Correction Z</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Delta Correction Z</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Op Vol Forward</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Op Vol Reverse</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Op Vol Net</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Int Vol Forward</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Int Vol Reverse</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Int Vol Net</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Op Total Vol Forward</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Op Total Vol Reverse</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Op Total Vol Net</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Vol Forward</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Vol Reverse</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Vol Net</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Interfer Vol Forward</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Interfer Vol Reverse</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Interfer Vol Net</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Total Vol Forward</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Total Vol Reverse</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Total Vol Net</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Operating Flow Rate</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Interference Flow Rate</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Standard Flow Rate</th>
+                      <th className="px-2 py-2 text-left text-xs font-bold text-slate-200 uppercase tracking-wider border-b border-slate-500/30">Std Interfer Flow Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-600/30">
+                    {archiveStore.paginatedData.map((record, index) => {
+                      // Convert record object to array of values in the correct order
+                      const recordArray = [
+                        record.id || (archiveStore.currentPage - 1) * archiveStore.itemsPerPage + index + 1,
+                        record.current_system_timestamp,
+                        record.delta_time ?? '-',
+                        record.last_volume_original ?? '-',
+                        record.current_volume_original ?? '-',
+                        record.delta_volume_original ?? '-',
+                        record.operating_temperature ?? '-',
+                        record.base_temperature ?? '-',
+                        record.temperature_unit || '-',
+                        record.operating_pressure ?? '-',
+                        record.base_pressure ?? '-',
+                        record.pressure_unit || '-',
+                        record.device_flow_rate ?? '-',
+                        record.software_flow_rate ?? '-',
+                        record.CH4 ?? '-',
+                        record.N2 ?? '-',
+                        record.CO2 ?? '-',
+                        record.C2H6 ?? '-',
+                        record.C3H8 ?? '-',
+                        record.I_C4H10 ?? '-',
+                        record.N_C4H10 ?? '-',
+                        record.I_C5H12 ?? '-',
+                        record.N_C5H12 ?? '-',
+                        record.C6H14 ?? '-',
+                        record.C7H16 ?? '-',
+                        record.C8H18 ?? '-',
+                        record.C9H20 ?? '-',
+                        record.C10H22 ?? '-',
+                        record.H2 ?? '-',
+                        record.H2S ?? '-',
+                        record.CO ?? '-',
+                        record.O2 ?? '-',
+                        record.H2O ?? '-',
+                        record.HE ?? '-',
+                        record.AR ?? '-',
+                        record.HS ?? '-',
+                        record.SD ?? '-',
+                        record.compressibility_k_factor ?? '-',
+                        record.compressibility_last_k_factor ?? '-',
+                        record.compressibility_delta_k_factor ?? '-',
+                        record.correction_z_factor ?? '-',
+                        record.correction_z_factor_last ?? '-',
+                        record.correction_z_factor_delta ?? '-',
+                        record.operating_volume_forward ?? '-',
+                        record.operating_volume_reverse ?? '-',
+                        record.operating_volume_net ?? '-',
+                        record.interference_volume_forward ?? '-',
+                        record.interference_volume_reverse ?? '-',
+                        record.interference_volume_net ?? '-',
+                        record.operating_total_volume_forward ?? '-',
+                        record.operating_total_volume_reverse ?? '-',
+                        record.operating_total_volume_net ?? '-',
+                        record.standard_volume_forward ?? '-',
+                        record.standard_volume_reverse ?? '-',
+                        record.standard_volume_net ?? '-',
+                        record.standard_interference_volume_forward ?? '-',
+                        record.standard_interference_volume_reverse ?? '-',
+                        record.standard_interference_volume_net ?? '-',
+                        record.standard_total_volume_forward ?? '-',
+                        record.standard_total_volume_reverse ?? '-',
+                        record.standard_total_volume_net ?? '-',
+                        record.operating_flow_rate ?? '-',
+                        record.interference_flow_rate ?? '-',
+                        record.standard_flow_rate ?? '-',
+                        record.standard_interference_flow_rate ?? '-'
+                      ];
+                      
+                      return (
+                        <tr key={index} className="hover:bg-slate-600/20 transition-all duration-200 border-b border-slate-600/20">
+                          {recordArray.map((field: any, fieldIndex: number) => (
+                            <td key={fieldIndex} className="px-3 py-2 whitespace-nowrap text-slate-200 text-xs">
+                              {fieldIndex === 3 ? 
+                                new Date(field).toLocaleString('en-GB', {
+                                  day: '2-digit',
+                                  month: '2-digit', 
+                                  year: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  second: '2-digit'
+                                }) : 
+                                (typeof field === 'number' && field > 1000 ? field.toLocaleString() : field)
+                              }
+                            </td>
+                          ))}
+                        </tr>
+                      );
+                    })}
                   </tbody>
-              </table></div>
-              <div className="md:hidden divide-y divide-zinc-800">
-                {store.paginatedData.map((item) => (<div key={item.id} className="p-4">
-                    <div className="flex justify-between items-start mb-2"><div className="text-sm font-medium text-zinc-100">{formatTimestamp(item.timestamp)}</div><span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full capitalize ${getStatusColor(item.status)}`}>{item.status}</span></div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm"><div className="text-zinc-400">Value: <span className="ml-1 font-medium text-zinc-200">{item.value}</span></div><div className="text-zinc-400">Category: <span className="ml-1 text-zinc-200">{item.category}</span></div><div className="text-zinc-400">Volume: <span className="ml-1 text-zinc-200">{item.volume.toLocaleString()}</span></div></div>
-                    <div className="mt-2 text-sm text-zinc-400">{item.details}</div>
-                </div>))}
+                </table>
               </div>
-              <div className="bg-zinc-900/50 px-4 py-3 flex items-center justify-between border-t border-zinc-800 sm:px-6">
+
+              {/* Pagination */}
+              <div className="bg-gradient-to-r from-slate-700/50 to-slate-600/50 px-6 py-4 flex items-center justify-between border-t border-slate-500/30">
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div><p className="text-sm text-zinc-400">Showing <span className="font-medium text-zinc-200">{(store.currentPage - 1) * store.itemsPerPage + 1}</span> to <span className="font-medium text-zinc-200">{Math.min(store.currentPage * store.itemsPerPage, store.filteredData.length)}</span> of <span className="font-medium text-zinc-200">{store.filteredData.length}</span> results</p></div>
-                  <div><nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                      <button onClick={() => store.setCurrentPage(Math.max(1, store.currentPage - 1))} disabled={store.currentPage === 1} className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-zinc-700 bg-zinc-800 text-sm font-medium text-zinc-400 hover:bg-zinc-700 disabled:opacity-40 transition-colors"><ChevronLeft size={20} /></button>
-                      {Array.from({ length: Math.min(5, store.totalPages) }, (_, i) => { const page = i + 1; return (<button key={page} onClick={() => store.setCurrentPage(page)} className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-colors ${page === store.currentPage ? 'z-10 bg-[rgb(234,179,8)] border-[rgb(234,179,8)] text-zinc-900 font-bold' : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700'}`}>{page}</button>); })}
-                      <button onClick={() => store.setCurrentPage(Math.min(store.totalPages, store.currentPage + 1))} disabled={store.currentPage === store.totalPages} className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-zinc-700 bg-zinc-800 text-sm font-medium text-zinc-400 hover:bg-zinc-700 disabled:opacity-40 transition-colors"><ChevronRight size={20} /></button>
-                  </nav></div>
+                  <div>
+                    <p className="text-sm text-slate-300 font-medium">
+                      Showing <span className="font-bold text-slate-100">{(archiveStore.currentPage - 1) * archiveStore.itemsPerPage + 1}</span> to{" "}
+                      <span className="font-bold text-slate-100">{Math.min(archiveStore.currentPage * archiveStore.itemsPerPage, archiveStore.rawData.length)}</span> of{" "}
+                      <span className="font-bold text-slate-100">{archiveStore.rawData.length}</span> records
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                      <button
+                        onClick={() => archiveStore.setCurrentPage(Math.max(1, archiveStore.currentPage - 1))}
+                        disabled={archiveStore.currentPage === 1}
+                        className="relative inline-flex items-center px-3 py-2 rounded-l-lg border border-slate-500/50 bg-slate-600/50 text-sm font-medium text-slate-300 hover:bg-slate-600/70 disabled:opacity-40 transition-all duration-200"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
+                      {Array.from({ length: Math.min(5, archiveStore.totalPages) }, (_, i) => {
+                        const page = i + 1;
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => archiveStore.setCurrentPage(page)}
+                            className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-all duration-200 ${
+                              page === archiveStore.currentPage
+                                ? "z-10 bg-gradient-to-r from-yellow-500 to-amber-600 border-yellow-500 text-black font-bold shadow-lg"
+                                : "bg-slate-600/50 border-slate-500/50 text-slate-300 hover:bg-slate-600/70"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+                      <button
+                        onClick={() => archiveStore.setCurrentPage(Math.min(archiveStore.totalPages, archiveStore.currentPage + 1))}
+                        disabled={archiveStore.currentPage === archiveStore.totalPages}
+                        className="relative inline-flex items-center px-3 py-2 rounded-r-lg border border-slate-500/50 bg-slate-600/50 text-sm font-medium text-slate-300 hover:bg-slate-600/70 disabled:opacity-40 transition-all duration-200"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </nav>
+                  </div>
                 </div>
               </div>
             </>

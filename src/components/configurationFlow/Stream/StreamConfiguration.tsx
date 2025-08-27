@@ -308,11 +308,28 @@ const StreamConfiguration = observer(() => {
           const rawConfig = toJS(
             currentStream.stream_config.compressibility_kfactor_config
           );
-          const payload = {
-            active_method: rawConfig.active_method,
-            constant_k_value: rawConfig.constant_k_value,
-            methods: rawConfig.methods,
+
+          const activeMethodName = rawConfig.active_method;
+          const activeMethodComponents = rawConfig.methods[activeMethodName];
+          const filteredComponents: { [key: string]: GasComponent } = {};
+          for (const key in activeMethodComponents) {
+            const component = activeMethodComponents[key];
+            if (component.value !== 0 || component.linked_device_id) {
+              filteredComponents[key] = component;
+            }
+          }
+
+          const methodsPayload = {
+            [activeMethodName]: filteredComponents, // Use the filtered components for the active method
           };
+
+          const payload = {
+            active_method: activeMethodName,
+            constant_k_value: rawConfig.constant_k_value,
+            methods: methodsPayload,
+          };
+
+          console.log(payload);
           await setCompressibilityConfig(streamId, payload);
           break;
         }
