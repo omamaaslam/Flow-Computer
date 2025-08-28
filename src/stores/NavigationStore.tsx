@@ -66,6 +66,10 @@ class NavigationStore {
     this.goTo("Monitor");
   }
 
+  goToSystemSettings() {
+    this.goTo("SystemSettings");
+  }
+
   gotoConfiguration(id: number | string) {
     if (this.navigator) {
       const path = ROUTES.Configuration.replace(":streamId", id.toString());

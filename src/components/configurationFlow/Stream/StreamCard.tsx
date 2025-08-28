@@ -2,6 +2,7 @@ import { observer } from "mobx-react-lite";
 import React from "react";
 import { Newspaper } from "lucide-react";
 import { navigationStore } from "../../../stores/NavigationStore";
+import globalStore from "../../../stores/GlobalStore";
 
 interface StreamCardProps {
   stream: {
@@ -13,6 +14,10 @@ interface StreamCardProps {
 
 const StreamCard: React.FC<StreamCardProps> = observer(
   ({ colorScheme, stream }) => {
+    const streamResult = globalStore.results.find(
+      (r) => r.stream_id === stream.id
+    );
+
     const getBackgroundClass = () => {
       switch (colorScheme) {
         case "yellow":
@@ -83,7 +88,15 @@ const StreamCard: React.FC<StreamCardProps> = observer(
                 style={{ borderColor }}
               >
                 <span className="text-[11px] sm:text-[12px] md:text-[18px] font-semibold text-white text-center">
-                  Volume: 86
+                  Volume:{" "}
+                  {streamResult.pressure_interference_flag &&
+                  streamResult.temperature_interference_flag &&
+                  streamResult.volume_interference_flag &&
+                  streamResult.flow_rate_interference_flag &&
+                  streamResult.flow_rate_interference_flag &&
+                  streamResult.compressbility_method_interference
+                    ? streamResult.standard_volume_forward.toFixed(5)
+                    : streamResult.standard_volume_forward.toFixed(5)}
                 </span>
               </div>
               <div
@@ -93,7 +106,15 @@ const StreamCard: React.FC<StreamCardProps> = observer(
                 style={{ borderColor }}
               >
                 <span className="text-[11px] sm:text-[12px] md:text-[18px] font-semibold text-white text-center">
-                  Flow Rate: 12
+                  Flow Rate:{" "}
+                  {streamResult.pressure_interference_flag &&
+                  streamResult.temperature_interference_flag &&
+                  streamResult.volume_interference_flag &&
+                  streamResult.flow_rate_interference_flag &&
+                  streamResult.flow_rate_interference_flag &&
+                  streamResult.compressbility_method_interference
+                    ? streamResult.standard_volume_forward.toFixed(5)
+                    : streamResult.standard_flow_rate.toFixed(5)}
                 </span>
               </div>
             </div>
@@ -115,7 +136,7 @@ const StreamCard: React.FC<StreamCardProps> = observer(
           >
             <Newspaper className="w-4 h-4 md:w-6 md:h-6 text-[#9BC53F]" />
             <span className="text-[11px] sm:text-[12px] md:text-[18px] font-semibold text-black">
-              View Results
+              View Analytics
             </span>
           </button>
         </div>

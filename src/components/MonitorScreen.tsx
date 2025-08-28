@@ -38,9 +38,10 @@ const InfoCard = ({
 // --- Main Screen Component ---
 const MonitorScreen = observer(() => {
   const [showArchive, setShowArchive] = useState<string | null>(null);
-  const streamId = results[0]?.stream_id;
+
+  // const streamId = results[0]?.stream_id;
   return (
-    <div className="w-full font-sans text-gray-600">
+    <div className="w-full font-sans text-gray-800">
       {results.length > 0 ? (
         <>
           {results.map((res: any, index) => {
@@ -293,6 +294,9 @@ const MonitorScreen = observer(() => {
 
             return (
               <div key={index} className="space-y-6">
+                {/* ======================================= */}
+                {/*         LARGE SCREEN LAYOUT             */}
+                {/* ======================================= */}
                 <div className="hidden lg:block space-y-8">
                   <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="flex justify-between">
@@ -557,8 +561,8 @@ const MonitorScreen = observer(() => {
                           <MeterGuage
                             currentValue={res.device_flow_rate}
                             unit="m3/h"
-                            min={0}
-                            max={50000}
+                            min={500}
+                            max={5000}
                           />
                           <p className="text-lg text-gray-500 mt-3">
                             {res.device_flow_rate.toFixed(5)} m³/h
@@ -597,6 +601,9 @@ const MonitorScreen = observer(() => {
                   </div>
                 </div>
 
+                {/* ======================================= */}
+                {/*          SMALL SCREEN LAYOUT            */}
+                {/* ======================================= */}
                 <div className="block lg:hidden space-y-4">
                   <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
                     <div className="flex justify-between">
@@ -652,6 +659,41 @@ const MonitorScreen = observer(() => {
                         <p className="font-semibold text-cyan-600 text-lg">
                           {res.current_volume_original.toFixed(5)}
                           <span className="text-xs"> m³</span>
+                        </p>
+                      </div>
+                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
+                        <p className="text-sm">
+                          <span className="font-bold text-gray-600">
+                            Current Flow Rate:
+                          </span>{" "}
+                          <span className="font-semibold text-cyan-600 pl-2">
+                            {res.device_flow_rate.toFixed(5)}{" "}
+                            <span className="text-xs">m³/h</span>
+                          </span>
+                        </p>
+                      </div>
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <p className="text-sm">
+                          <span className="font-bold text-gray-600 ">
+                            Interference Vol:
+                          </span>
+                          <span className="font-semibold text-cyan-600 pl-2">
+                            {res.interference_volume_forward.toFixed(5)}
+                            <span className="text-xs"> m³</span>
+                          </span>
+                        </p>
+                      </div>
+                      <div className="border border-gray-200 rounded-lg p-6">
+                        <p className="text-sm">
+                          <span className="font-bold text-gray-600">
+                            Std. Interference Volume:
+                          </span>{" "}
+                          <span className="font-semibold text-cyan-600 pl-2">
+                            {res.standard_interference_volume_forward.toFixed(
+                              5
+                            )}{" "}
+                            <span className="text-xs"> m³</span>
+                          </span>
                         </p>
                       </div>
                     </div>

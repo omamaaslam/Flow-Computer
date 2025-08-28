@@ -14,6 +14,7 @@ import { connectWebSocket } from "./utils/api";
 import MonitorScreen from "./components/MonitorScreen";
 import { getGlobalStateSnapshot } from "./utils/services";
 import ArchiveDataComponent from "./components/Archive";
+import SystemSettings from "./components/SystemSettings";
 
 const App = observer(() => {
   const navigate = useNavigate();
@@ -61,6 +62,7 @@ const App = observer(() => {
               <Route path={ROUTES.Users} element={<h1>Users Page</h1>} />
               <Route path={ROUTES.Monitor} element={<MonitorScreen />} />
               <Route path={ROUTES.Configuration} element={<Configuration />} />
+              <Route path={ROUTES.SystemSettings} element={<SystemSettings />} />
               <Route path="*" element={<h1>404: Page Not Found</h1>} />
             </Routes>
           </div>
