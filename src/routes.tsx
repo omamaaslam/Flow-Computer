@@ -9,7 +9,7 @@ import NetworkSettings from "./components/SystemSettings/NetworkSettings.tsx";
 
 export const ROUTES = {
   Home: "/",
-  Monitor: "/monitor",
+  Monitor: "/monitor/:streamId",
   Alarms: "/alarms",
   Devices: "/devices",
   Users: "/users",

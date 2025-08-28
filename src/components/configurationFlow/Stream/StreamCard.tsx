@@ -132,7 +132,7 @@ const StreamCard: React.FC<StreamCardProps> = observer(
               boxShadow:
                 "0px 10px 6px rgba(0, 0, 0, 0.02), 0px 4px 4px rgba(0, 0, 0, 0.04)",
             }}
-            onClick={() => navigationStore.gotoMonitor()}
+            onClick={() => navigationStore.gotoMonitor(stream.id)}
           >
             <Newspaper className="w-4 h-4 md:w-6 md:h-6 text-[#9BC53F]" />
             <span className="text-[11px] sm:text-[12px] md:text-[18px] font-semibold text-black">

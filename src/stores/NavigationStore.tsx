@@ -62,10 +62,14 @@ class NavigationStore {
   goToUsers() {
     this.goTo("Users");
   }
-  gotoMonitor() {
-    this.goTo("Monitor");
+gotoMonitor(id: number | string) {
+  if (this.navigator) {
+    const path = ROUTES.Monitor.replace(":streamId", id.toString());
+    this.navigator(path);
+  } else {
+    console.warn("Navigator not initialized yet.");
   }
-
+}
   goToSystemSettings() {
     this.goTo("SystemSettings");
   }

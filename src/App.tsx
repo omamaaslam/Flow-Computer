@@ -13,7 +13,6 @@ import Configuration from "./components/configurationFlow/Stream/io_card/Interfa
 import { connectWebSocket } from "./utils/api";
 import MonitorScreen from "./components/MonitorScreen";
 import { getGlobalStateSnapshot } from "./utils/services";
-import ArchiveDataComponent from "./components/Archive";
 import SystemSettings from "./components/SystemSettings";
 
 const App = observer(() => {

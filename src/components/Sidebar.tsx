@@ -4,13 +4,6 @@ import { navigationStore } from "../stores/NavigationStore";
 import { useMediaQuery } from "react-responsive";
 
 const navItems = [
-  // {
-  //   label: "Monitor",
-  //   icon: <Monitor size={18} />,
-  //   action: () => navigationStore.gotoMonitor(),
-  //   routeKey: "Monitor",
-  //   children: [],
-  // },
   {
     label: "Home",
     icon: <Home size={18} />,
