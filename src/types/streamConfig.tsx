@@ -320,6 +320,10 @@ export interface stream_config {
   pipeline_profile_configuration: pipeline_profile_config;
   calculation_profile: any;
   result?: Streams;
+  state: {
+    configured: boolean;
+    start: boolean;
+  };
 }
 
 export interface StreamData {
@@ -327,7 +331,10 @@ export interface StreamData {
   stream_name: string;
   calculator: stream_config;
   io_card: IOCardConfig;
-  state: any;
+  state: {
+    configured: boolean;
+    start: boolean;
+  };
 }
 
 export const createDefaultStreamConfig = (): stream_config => ({
@@ -562,4 +569,8 @@ export const createDefaultStreamConfig = (): stream_config => ({
   },
   calculation_profile: null,
   result: {},
+  state: {
+    configured: false,
+    start: false,
+  },
 });

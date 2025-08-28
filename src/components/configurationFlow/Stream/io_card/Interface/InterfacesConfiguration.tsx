@@ -1,4 +1,3 @@
-import { toJS } from "mobx";
 import type { Stream } from "../../../../../stores/Stream";
 import Legend from "../../../../Legend";
 import IoCardSvg from "../IoCardSvg";

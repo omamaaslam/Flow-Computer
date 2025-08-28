@@ -1,4 +1,4 @@
-import { useState, type JSX } from "react";
+import { useEffect, useState } from "react";
 import { observer } from "mobx-react-lite";
 import {
   Thermometer,
@@ -61,18 +61,43 @@ const StreamConfiguration = observer(() => {
   const [activeModal, setActiveModal] = useState<ActiveModalState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { streamId } = useParams<{ streamId: string }>();
-  const [runState, setRunState] = useState<RunState>("start");
 
   if (!streamId) {
     return <div>Stream ID is missing.</div>;
   }
   const currentStream = globalStore.streams.find((s) => s.id === streamId);
-
+  const [runState, setRunState] = useState<RunState>(
+    currentStream?.stream_config.state.start ? "stop" : "start"
+  );
   const [alertState, setAlertState] = useState<AlertState>({
     isOpen: false,
     type: "success",
     message: "",
   });
+
+  useEffect(() => {
+    console.log("useEffect triggered for stream config state update");
+    if (
+      currentStream &&
+      currentStream.stream_config &&
+      typeof currentStream.stream_config.state.start === "boolean"
+    ) {
+      const newRunState = currentStream.stream_config.state.start
+        ? "stop"
+        : "start";
+      if (runState !== newRunState) {
+        console.log(`Updating runState from ${runState} to ${newRunState}`);
+        setRunState(newRunState);
+      }
+    } else {
+      if (runState !== "start") {
+        setRunState("start");
+      }
+      console.log(
+        "Current stream or its state.start is not yet available or valid."
+      );
+    }
+  }, [currentStream?.stream_config.state.start, currentStream]);
 
   const buttonConfigs = {
     start: {

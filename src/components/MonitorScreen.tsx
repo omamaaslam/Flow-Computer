@@ -296,16 +296,19 @@ const MonitorScreen = observer(() => {
                 <div className="hidden lg:block space-y-8">
                   <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                     <div className="flex justify-between">
-                      <div>
-                      <span>Active Profile</span>
                       <button
-                        onClick={() => setShowArchive(res.stream_id || globalStore.streams[index]?.id || index.toString())}
+                        onClick={() =>
+                          setShowArchive(
+                            res.stream_id ||
+                              globalStore.streams[index]?.id ||
+                              index.toString()
+                          )
+                        }
                         className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-gray-800 text-bold rounded-lg transition-colors"
                       >
                         <Archive size={18} />
                         View Archive
                       </button>
-                      </div>
                       <span>
                         <strong>Update Time:</strong>
                         {new Date(res.current_system_timestamp).toLocaleString(
@@ -464,7 +467,8 @@ const MonitorScreen = observer(() => {
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-3 h-3 rounded-full ${
-                              res.compressibility_interference_flag
+                              res.compressibility_interference_flag &&
+                              res.compressbility_method_interference
                                 ? "bg-red-600"
                                 : "bg-green-500"
                             }`}
@@ -593,6 +597,288 @@ const MonitorScreen = observer(() => {
                   </div>
                 </div>
 
+                <div className="block lg:hidden space-y-4">
+                  <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                    <div className="flex justify-between">
+                      <button
+                        onClick={() =>
+                          setShowArchive(
+                            res.stream_id ||
+                              globalStore.streams[index]?.id ||
+                              index.toString()
+                          )
+                        }
+                        className="flex items-center gap-2 px-4 py-2 bg-yellow-500 text-gray-800 text-bold rounded-lg transition-colors"
+                      >
+                        <Archive size={18} />
+                        View Archive
+                      </button>
+                      <span>
+                        <strong>Update Time:</strong>
+                        {new Date(res.current_system_timestamp).toLocaleString(
+                          "en-GB",
+                          {
+                            year: "numeric",
+                            month: "2-digit",
+                            day: "2-digit",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                            hour12: false,
+                          }
+                        )}
+                      </span>
+                    </div>
+                    <h3 className="font-semibold text-gray-800 text-base mb-2">
+                      Forward Volume
+                    </h3>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
+                        <p className="font-bold text-sm">Operating Volume</p>
+                        <p className="font-semibold text-cyan-600 text-lg">
+                          {res.operating_volume_net.toFixed(5)}
+                          <span className="text-xs"> m³</span>
+                        </p>
+                      </div>
+                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
+                        <p className="font-bold text-sm">Std Volume</p>
+                        <p className="font-semibold text-cyan-600 text-lg">
+                          {res.standard_volume_forward.toFixed(5)}
+                          <span className="text-xs"> m³</span>
+                        </p>
+                      </div>
+                      <div className="bg-white border rounded-lg shadow-sm p-3 text-center">
+                        <p className="font-bold text-sm">Original Volume</p>
+                        <p className="font-semibold text-cyan-600 text-lg">
+                          {res.current_volume_original.toFixed(5)}
+                          <span className="text-xs"> m³</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex flex-row items-stretch gap-2 h-[170px]">
+                      {/* --- Conditions --- */}
+                      <div className="flex flex-1 flex-col bg-white border rounded-lg shadow-sm p-3">
+                        <h3 className="font-semibold text-gray-800 text-sm border-b pb-1 mb-2">
+                          Conditions
+                        </h3>
+                        <div className="text-sm divide-y divide-gray-200">
+                          <p className="flex justify-between py-1.5">
+                            <span className="text-cyan-600">Pressure:</span>
+                            <span className="font-medium text-gray-700">
+                              {res.operating_pressure.toFixed(5)}{" "}
+                              {res.pressure_unit}
+                            </span>
+                          </p>
+                          <p className="flex justify-between py-1.5">
+                            <span className="text-cyan-600">Temp:</span>
+                            <span className="font-medium text-gray-700">
+                              {res.operating_temperature.toFixed(5)}{" "}
+                              {res.temperature_unit}
+                            </span>
+                          </p>
+                          <p className="flex justify-between py-1.5">
+                            <span className="text-cyan-600">Z-Factor:</span>
+                            <span className="font-medium text-gray-700">
+                              {res.correction_z_factor.toFixed(5)}
+                            </span>
+                          </p>
+                          <p className="flex justify-between py-1.5">
+                            <span className="text-cyan-600">K-Number:</span>
+                            <span className="font-medium text-gray-700">
+                              {res.compressibility_k_factor.toFixed(5)}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* --- System --- */}
+                      <div className="flex flex-col bg-white border rounded-lg shadow-sm p-3">
+                        <h3 className="font-semibold text-gray-800 text-sm border-b pb-1 mb-2">
+                          System
+                        </h3>
+                        <div className="space-y-1.5 text-xs pt-1">
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className={`w-2.5 h-2.5 rounded-full ${
+                                res.pressure_interference_flag
+                                  ? "bg-red-500"
+                                  : "bg-green-500"
+                              }`}
+                            />
+                            <span>Pressure</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className={`w-2.5 h-2.5 rounded-full ${
+                                res.temperature_interference_flag
+                                  ? "bg-red-500"
+                                  : "bg-green-500"
+                              }`}
+                            />
+                            <span>Temperature</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className={`w-2.5 h-2.5 rounded-full ${
+                                res.volume_interference_flag
+                                  ? "bg-red-500"
+                                  : "bg-green-500"
+                              }`}
+                            />
+                            <span>Volume</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className={`w-2.5 h-2.5 rounded-full ${
+                                res.flow_rate_interference_flag
+                                  ? "bg-red-500"
+                                  : "bg-green-500"
+                              }`}
+                            />
+                            <span>FlowRate</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <div
+                              className={`w-2.5 h-2.5 rounded-full ${
+                                res.compressibility_interference_flag &&
+                                res.compressbility_method_interference
+                                  ? "bg-red-500"
+                                  : "bg-green-500"
+                              }`}
+                            />
+                            <span>K-Number</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* --- Alerts --- */}
+                      <div className="flex flex-1 flex-col bg-white border rounded-lg shadow-sm p-3">
+                        <h3 className="font-semibold text-gray-800 text-sm border-b pb-1 mb-2">
+                          Alerts
+                        </h3>
+                        <div className="flex-grow overflow-y-auto space-y-1.5 text-xs pr-1">
+                          <div
+                            className={`p-2 border-l-4 ${
+                              res.temperature_interference_flag
+                                ? "border-red-500 bg-red-100/80 text-red-700"
+                                : "bg-green-100 border-green-500 text-green-800"
+                            }`}
+                          >
+                            {res.temperature_logs?.[
+                              res.temperature_logs.length - 1
+                            ] || "No temperature logs"}
+                          </div>
+                          <div
+                            className={`p-2 border-l-4 ${
+                              res.flow_rate_interference_flag
+                                ? "border-red-500 bg-red-100/80 text-red-700"
+                                : "bg-green-100 border-green-500 text-green-800"
+                            }`}
+                          >
+                            {res.flow_rate_logs?.[
+                              res.flow_rate_logs.length - 1
+                            ] || "No flow rate logs"}
+                          </div>
+                          <div
+                            className={`p-2 border-l-4 ${
+                              res.pressure_interference_flag
+                                ? "border-red-500 bg-red-100/80 text-red-700"
+                                : "bg-green-100 border-green-500 text-green-800"
+                            }`}
+                          >
+                            {res.pressure_logs?.[
+                              res.pressure_logs.length - 1
+                            ] || "No pressure logs"}
+                          </div>
+                          <div
+                            className={`p-2 border-l-4 ${
+                              !res.last_status_ok
+                                ? "border-red-500 bg-red-100/80 text-red-700"
+                                : "bg-blue-100 border-blue-500 text-blue-800"
+                            }`}
+                          >
+                            {res.system_logs?.[res.system_logs.length - 1] ||
+                              "No system logs"}
+                          </div>
+                          <div
+                            className={`p-2 border-l-4 ${
+                              res.volume_interference_flag
+                                ? "border-red-500 bg-red-100/80 text-red-700"
+                                : "bg-green-100 border-green-500 text-green-800"
+                            }`}
+                          >
+                            {res.volume_logs?.[res.volume_logs.length - 1] ||
+                              "No volume logs"}
+                          </div>
+                          <div
+                            className={`p-2 border-l-4 ${
+                              res.compressibility_interference_flag
+                                ? "border-red-500 bg-red-100/80 text-red-700"
+                                : "bg-green-100 border-green-500 text-green-800"
+                            }`}
+                          >
+                            {res.compressibility_logs?.[
+                              res.compressibility_logs.length - 1
+                            ] || "No compressibility logs"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* --- Gauges --- */}
+                  <div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-white p-2 rounded-lg border shadow-lg flex flex-col items-center text-center">
+                        <h3 className="font-bold text-lg mb-1">Flow Rate</h3>
+                        <div className="my-2">
+                          <MeterGuage
+                            currentValue={res.device_flow_rate}
+                            unit="m³/h"
+                            min={0}
+                            max={50000}
+                          />
+                          <p className="text-[16px] text-gray-500 mt-2">
+                            {res.device_flow_rate.toFixed(5)} m³/h
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-white p-2 rounded-lg border shadow-lg flex flex-col items-center text-center">
+                        <h3 className="font-bold text-lg mb-1">Pressure</h3>
+                        <div className="my-2">
+                          <MeterGuage
+                            currentValue={res.operating_pressure}
+                            unit={res.pressure_unit}
+                            min={0}
+                            max={20}
+                          />
+                          <p className="text-[16px] text-gray-500 mt-2">
+                            {res.operating_pressure.toFixed(5)}{" "}
+                            {res.pressure_unit}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="bg-white p-2 rounded-lg border shadow-lg flex flex-col items-center text-center">
+                        <h3 className="font-bold text-lg mb-1">Temperature</h3>
+                        <div className="pt-2">
+                          <Thermometer
+                            currentValue={res.operating_temperature}
+                            min={-20}
+                            max={100}
+                          />
+                          <p className="text-[16px] text-gray-500 mt-2">
+                            {res.operating_temperature.toFixed(2)}{" "}
+                            {res.temperature_unit}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm overflow-auto my-6">
                   <h3 className="text-xl font-bold p-2 text-gray-700">
                     Detailed Results
@@ -665,18 +951,21 @@ const MonitorScreen = observer(() => {
               </div>
             );
           })}
-           {/* Archive start here  */}
-            {showArchive && (
+          {/* Archive start here  */}
+          {showArchive && (
             <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
               <div className="bg-white rounded-xl w-full max-w-7xl max-h-[90vh] overflow-hidden">
                 <div className="overflow-auto max-h-[calc(90vh-80px)]">
-                  <ArchiveDataComponent streamId={showArchive} onClose={() => setShowArchive(null)} />
+                  <ArchiveDataComponent
+                    streamId={showArchive}
+                    onClose={() => setShowArchive(null)}
+                  />
                 </div>
               </div>
             </div>
           )}
 
-           {/* Archive end here  */}
+          {/* Archive end here  */}
         </>
       ) : (
         <p>No results yet...</p>

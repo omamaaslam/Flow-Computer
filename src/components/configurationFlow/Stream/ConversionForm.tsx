@@ -142,9 +142,7 @@ const ConversionForm: React.FC<ConversionFormProps> = observer(
             <div>
               {stream.componentsForActiveMethod.map(
                 (component: GasComponent) => {
-                  const resultForStream = store.results.find((r) => {
-                    r.stream_id === stream.id;
-                  });
+                  const resultForStream = store.results.find((r) => r.stream_id === stream.id);
                   return (
                     <ComponentRow
                       key={component.key}

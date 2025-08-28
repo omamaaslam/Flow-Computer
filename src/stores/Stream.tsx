@@ -180,6 +180,11 @@ export class Stream {
       this.stream_config.calculation_profile =
         incomingstream_config.calculation_profile;
     }
+     if (incomingstream_config.state) {
+        Object.assign(this.stream_config.state, incomingstream_config.state);
+      } else if (streamData.state) {
+        Object.assign(this.stream_config.state, streamData.state);
+      }
   }
 
   // --- NEW, SIMPLER WAY TO HANDLE CANCEL ---
