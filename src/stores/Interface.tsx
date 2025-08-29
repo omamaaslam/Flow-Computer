@@ -7,6 +7,7 @@ import {
   updateDevice as updateDeviceService,
   addInterfaceConfig,
   updateInterface,
+  DeleteDevice as deleteDeviceService,
 } from "../utils/services";
 
 export class Interface {
@@ -153,12 +154,33 @@ export class Interface {
       throw error;
     }
   }
-
-  removeDevice(deviceId: string) {
-    this.devices = this.devices.filter((device) => device.id !== deviceId);
-  }
-
   getConfig(): InterfaceConfig {
     return this.config;
+  }
+
+  async deleteDevice(deviceId: string) {
+    const deviceIndex = this.devices.findIndex(
+      (device) => device.id === deviceId
+    );
+
+    if (deviceIndex === -1) {
+      console.error(`Device with ID ${deviceId} not found for deletion.`);
+      return;
+    }
+
+    try {
+      // Call the service to delete the device
+      await deleteDeviceService(this.stream_id, this.interface_id, deviceId);
+
+      // On success, remove it locally
+      runInAction(() => {
+        this.devices.splice(deviceIndex, 1);
+      });
+
+      console.log(`Device '${deviceId}' deleted successfully.`);
+    } catch (error) {
+      console.error(`Failed to DELETE device '${deviceId}':`, error);
+      throw error;
+    }
   }
 }

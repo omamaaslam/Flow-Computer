@@ -29,4 +29,9 @@ export class Device {
     }
     Object.assign(this.config.data, liveData);
   }
+
+  removeDevice(device_id: string, interface_id: string, stream_id: string) {
+   
+  }
+
 }

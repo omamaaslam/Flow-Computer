@@ -600,16 +600,285 @@ const MonitorScreen = observer(() => {
         {/* ======================================= */}
         {/*          SMALL SCREEN LAYOUT            */}
         {/* ======================================= */}
-        <div className="block lg:hidden space-y-4">
-          {/* ... (keep the mobile layout but replace all 'res' with 'streamResult') ... */}
+        <div className="block lg:hidden">
+          {/* Header with Archive button and timestamp */}
+          <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+            <div className="flex justify-between items-center">
+              <button
+                onClick={() => setShowArchive(streamId || "")}
+                className="flex items-center gap-1 px-3 py-1.5 bg-yellow-500 text-gray-800 font-bold rounded-lg transition-colors text-sm"
+              >
+                <Archive size={14} />
+                View Archive
+              </button>
+              <span className="text-sm">
+                <strong>Update Time:</strong>
+                {new Date(streamResult.current_system_timestamp).toLocaleString(
+                  "en-GB",
+                  {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                  }
+                )}
+              </span>
+            </div>
+
+            {/* Key metrics grid for small screens */}
+            <div className="grid grid-cols-2 gap-1 mt-3">
+              <div className="border border-gray-200 rounded-lg p-2">
+                <p className="text-md">
+                  <span className="font-bold text-gray-600">Orig. Vol:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.current_volume_original.toFixed(3)} m³
+                  </span>
+                </p>
+              </div>
+              <div className="border border-gray-200 rounded-lg p-2">
+                <p className="text-md">
+                  <span className="font-bold text-gray-600">Oper. Vol:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.operating_volume_net.toFixed(3)} m³
+                  </span>
+                </p>
+              </div>
+              <div className="border border-gray-200 rounded-lg p-2">
+                <p className="text-md">
+                  <span className="font-bold text-gray-600">Std Vol:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.standard_volume_forward.toFixed(3)} m³
+                  </span>
+                </p>
+              </div>
+              <div className="border border-gray-200 rounded-lg p-2">
+                <p className="text-md">
+                  <span className="font-bold text-gray-600">Flow Rate:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.device_flow_rate.toFixed(3)} m³/h
+                  </span>
+                </p>
+              </div>
+              <div className="border border-gray-200 rounded-lg p-2">
+                <p className="text-md">
+                  <span className="font-bold text-gray-600">Interference Vol:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.interference_volume_forward.toFixed(5)} m³
+                  </span>
+                </p>
+              </div>
+              <div className="border border-gray-200 rounded-lg p-2">
+                <p className="text-md">
+                  <span className="font-bold text-gray-600">Std Int Vol:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.standard_interference_volume_forward.toFixed(
+                      5
+                    )}
+                    m³{" "}
+                  </span>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Visualizations for small screens */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center">
+              <h3 className="font-bold text-md mb-1">Flow Rate</h3>
+              <div className="scale-75 -my-2">
+                <MeterGuage
+                  currentValue={streamResult.device_flow_rate}
+                  unit="m3/h"
+                  min={500}
+                  max={5000}
+                />
+              </div>
+              <p className="text-md text-gray-500 mt-0">
+                {streamResult.device_flow_rate.toFixed(3)} m³/h
+              </p>
+            </div>
+
+            <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center">
+              <h3 className="font-bold text-md mb-1">Pressure</h3>
+              <div className="scale-75 -my-2">
+                <MeterGuage
+                  currentValue={streamResult.operating_pressure}
+                  unit="Bar"
+                  min={0}
+                  max={20}
+                />
+              </div>
+              <p className="text-md text-gray-500 mt-0">
+                {streamResult.operating_pressure.toFixed(3)}{" "}
+                {streamResult.pressure_unit}
+              </p>
+            </div>
+
+            <div className="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center">
+              <h3 className="font-bold text-md mb-1">Temperature</h3>
+              <div className="scale-75 -my-2">
+                <Thermometer
+                  currentValue={streamResult.operating_temperature}
+                  min={-20}
+                  max={100}
+                />
+              </div>
+              <p className="text-md text-gray-500 mt-0">
+                {streamResult.operating_temperature.toFixed(1)}{" "}
+                {streamResult.temperature_unit}
+              </p>
+            </div>
+          </div>
+
+          {/* Main content grid for small screens */}
+          <div className="grid grid-cols-2 gap-3">
+            <InfoCard title="Conditions" className="col-span-1">
+              <div className="text-md divide-y divide-gray-200">
+                <p className="flex justify-between py-1.5">
+                  <span>Pressure:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.operating_pressure.toFixed(3)}{" "}
+                    {streamResult.pressure_unit}
+                  </span>
+                </p>
+                <p className="flex justify-between py-1.5">
+                  <span>Temp:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.operating_temperature.toFixed(3)}{" "}
+                    {streamResult.temperature_unit}
+                  </span>
+                </p>
+                <p className="flex justify-between py-1.5">
+                  <span>K-Number:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.compressibility_k_factor.toFixed(3)}
+                  </span>
+                </p>
+                <p className="flex justify-between py-1.5">
+                  <span>Z-Factor:</span>{" "}
+                  <span className="font-semibold text-cyan-600">
+                    {streamResult.correction_z_factor.toFixed(3)}
+                  </span>
+                </p>
+              </div>
+            </InfoCard>
+
+            <InfoCard title="System Status" className="col-span-1">
+              <div className="space-y-2 text-md pt-1">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      streamResult.pressure_interference_flag
+                        ? "bg-red-600"
+                        : "bg-green-500"
+                    }`}
+                  />
+                  <span>Pressure</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      streamResult.temperature_interference_flag
+                        ? "bg-red-600"
+                        : "bg-green-500"
+                    }`}
+                  />
+                  <span>Temperature</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      streamResult.volume_interference_flag
+                        ? "bg-red-600"
+                        : "bg-green-500"
+                    }`}
+                  />
+                  <span>Volume</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      streamResult.flow_rate_interference_flag
+                        ? "bg-red-600"
+                        : "bg-green-500"
+                    }`}
+                  />
+                  <span>FlowRate</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full ${
+                      streamResult.compressibility_interference_flag &&
+                      streamResult.compressbility_method_interference
+                        ? "bg-red-600"
+                        : "bg-green-500"
+                    }`}
+                  />
+                  <span>K-Number</span>
+                </div>
+              </div>
+            </InfoCard>
+
+            <InfoCard title="Alerts" scrollable={true} className="col-span-2">
+              <div className="space-y-1 text-md">
+                <div
+                  className={`p-1 border-l-2 ${
+                    streamResult.temperature_interference_flag
+                      ? "border-red-500 bg-red-100/80 text-red-700"
+                      : "bg-green-100 border-green-500 text-green-800"
+                  }`}
+                >
+                  {streamResult.temperature_logs?.[
+                    streamResult.temperature_logs.length - 1
+                  ] || "No temp logs"}
+                </div>
+                <div
+                  className={`p-1 border-l-2 ${
+                    streamResult.flow_rate_interference_flag
+                      ? "border-red-500 bg-red-100/80 text-red-700"
+                      : "bg-green-100 border-green-500 text-green-800"
+                  }`}
+                >
+                  {streamResult.flow_rate_logs?.[
+                    streamResult.flow_rate_logs.length - 1
+                  ] || "No flow logs"}
+                </div>
+                <div
+                  className={`p-1 border-l-2 ${
+                    streamResult.pressure_interference_flag
+                      ? "border-red-500 bg-red-100/80 text-red-700"
+                      : "bg-green-100 border-green-500 text-green-800"
+                  }`}
+                >
+                  {streamResult.pressure_logs?.[
+                    streamResult.pressure_logs.length - 1
+                  ] || "No pressure logs"}
+                </div>
+                <div
+                  className={`p-1 border-l-2 ${
+                    !streamResult.last_status_ok
+                      ? "border-red-500 bg-red-100/80 text-red-700"
+                      : "bg-blue-100 border-blue-500 text-blue-800"
+                  }`}
+                >
+                  {streamResult.system_logs?.[
+                    streamResult.system_logs.length - 1
+                  ] || "No system logs"}
+                </div>
+              </div>
+            </InfoCard>
+          </div>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm overflow-auto my-6">
-          <h3 className="text-xl font-bold p-2 text-gray-700">
+          <h3 className="text-lg font-bold p-2 text-gray-700">
             Detailed Results
           </h3>
           <table className="w-full text-sm text-left">
-            <thead className="text-sm text-gray-700 uppercase bg-[#FFB700] sticky top-0">
+            <thead className="text-md text-gray-700 uppercase bg-[#FFB700] sticky top-0">
               <tr>
                 <th className="px-6 py-3">NAME</th>
                 <th className="px-6 py-3">VALUE</th>

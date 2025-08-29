@@ -165,7 +165,7 @@ const SystemSettings = () => {
               color: '#333',
               marginBottom: '12px'
             }}>
-              DsFG Modbus
+              Modbus Server
             </h3>
             <p style={{
               color: '#6b7280',

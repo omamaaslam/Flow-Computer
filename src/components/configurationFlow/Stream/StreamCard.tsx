@@ -114,7 +114,7 @@ const StreamCard: React.FC<StreamCardProps> = observer(
                   streamResult.flow_rate_interference_flag &&
                   streamResult.compressbility_method_interference
                     ? streamResult.standard_volume_forward.toFixed(5)
-                    : streamResult.standard_flow_rate.toFixed(5)}
+                    : streamResult.interference_volume_forward.toFixed(5)}
                 </span>
               </div>
             </div>

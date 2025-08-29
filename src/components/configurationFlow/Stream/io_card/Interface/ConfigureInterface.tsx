@@ -31,8 +31,12 @@ interface ConfigureInterfaceProps {
 
 type AlertState = {
   isOpen: boolean;
-  type: "success" | "error";
+  type: "success" | "error" | "warning" | "confirm"; // Updated type to include 'confirm'
   message: string;
+  title?: string;
+  onConfirm?: () => void;
+  confirmText?: string;
+  cancelText?: string;
 };
 
 type DeviceStatus = "ok" | "warning" | "error";
@@ -90,12 +94,11 @@ const deviceOptions = [
   { value: "SD", label: "Standard Density" },
 ];
 
- const gasDeviceTypes = deviceOptions
-   .filter(
-     (opt) =>
-       !opt.value.endsWith("Device") && !["HI", "WI"].includes(opt.value)
-   )
-   .map((opt) => opt.value);
+const gasDeviceTypes = deviceOptions
+  .filter(
+    (opt) => !opt.value.endsWith("Device") && !["HI", "WI"].includes(opt.value)
+  )
+  .map((opt) => opt.value);
 
 const ConfigureInterface = observer(
   ({ anInterface, onBack }: ConfigureInterfaceProps) => {
@@ -115,7 +118,12 @@ const ConfigureInterface = observer(
     });
 
     const handleCloseAlert = () => {
-      setAlertState({ ...alertState, isOpen: false });
+      setAlertState({
+        ...alertState,
+        isOpen: false,
+        onConfirm: undefined,
+        title: undefined,
+      });
     };
 
     useEffect(() => {
@@ -176,9 +184,7 @@ const ConfigureInterface = observer(
               return;
             }
             newDeviceId = `${anInterface.interface_id}T${pollingAddress}${variableType}`;
-          } else if (
-            ["DI", "TI", "AI1", "AI2"].includes(currentInterfacePrefix)
-          ) {
+          } else if (["DI", "TI", "AI"].includes(currentInterfacePrefix)) {
             newDeviceId = anInterface.interface_id;
           } else {
             newDeviceId = `${anInterface.interface_id}D${deviceCount + 1}`;
@@ -233,17 +239,55 @@ const ConfigureInterface = observer(
     const handleAddNewDeviceClick = () => {
       setIsEditing(false);
       setEditingDevice(null);
+      const isAIInterface = ["AI1", "AI2"].includes(anInterface.interface_id);
+
+      if (isAIInterface && anInterface.devices.length > 0) {
+        setAlertState({
+          isOpen: true,
+          type: "warning",
+          message:
+            "This Analog Input interface can only configure one device at a time. Please delete the existing device to add a new one.",
+        });
+        return;
+      }
       setModalView("addDevice_selectType");
     };
 
-    const handleDeleteDevice = () => {
+    const handleDeleteDeviceClick = () => {
       if (selectedDeviceId !== null) {
-        anInterface.removeDevice(selectedDeviceId);
-        setSelectedDeviceId(null);
+        setAlertState({
+          isOpen: true,
+          type: "confirm",
+          title: "Confirm Device Deletion",
+          message:
+            "Are you sure you want to delete this device? This action cannot be undone.",
+          onConfirm: () => confirmDeleteDevice(selectedDeviceId!), // Pass deviceId to confirm function
+          confirmText: "Yes, Delete",
+          cancelText: "No, Keep",
+        });
       }
     };
 
-    // *** MODIFIED FUNCTION ***
+    const confirmDeleteDevice = async (deviceId: string) => {
+      handleCloseAlert(); // Close the confirmation dialog immediately
+      try {
+        await anInterface.deleteDevice(deviceId); // ✅ now calls store delete
+        setAlertState({
+          isOpen: true,
+          type: "success",
+          message: "Device deleted successfully!",
+        });
+        setSelectedDeviceId(null); // Deselect after deletion
+      } catch (error) {
+        setAlertState({
+          isOpen: true,
+          type: "error",
+          message: `Failed to delete device. Please try again.`,
+        });
+        console.error("❌ Failed to delete device:", error);
+      }
+    };
+
     const handleDeviceClick = (device: Device) => {
       // Find the actual device instance from the store to ensure it's observable and live
       const deviceFromStore = anInterface.devices.find(
@@ -425,6 +469,10 @@ const ConfigureInterface = observer(
           type={alertState.type}
           message={alertState.message}
           onClose={handleCloseAlert}
+          onConfirm={alertState.onConfirm}
+          title={alertState.title}
+          confirmText={alertState.confirmText}
+          cancelText={alertState.cancelText}
         />
         <Legend />
         <div className="w-full bg-white p-4 md:p-8 rounded-2xl shadow-lg space-y-6 md:space-y-8 border border-gray-200">
@@ -462,25 +510,107 @@ const ConfigureInterface = observer(
                       deviceOptions.find((opt) => opt.value === deviceType)
                         ?.label || deviceType;
                     return (
-                      <button
+                      // <div
+                      //   key={device.id}
+                      //   className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 border-2 bg-gradient-to-bl ${statusStyles["ok"].gradient}`}
+                      // >
+                      //   {/* Delete button */}
+                      //   <button
+                      //     onClick={(e) => {
+                      //       e.stopPropagation(); // prevent opening edit modal
+                      //       setAlertState({
+                      //         isOpen: true,
+                      //         type: "confirm",
+                      //         title: "Confirm Device Deletion",
+                      //         message:
+                      //           "Are you sure you want to delete this device? This action cannot be undone.",
+                      //         onConfirm: () => confirmDeleteDevice(device.id),
+                      //         confirmText: "Yes, Delete",
+                      //         cancelText: "No, Keep",
+                      //       });
+                      //     }}
+                      //     className="absolute top-1 right-1 p-1 bg-black/30 rounded-full hover:bg-red-500"
+                      //   >
+                      //     <svg
+                      //       xmlns="http://www.w3.org/2000/svg"
+                      //       className="h-4 w-4 text-white"
+                      //       fill="none"
+                      //       viewBox="0 0 24 24"
+                      //       stroke="currentColor"
+                      //     >
+                      //       <path
+                      //         strokeLinecap="round"
+                      //         strokeLinejoin="round"
+                      //         strokeWidth={2}
+                      //         d="M6 18L18 6M6 6l12 12"
+                      //       />
+                      //     </svg>
+                      //   </button>
+
+                      //   {/* Main clickable content */}
+                      //   <button
+                      //     onClick={() => handleDeviceClick(device)}
+                      //     className="flex flex-col items-center justify-center w-full h-full focus:outline-none"
+                      //   >
+                      //     <DeviceIcon
+                      //       deviceType={deviceType}
+                      //       className={`${statusStyles["ok"].icon} h-6 w-6 md:h-8 md:w-8`}
+                      //     />
+                      //     <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
+                      //       {deviceLabel}
+                      //     </span>
+                      //   </button>
+                      // </div>
+                      <div
                         key={device.id}
-                        onClick={() => handleDeviceClick(device)}
-                        className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 focus:outline-none border-2 bg-gradient-to-bl ${
-                          statusStyles["ok"].gradient
-                        } ${
-                          selectedDeviceId === device.id
-                            ? "ring-2 md:ring-4 ring-offset-2 ring-yellow-400"
-                            : "ring-2 ring-transparent"
-                        }`}
+                        className={`relative flex flex-col items-center justify-center gap-0.5 p-1 h-20 md:h-32 md:gap-2 md:p-4 rounded-lg text-white shadow-md transition-all duration-200 ease-in-out hover:scale-105 border-2 bg-gradient-to-bl ${statusStyles["ok"].gradient}`}
                       >
-                        <DeviceIcon
-                          deviceType={deviceType}
-                          className={`${statusStyles["ok"].icon} h-6 w-6 md:h-8 md:w-8`}
-                        />
-                        <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
-                          {deviceLabel}
-                        </span>
-                      </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setAlertState({
+                              isOpen: true,
+                              type: "confirm",
+                              title: "Confirm Device Deletion",
+                              message:
+                                "Are you sure you want to delete this device? This action cannot be undone.",
+                              onConfirm: () => confirmDeleteDevice(device.id),
+                              confirmText: "Yes, Delete",
+                              cancelText: "No, Keep",
+                            });
+                          }}
+                          className="absolute top-1 right-1 p-1 bg-black/30 rounded-full hover:bg-red-500"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+
+                        {/* Main clickable content */}
+                        <button
+                          onClick={() => handleDeviceClick(device)}
+                          className="flex flex-col items-center justify-center w-full h-full focus:outline-none"
+                        >
+                          <DeviceIcon
+                            deviceType={deviceType}
+                            className={`${statusStyles["ok"].icon} h-6 w-6 md:h-8 md:w-8`}
+                          />
+                          <span className="font-semibold font-sans text-[9px] leading-tight text-center md:text-sm">
+                            {deviceLabel}
+                          </span>
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -492,7 +622,7 @@ const ConfigureInterface = observer(
                     Add Device
                   </button>
                   <button
-                    onClick={handleDeleteDevice}
+                    onClick={handleDeleteDeviceClick}
                     disabled={selectedDeviceId === null}
                     className="px-4 py-1.5 md:px-5 md:py-2 text-xs md:text-sm font-semibold font-sans bg-white border border-gray-300 rounded-full shadow-sm text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:enabled:bg-gray-100"
                   >

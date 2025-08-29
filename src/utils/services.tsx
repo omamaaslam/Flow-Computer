@@ -280,6 +280,47 @@ export const updateDevice = (
   return sendAndWait(msg, isMatch);
 };
 
+export const DeleteDevice = (
+  stream_id: string,
+  interface_id: string,
+  device_id: string
+) => {
+  const msg = {
+    scope: "delete_device",
+    stream_id: stream_id,
+    interface_id: interface_id,
+    device_id: device_id,
+  };
+
+  const isMatch = (res: any) => {
+    if (
+      res?.success &&
+      typeof res.success === "string" &&
+      res.success.includes(`'${device_id}'`)
+    ) {
+      console.log(`✅ Matched DELETE DEVICE success message for ${device_id}`);
+      return true;
+    }
+
+    const device =
+      res?.streams?.[stream_id]?.io_card?.interfaces?.[interface_id]?.devices?.[
+        device_id
+      ];
+
+    if (device === undefined) {
+      console.log(
+        `✅ Device ${device_id} successfully deleted from ${interface_id}`
+      );
+      return true;
+    }
+
+    return false;
+  };
+
+  return sendAndWait(msg, isMatch);
+};
+
+
 // ==============================================================================================
 //                                 STREAM CONFIGURATIONS API
 // ==============================================================================================
@@ -426,15 +467,13 @@ export const stop_calculation = (streamId: string) => {
   return sendAndWait(msg, isMatch);
 };
 
-
 type ArchiveRequestParams = {
   streamId: string;
   profileId: string;
-  archiveType: 'minute' | 'hour' | 'day' | 'event'; // Use a union type for better type-safety
+  archiveType: "minute" | "hour" | "day" | "event"; // Use a union type for better type-safety
   startDate: string;
   endDate: string;
 };
-
 
 export const get_archives = ({
   streamId,
@@ -463,8 +502,8 @@ export const get_archives = ({
     }
 
     if (res?.success === false && res?.request?.scope === "get_archives") {
-        console.error("Received an error response for get_archives:", res);
-        return true;
+      console.error("Received an error response for get_archives:", res);
+      return true;
     }
 
     return false;
